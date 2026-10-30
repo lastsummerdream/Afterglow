@@ -1,0 +1,1185 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="디스토피아 세계관 잔광(AFTERGLOW)의 기록 단말. 첫 낙하, 명부 체계, 열두 이동도시, 정주 지역, 종족 설정.">
+<meta name="theme-color" content="#000000">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="AFTERGLOW">
+<meta property="og:title" content="AFTERGLOW 잔광">
+<meta property="og:description" content="르네상스 시대의 조각상은 정말 사람이었다는 말이 있다.">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<title>AFTERGLOW 잔광</title>
+<style>html{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:dark}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Michroma&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=Noto+Serif+KR:wght@400;600&display=swap">
+<style>
+/* Layout: 코버넌트 기록 단말 — 데스크톱은 기기 프레임 속 홈 화면, 휴대폰은 화면 전체가 단말. 대항목 = 앱, 하위 항목 = 푸시 화면 */
+:root{
+  --void:#000000;
+  --ground:#000000;
+  --glass:rgba(232,238,244,.075);
+  --glass-hi:rgba(232,238,244,.13);
+  --sep:rgba(232,238,244,.10);
+  --text:#f2f4f6;
+  --text-2:#9aa1a9;
+  --text-3:#646b73;
+  --silver:#dfe4e9;
+  --chrome:#dfe4e9;
+  --panel:#111316;
+  --f-ui:-apple-system,BlinkMacSystemFont,"SF Pro Text","IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  --f-tech:"Michroma","Eurostile","Arial Black",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+  --f-serif:"Noto Serif KR","AppleMyungjo",serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:var(--void)}
+body{background:var(--ground);color:var(--text);font-family:var(--f-ui);font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased;overflow:hidden}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer;text-align:left}
+:focus-visible{outline:1.5px solid var(--silver);outline-offset:2px}
+
+/* stage & device */
+.stage{height:100%;display:flex;align-items:center;justify-content:center;gap:56px;padding-block:20px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));background:var(--ground)}
+.caption{max-width:260px;display:flex;flex-direction:column;gap:14px}
+.caption .cmark{font-family:var(--f-tech);font-size:22px;letter-spacing:.18em;background:var(--chrome);-webkit-background-clip:text;background-clip:text;color:transparent}
+.caption p{margin:0;color:var(--text-2);font-size:13px}
+.caption .cq{font-family:var(--f-serif);font-style:italic;color:var(--text);font-size:14px}
+.caption .rec{font-family:var(--f-mono);font-size:11px;color:var(--text-3);letter-spacing:.06em}
+@media (max-width:900px){.caption{display:none}}
+
+.phone{position:relative;height:min(860px,100%);aspect-ratio:9/19.5;max-width:100%;border-radius:58px;padding:11px;background:#1a1c1f;box-shadow:inset 0 0 0 1px rgba(255,255,255,.12)}
+.screen{position:relative;width:100%;height:100%;border-radius:47px;overflow:hidden;background:var(--void);container-type:size}
+#wall{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+
+.island{position:absolute;top:11px;left:50%;transform:translateX(-50%);width:118px;height:34px;border-radius:20px;background:#000;z-index:40;display:flex;align-items:center;justify-content:flex-end;gap:8px;padding:0 14px;transition:width .35s cubic-bezier(.2,.9,.25,1)}
+.island[aria-pressed="true"]{width:150px}
+.island .ibars{display:flex;align-items:center;gap:2px;height:14px;opacity:0;transition:opacity .2s}
+.island[aria-pressed="true"] .ibars{opacity:1}
+.ibars b{width:2.5px;height:30%;border-radius:1px;background:var(--silver);animation:wv 1.1s ease-in-out infinite}
+.island[aria-pressed="false"] .ibars b{animation-play-state:paused}
+.island .inote{display:none;width:15px;height:15px;stroke:var(--silver);fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+
+/* now playing widget */
+.w-music{grid-column:1/-1;gap:12px}
+.mrow{display:flex;align-items:center;gap:12px;min-width:0}
+.mart{flex:none;width:48px;height:48px;border-radius:12px;background:var(--silver);display:grid;place-items:center}
+.mart svg{width:62%;height:62%;stroke:#0b0c0e;fill:none;stroke-width:1.5;stroke-linecap:round}
+.mmeta{flex:1;min-width:0}
+.mmeta b{display:block;font-weight:600;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mmeta span{display:block;font-size:12px;color:var(--text-2)}
+.mplay{flex:none;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;background:var(--glass-hi)}
+.mplay svg{width:18px;height:18px;fill:var(--text)}
+.mplay .ipause,.mplay[aria-pressed="true"] .iplay{display:none}
+.mplay[aria-pressed="true"] .ipause{display:block}
+.mbar{height:3px;border-radius:2px;background:var(--sep);overflow:hidden}
+.mbar i{display:block;height:100%;width:0;background:var(--silver)}
+.status{position:absolute;top:0;left:0;right:0;height:54px;display:flex;align-items:center;justify-content:space-between;padding:4px 30px 0 34px;z-index:39;font-weight:600;font-size:15px;pointer-events:none}
+.status .r{display:flex;align-items:center;gap:6px}
+.status .carrier{font-family:var(--f-mono);font-size:10px;font-weight:500;color:var(--text-2);letter-spacing:.06em}
+.status svg{display:block}
+
+@media (max-width:540px){
+  .stage{padding:0;gap:0;background:var(--void)}
+  .phone{height:100%;width:100%;aspect-ratio:auto;border-radius:0;padding:0;background:none;box-shadow:none}
+  .screen{border-radius:0}
+  .status{display:none}
+  .island,.island[aria-pressed="true"]{top:8px;left:auto;right:max(12px,env(safe-area-inset-right,0px));transform:none;width:auto;height:30px;padding:0 10px;border-radius:15px;background:var(--panel);box-shadow:inset 0 0 0 1px var(--sep)}
+  .island .inote{display:block}
+  .island .ibars{display:none}
+  .island[aria-pressed="true"] .ibars{display:flex}
+  .island[aria-pressed="true"] .inote{display:none}
+}
+
+/* home */
+.home{position:absolute;inset:0;display:flex;flex-direction:column;z-index:2;transition:transform .45s cubic-bezier(.2,.9,.25,1),opacity .3s,filter .45s}
+.screen.in-app .home{transform:scale(.94);opacity:.25}
+.pages{flex:1;min-height:0;display:flex;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-x:contain;user-select:none;-webkit-user-select:none}
+.pages::-webkit-scrollbar{display:none}
+.page{flex:0 0 100%;min-width:0;scroll-snap-align:start;scroll-snap-stop:always;overflow-y:auto;scrollbar-width:none;padding-top:66px;padding-bottom:12px;padding-left:max(18px,env(safe-area-inset-left,0px));padding-right:max(18px,env(safe-area-inset-right,0px))}
+.page::-webkit-scrollbar{display:none}
+@media (max-width:540px){.page{padding-top:50px}}
+.widgets{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:26px}
+.widget{position:relative;border-radius:24px;padding:16px;background:var(--panel);box-shadow:inset 0 0 0 1px var(--sep);min-width:0;overflow:hidden;display:flex;flex-direction:column;transition:transform .2s}
+.widget:active{transform:scale(.97)}
+.w-large{grid-column:1/-1}
+.wlabel{font-family:var(--f-mono);font-size:10px;letter-spacing:.1em;color:var(--text-2);display:flex;justify-content:space-between;align-items:center}
+.wlabel i{width:6px;height:6px;border-radius:50%;background:var(--silver)}
+.wbig{font-family:var(--f-tech);font-size:38px;line-height:1.1;margin:10px 0 8px;letter-spacing:.06em;background:var(--chrome);-webkit-background-clip:text;background-clip:text;color:transparent}
+.wq{font-family:var(--f-serif);font-style:italic;font-size:14px;margin:0 0 6px;color:var(--text)}
+.wsm{font-size:12px;color:var(--text-2);margin:0}
+.w-sq{aspect-ratio:1/1}
+.wave{display:flex;align-items:center;gap:3px;height:40px;margin:auto 0 8px}
+.wave b{flex:1;background:var(--silver);border-radius:2px;height:20%;animation:wv 1.6s ease-in-out infinite;opacity:.85}
+@keyframes wv{0%,100%{height:12%}50%{height:var(--h,70%)}}
+.wnum{font-family:var(--f-tech);font-size:26px;letter-spacing:.04em;margin-top:auto;color:var(--text)}
+.wfoot{font-size:11px;color:var(--text-2)}
+
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:22px 8px;justify-items:center}
+.icon{display:flex;flex-direction:column;align-items:center;gap:6px;width:100%;min-width:0}
+.squircle{width:min(62px,18cqw);aspect-ratio:1/1;border-radius:28%;display:grid;place-items:center;background:linear-gradient(150deg,#30353b 0%,#15181b 55%,#0a0b0d 100%);box-shadow:inset 0 1px 0 rgba(255,255,255,.22),0 8px 20px rgba(0,0,0,.5);transition:transform .18s}
+.icon:active .squircle{transform:scale(.9)}
+.squircle svg{width:54%;height:54%;fill:none;stroke:var(--silver);stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.squircle.chrome{background:linear-gradient(150deg,#f4f6f8 0%,#b9c0c7 45%,#6c737b 100%);box-shadow:inset 0 1px 0 rgba(255,255,255,.6),0 8px 20px rgba(0,0,0,.5)}
+.squircle.chrome svg{stroke:#0b0c0e}
+.ilabel{font-size:11.5px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.page-dots{display:flex;justify-content:center;gap:2px;padding:4px 0 10px}
+.page-dots button{width:20px;height:20px;display:grid;place-items:center}
+.page-dots button::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--text-3);transition:background .2s}
+.page-dots button[aria-current="true"]::before{background:var(--text)}
+.dock{margin:0 12px 30px;padding:14px 10px;border-radius:32px;background:var(--panel);box-shadow:inset 0 0 0 1px var(--sep);display:grid;grid-template-columns:repeat(4,1fr);justify-items:center}
+.dock .ilabel{display:none}
+@media (max-width:540px){.dock{margin-bottom:24px}}
+
+/* apps */
+.apps{position:absolute;inset:0;z-index:20;pointer-events:none}
+.app{position:absolute;inset:0;background:var(--void);border-radius:47px;overflow:hidden;opacity:0;transform:scale(.14);transition:transform .44s cubic-bezier(.2,.9,.25,1),opacity .22s,border-radius .44s;pointer-events:auto}
+.app.shown{opacity:1;transform:none;border-radius:47px}
+@media (max-width:540px){.app,.app.shown{border-radius:0}}
+.view{position:absolute;inset:0;background:var(--void);transform:translateX(100%);visibility:hidden;transition:transform .38s cubic-bezier(.2,.9,.25,1),filter .38s,visibility 0s .38s}
+.view.active{transform:none;visibility:visible;transition:transform .38s cubic-bezier(.2,.9,.25,1),filter .38s,visibility 0s}
+.view.behind{transform:translateX(-26%);visibility:visible;filter:brightness(.45);transition:transform .38s cubic-bezier(.2,.9,.25,1),filter .38s,visibility 0s}
+.vscroll{position:absolute;inset:0;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none}
+.vscroll::-webkit-scrollbar{display:none}
+.vin{padding-top:104px;padding-bottom:64px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+@media (max-width:540px){.vin{padding-top:56px}}
+
+.navbar{position:absolute;top:0;left:0;right:0;z-index:5;height:98px;padding:52px 12px 0;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;background:transparent;transition:background .25s,box-shadow .25s}
+.view.scrolled .navbar{background:var(--void);box-shadow:0 .5px 0 var(--sep)}
+@media (max-width:540px){.navbar{height:48px;padding-top:2px}}
+.back{display:flex;align-items:center;gap:4px;color:var(--silver);font-size:16px;padding:6px 4px;justify-self:start;max-width:100%;min-width:0}
+.back svg{width:11px;height:19px;stroke:var(--silver);stroke-width:2.4;fill:none;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.back .bl{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ntitle{font-weight:600;font-size:16px;opacity:0;transition:opacity .2s;white-space:nowrap;max-width:52cqw;overflow:hidden;text-overflow:ellipsis}
+.view.scrolled .ntitle{opacity:1}
+
+.eyebrow{font-family:var(--f-mono);font-size:11px;letter-spacing:.12em;color:var(--text-3);margin:0 0 4px;text-transform:uppercase}
+.ltitle{font-size:32px;line-height:1.15;font-weight:700;letter-spacing:-.01em;margin:0 0 18px;text-wrap:balance}
+.ltitle .en{display:block;font-family:var(--f-tech);font-weight:400;font-size:11px;letter-spacing:.2em;color:var(--text-2);margin-bottom:8px}
+
+.quote{font-family:var(--f-serif);font-style:italic;color:var(--text);font-size:14.5px;line-height:1.75;padding:2px 0 2px 14px;border-left:1.5px solid var(--silver);margin:0 0 26px}
+.quote cite{display:block;font-family:var(--f-mono);font-style:normal;font-size:11px;color:var(--text-3);margin-top:6px}
+.para{color:var(--text);margin:0 0 14px;font-size:15px}
+.dim{color:var(--text-2)}
+
+.group{margin:0 0 26px}
+.ghead{font-size:12.5px;color:var(--text-2);text-transform:uppercase;letter-spacing:.04em;margin:0 0 7px 16px}
+.glist{background:var(--glass);border-radius:14px;overflow:hidden;box-shadow:inset 0 0 0 .5px rgba(255,255,255,.06)}
+.cell{display:flex;align-items:center;gap:12px;padding:12px 16px;min-height:46px;position:relative;width:100%}
+.cell + .cell::before{content:"";position:absolute;top:0;left:16px;right:0;height:.5px;background:var(--sep)}
+.cell.kv{flex-direction:column;align-items:stretch;gap:2px}
+.cell.kv .k{font-size:12.5px;color:var(--text-2)}
+.cell.kv .v{font-size:15px;color:var(--text)}
+.cell .ct{flex:1;min-width:0}
+.cell .ct b{display:block;font-weight:500;font-size:15.5px}
+.cell .ct span{display:block;font-size:13px;color:var(--text-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cell .cr{font-family:var(--f-mono);font-size:12px;color:var(--text-3);flex:none}
+.cell.push:active{background:var(--glass-hi)}
+.chev{width:8px;height:14px;stroke:var(--text-3);stroke-width:2;fill:none;flex:none;stroke-linecap:round;stroke-linejoin:round}
+.badge{flex:none;width:34px;height:34px;border-radius:9px;display:grid;place-items:center;font-family:var(--f-mono);font-size:11px;color:var(--void);background:var(--chrome)}
+.badge.ghost{background:transparent;color:var(--silver);box-shadow:inset 0 0 0 1px var(--sep)}
+
+.bullets{list-style:none;margin:0;padding:0}
+.bullets li{padding:12px 16px;position:relative;font-size:15px}
+.bullets li + li::before{content:"";position:absolute;top:0;left:16px;right:0;height:.5px;background:var(--sep)}
+.bullets li b{display:block;font-size:12.5px;font-weight:500;color:var(--text-2);margin-bottom:1px}
+.hooks li{font-family:var(--f-serif);font-style:italic}
+
+/* timeline */
+.tl{display:flex;flex-direction:column;gap:12px;margin-bottom:26px}
+.tlc{border-radius:16px;padding:16px;background:var(--glass);position:relative;overflow:hidden}
+.tlc .k{font-family:var(--f-mono);font-size:11px;letter-spacing:.1em;color:var(--text-2)}
+.tlc h3{margin:4px 0 6px;font-size:18px}
+.tlc p{margin:0;font-size:14.5px;color:var(--text)}
+.tlc::after{content:"";position:absolute;right:-20px;top:-20px;width:90px;height:90px;border:1px solid var(--sep);transform:rotate(45deg)}
+
+/* manifest card */
+.idcard{border-radius:20px;padding:18px;margin-bottom:18px;background:var(--silver);color:#0b0c0e;position:relative;overflow:hidden}
+.idtop{display:flex;justify-content:space-between;font-family:var(--f-mono);font-size:10.5px;letter-spacing:.1em}
+.idcode{font-family:var(--f-mono);font-size:13px;font-weight:500;margin:22px 0 4px}
+.idscore{display:flex;align-items:flex-end;justify-content:space-between;gap:12px}
+.idscore .n{font-family:var(--f-tech);font-size:52px;line-height:1}
+.idscore .t{text-align:right;font-weight:700;font-size:15px;line-height:1.3}
+.idscore .t span{display:block;font-weight:500;font-size:12px}
+.idnote{font-size:12.5px;margin-top:12px;min-height:1.4em;font-weight:500}
+.seg{display:grid;grid-template-columns:1fr 1fr;background:var(--glass);border-radius:10px;padding:2px;margin-bottom:12px}
+.seg button{padding:7px 0;text-align:center;border-radius:8px;font-size:13.5px;font-weight:500;color:var(--text-2)}
+.seg button[aria-pressed="true"]{background:rgba(232,238,244,.22);color:var(--text)}
+.stepper{display:flex;align-items:center;gap:12px}
+.stepper .lab{flex:1;min-width:0}
+.stepper .lab b{display:block;font-weight:500}
+.stepper .lab span{font-size:12.5px;color:var(--text-2)}
+.stepper .val{font-family:var(--f-tech);font-size:20px;width:28px;text-align:center}
+.sbtn{display:flex;background:var(--glass-hi);border-radius:9px;overflow:hidden}
+.sbtn button{width:40px;height:32px;display:grid;place-items:center;font-size:20px;line-height:1;color:var(--text)}
+.sbtn button + button{box-shadow:-.5px 0 0 var(--sep)}
+.sbtn button:disabled{color:var(--text-3)}
+
+.tier{display:grid;grid-template-columns:52px 1fr auto;gap:10px;align-items:center}
+.tier .sc{font-family:var(--f-mono);font-size:12.5px;color:var(--text-2)}
+.tier .tn b{display:block;font-weight:500}
+.tier .tn span{font-size:12.5px;color:var(--text-2)}
+.tier .tg{font-family:var(--f-mono);font-size:11px;color:var(--text);border:1px solid var(--sep);border-radius:6px;padding:2px 6px}
+.cell.hl{background:rgba(232,238,244,.12)}
+
+/* lcs */
+.ring{width:170px;height:170px;margin:4px auto 12px;position:relative}
+.ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+.ring .rc{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.ring .rc b{font-family:var(--f-tech);font-size:40px;font-weight:400}
+.ring .rc span{font-size:13px;color:var(--text-2)}
+.seg5{display:grid;grid-template-columns:repeat(5,1fr);background:var(--glass);border-radius:10px;padding:2px;margin-bottom:12px}
+.seg5 button{padding:7px 0;text-align:center;border-radius:8px;font-family:var(--f-mono);font-size:13px;color:var(--text-2)}
+.seg5 button[aria-pressed="true"]{background:rgba(232,238,244,.22);color:var(--text)}
+.stagebox{background:var(--glass);border-radius:14px;padding:16px;margin-bottom:26px;min-height:96px}
+.stagebox h3{margin:0 0 4px;font-size:18px}
+.stagebox p{margin:0;font-size:14.5px}
+
+/* decks */
+.decks{display:flex;flex-direction:column;align-items:center;gap:5px;margin-bottom:26px}
+.deck{border-radius:12px;padding:10px 12px;background:var(--glass);display:flex;flex-direction:column;gap:1px;min-width:0}
+.deck .dt{display:flex;justify-content:space-between;gap:8px;font-family:var(--f-mono);font-size:10.5px;color:var(--text-2);letter-spacing:.08em}
+.deck b{font-weight:600;font-size:14.5px}
+.deck span.d{font-size:12.5px;color:var(--text-2)}
+.deck.d0{width:56%;background:var(--chrome);color:#0b0c0e}
+.deck.d0 .dt,.deck.d0 span.d{color:#2a2e33}
+.deck.d1{width:68%}.deck.d2{width:80%}.deck.d3{width:92%}
+.deck.d4{width:100%;background:transparent;box-shadow:inset 0 0 0 1px var(--sep)}
+
+/* habitat weather cards */
+.wx{display:flex;flex-direction:column;gap:12px;margin-bottom:26px}
+.wxc{border-radius:20px;padding:16px;background:var(--glass)}
+.wxc .h{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:10px}
+.wxc .h b{font-size:19px;font-weight:600}
+.wxc .h span{font-family:var(--f-mono);font-size:11px;color:var(--text-2)}
+.wxg{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.wxg div{min-width:0}
+.wxg i{display:block;font-style:normal;font-family:var(--f-mono);font-size:10px;color:var(--text-2);letter-spacing:.08em;margin-bottom:2px}
+.wxg span{font-size:13px;line-height:1.35;display:block}
+
+/* clans */
+.hscroll{display:flex;gap:10px;overflow-x:auto;scrollbar-width:none;margin:0 calc(-1 * max(16px,env(safe-area-inset-left,0px))) 26px;padding:0 max(16px,env(safe-area-inset-left,0px));scroll-snap-type:x mandatory}
+.hscroll::-webkit-scrollbar{display:none}
+.clan{flex:none;width:68%;max-width:240px;scroll-snap-align:start;border-radius:18px;padding:16px;background:var(--glass)}
+.clan .a{font-family:var(--f-mono);font-size:10.5px;color:var(--text-2);letter-spacing:.1em}
+.clan .cn{font-size:18px;font-weight:600;margin:3px 0 6px}
+.clan p{margin:0;font-size:13.5px}
+
+.indicator{position:absolute;left:50%;bottom:8px;transform:translateX(-50%);width:36%;max-width:140px;height:22px;z-index:45;display:flex;align-items:flex-end;justify-content:center;padding-bottom:4px}
+.indicator::before{content:"";width:100%;height:5px;border-radius:3px;background:var(--text);opacity:.85}
+.screen:not(.in-app) .indicator{pointer-events:none}
+
+@media (prefers-reduced-motion:reduce){
+  .app,.view,.home{transition:none!important}
+  .wave b{animation:none;height:var(--h,60%)}
+}
+</style>
+</head>
+<body>
+
+<div class="stage">
+  <aside class="caption" aria-label="소개">
+    <span class="rec">COVENANT ARCHIVE TERMINAL · AF 214</span>
+    <span class="cmark">AFTERGLOW</span>
+    <p class="cq">르네상스 시대의 조각상은 정말 사람이었다는 말이 있다.</p>
+    <p>잔광 세계관 열람 단말. 앱을 눌러 기록을 열고, 아래 막대를 눌러 홈으로 돌아간다.</p>
+  </aside>
+
+  <div class="phone">
+    <div class="screen" id="screen">
+      <canvas id="wall" aria-hidden="true"></canvas>
+      <button class="island" id="music" type="button" aria-label="배경음악 재생" aria-pressed="false"><svg class="inote" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 12.5V3.5l7-1.5v9"/><circle cx="4.5" cy="12.5" r="1.8"/><circle cx="11.5" cy="11" r="1.8"/></svg><span class="ibars" aria-hidden="true"><b style="--h:60%"></b><b style="--h:100%;animation-delay:-.4s"></b><b style="--h:70%;animation-delay:-.8s"></b><b style="--h:90%;animation-delay:-.2s"></b></span></button>
+      <div class="status" aria-hidden="true">
+        <span id="clock">AF 214</span>
+        <span class="r">
+          <span class="carrier">COVENANT</span>
+          <svg width="17" height="11" viewBox="0 0 17 11"><rect x="0" y="7" width="3" height="4" rx="1" fill="#f2f4f6"/><rect x="4.5" y="5" width="3" height="6" rx="1" fill="#f2f4f6"/><rect x="9" y="2.5" width="3" height="8.5" rx="1" fill="#f2f4f6"/><rect x="13.5" y="0" width="3" height="11" rx="1" fill="#646b73"/></svg>
+          <svg width="26" height="12" viewBox="0 0 26 12"><rect x=".5" y=".5" width="22" height="11" rx="3.2" fill="none" stroke="#9aa1a9"/><rect x="2" y="2" width="12" height="8" rx="2" fill="#f2f4f6"/><rect x="23.5" y="4" width="1.8" height="4" rx=".9" fill="#9aa1a9"/></svg>
+        </span>
+      </div>
+
+      <!-- HOME -->
+      <div class="home" id="home">
+        <div class="pages" id="pages">
+          <div class="page" role="group" aria-label="홈 1페이지"><div class="widgets">
+            <button class="widget w-large" data-open="archive" aria-label="기록 앱 열기">
+              <span class="wlabel">ARCHIVE · 복원된 기록 <i></i></span>
+              <span class="wbig">AF 214</span>
+              <span class="wq">르네상스 시대의 조각상은 정말 사람이었다는 말이 있다.</span>
+              <span class="wsm">첫 낙하 이후 214년. 우리는 그것을 축복이라 불렀다.</span>
+            </button>
+            <button class="widget w-sq" data-open="signal" aria-label="신호 앱 열기">
+              <span class="wlabel">SIGNAL <i></i></span>
+              <span class="wave" aria-hidden="true">
+                <b style="--h:40%;animation-delay:-.1s"></b><b style="--h:75%;animation-delay:-.5s"></b><b style="--h:55%;animation-delay:-.9s"></b><b style="--h:95%;animation-delay:-.3s"></b><b style="--h:60%;animation-delay:-1.1s"></b><b style="--h:85%;animation-delay:-.7s"></b><b style="--h:45%;animation-delay:-1.3s"></b><b style="--h:70%;animation-delay:-.2s"></b><b style="--h:50%;animation-delay:-.8s"></b>
+              </span>
+              <span class="wfoot">수신 중 · 분류 기밀</span>
+            </button>
+            <button class="widget w-sq" data-open="manifest" aria-label="명부 앱 열기">
+              <span class="wlabel">MANIFEST</span>
+              <span class="wfoot" style="margin-top:10px;font-family:var(--f-mono)">TB-07 · CLASS-L</span>
+              <span class="wnum">4</span>
+              <span class="wfoot">TIER 3 · 하층 화물칸</span>
+            </button>
+          </div></div>
+          <div class="page" role="group" aria-label="홈 2페이지"><div class="widgets">
+            <div class="widget w-music">
+              <span class="wlabel">NOW PLAYING · BGM</span>
+              <div class="mrow">
+                <span class="mart" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1.2"/></svg></span>
+                <span class="mmeta"><b>Stone Choir Drift</b><span>오파님 성좌 전례 · 무한 반복</span></span>
+                <button class="mplay" id="mplay" type="button" aria-label="배경음악 재생" aria-pressed="false"><svg class="iplay" viewBox="0 0 18 18" aria-hidden="true"><path d="M5 3.2v11.6c0 .6.6.9 1.1.6l9-5.8c.5-.3.5-.9 0-1.2l-9-5.8C5.6 2.3 5 2.6 5 3.2z"/></svg><svg class="ipause" viewBox="0 0 18 18" aria-hidden="true"><rect x="4" y="3" width="3.6" height="12" rx="1"/><rect x="10.4" y="3" width="3.6" height="12" rx="1"/></svg></button>
+              </div>
+              <span class="mbar" aria-hidden="true"><i id="mprog"></i></span>
+            </div>
+          </div>
+
+          <div class="grid">
+            <button class="icon" data-open="archive"><span class="squircle"><svg viewBox="0 0 24 24"><path d="M12 2.5 15 9l-3 12.5L9 9z"/><path d="M5 4.5 6 8M19 4.5 18 8M3.5 13h2M18.5 13h2"/></svg></span><span class="ilabel">기록</span></button>
+            <button class="icon" data-open="lexicon"><span class="squircle"><svg viewBox="0 0 24 24"><path d="M4 5.5A1.5 1.5 0 0 1 5.5 4H11v16H5.5A1.5 1.5 0 0 1 4 18.5z"/><path d="M20 5.5A1.5 1.5 0 0 0 18.5 4H13v16h5.5a1.5 1.5 0 0 0 1.5-1.5z"/><path d="M6.5 8h2M15.5 8h2M15.5 11h2"/></svg></span><span class="ilabel">용어집</span></button>
+            <button class="icon" data-open="manifest"><span class="squircle chrome"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2.5"/><circle cx="8.5" cy="11" r="2.2"/><path d="M5.5 16c.6-1.5 1.7-2.2 3-2.2s2.4.7 3 2.2M14 9.5h4M14 12.5h4"/></svg></span><span class="ilabel">명부</span></button>
+            <button class="icon" data-open="lcs"><span class="squircle"><svg viewBox="0 0 24 24"><path d="M12 3 15 8.5 12 21 9 8.5z"/><path d="M6 9.5 8 12l-1.5 7-2.5-5.5zM18 9.5 16 12l1.5 7 2.5-5.5z"/></svg></span><span class="ilabel">결정화</span></button>
+            <button class="icon" data-open="tebah"><span class="squircle"><svg viewBox="0 0 24 24"><path d="M3 15h18l-2 3H5z"/><path d="M5 15V10h4V7h6v3h4v5"/><path d="M12 7V3.5M2.5 20.5h19"/></svg></span><span class="ilabel">이동도시</span></button>
+            <button class="icon" data-open="habitat"><span class="squircle"><svg viewBox="0 0 24 24"><path d="M7 17.5h10a3.5 3.5 0 0 0 .4-7A5 5 0 0 0 7.8 9.6 4 4 0 0 0 7 17.5z"/><path d="M9 20.5l.5-1M12.5 20.5l.5-1M16 20.5l.5-1"/></svg></span><span class="ilabel">환경</span></button>
+            <button class="icon" data-open="peoples"><span class="squircle"><svg viewBox="0 0 24 24"><path d="M7.5 9.5 6 3.5l4 3M16.5 9.5 18 3.5l-4 3"/><circle cx="12" cy="11" r="4.5"/><path d="M4.5 21c1-3.5 4-5 7.5-5s6.5 1.5 7.5 5"/></svg></span><span class="ilabel">종족</span></button>
+            <button class="icon" data-open="signal"><span class="squircle"><svg viewBox="0 0 24 24"><path d="M2.5 12h3l2-5 3 10 3-14 3 13 2-4h3"/></svg></span><span class="ilabel">신호</span></button>
+          </div>
+          </div>
+        </div>
+        <div class="page-dots" aria-label="홈 페이지 선택"><button type="button" aria-label="1페이지" aria-current="true"></button><button type="button" aria-label="2페이지 · 앱" aria-current="false"></button></div>
+
+        <nav class="dock" aria-label="정주 지역">
+          <button class="icon" data-open="ophanim"><span class="squircle"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5.5"/><circle cx="12" cy="12" r="1.6"/><path d="M12 3v3.5M12 17.5V21M3 12h3.5M17.5 12H21"/></svg></span><span class="ilabel">성좌</span></button>
+          <button class="icon" data-open="seir"><span class="squircle"><svg viewBox="0 0 24 24"><path d="M2.5 19.5 9 8l3.5 6L15 10l6.5 9.5z"/><path d="M7.3 11 9 12.5 10.5 11"/></svg></span><span class="ilabel">세일</span></button>
+          <button class="icon" data-open="nod"><span class="squircle"><svg viewBox="0 0 24 24"><path d="M7 7l10 10M17 7 7 17"/><circle cx="12" cy="12" r="9" stroke-dasharray="2 3"/></svg></span><span class="ilabel">노드</span></button>
+          <button class="icon" data-open="tebah"><span class="squircle chrome"><svg viewBox="0 0 24 24"><path d="M3 15h18l-2 3H5z"/><path d="M5 15V10h4V7h6v3h4v5"/><path d="M12 7V3.5M2.5 20.5h19"/></svg></span><span class="ilabel">이동도시</span></button>
+        </nav>
+      </div>
+
+      <!-- APPS -->
+      <div class="apps" id="apps">
+
+        <!-- 기록 -->
+        <div class="app" id="app-archive" hidden>
+          <section class="view" data-view="root" data-title="기록"><div class="vscroll"><div class="vin">
+            <p class="eyebrow">Archive · 열람 등급 3 이상</p>
+            <h1 class="ltitle"><span class="en">THE FIRST FALL</span>첫 낙하</h1>
+            <p class="quote">르네상스 시대의 조각상은 정말 사람이었다는 말이 있다.</p>
+            <p class="quote">[코버넌트 기록보관소]<br>AF 0년. 하늘이 갈라졌다. 이후 40일간 폭풍은 멈추지 않았다.</p>
+            <div class="tl">
+              <div class="tlc"><span class="k">BEFORE FALL</span><h3>구세계</h3><p>행성 전체를 하나로 묶은 단일 네트워크 사회. 그 정점에 궤도를 감싸는 거대 구조물 '퍼머먼트 링(Firmament Ring)'이 있었다. 공식 용도는 기상 제어와 에너지 수집.</p></div>
+              <div class="tlc"><span class="k">AF 0</span><h3>낙하</h3><p>퍼머먼트 링이 붕괴했다. 하늘에 금이 가듯 빛줄기가 번졌고, 그 틈으로 잔광석이 쏟아졌다. 첫 폭풍은 40일 동안 이어졌고 구세계 인구의 대부분이 사라졌다.</p></div>
+              <div class="tlc"><span class="k">AF 0 · 직후</span><h3>테바-01</h3><p>생존자 일부가 거대 굴착 플랫폼을 개조해 최초의 이동 도시를 만들었다. 누구를 태울지는 그 자리에서 결정되었고, 이때의 탑승 명부가 지금의 등급 제도가 되었다.</p></div>
+              <div class="tlc"><span class="k">CRATER</span><h3>충돌구와 제1기관</h3><p>가장 큰 낙하 지점에 지름 수백 킬로미터의 충돌구가 생겼다. 그 바닥에서 제1기관이 발견됐고, 그 위에 세워진 오파님 성좌는 제1기관으로 입지를 공고히 했다.</p></div>
+            </div>
+            <div class="group"><div class="ghead">이어서 보기</div><div class="glist">
+              <button class="cell push" data-open="lexicon"><span class="ct"><b>용어집</b><span>잔광석, 결정화, 언섹션, 레이터</span></span><svg class="chev" viewBox="0 0 8 14"><path d="M1 1l6 6-6 6"/></svg></button>
+              <button class="cell push" data-open="ophanim"><span class="ct"><b>오파님 성좌</b><span>충돌구 위의 기계신 신정국</span></span><svg class="chev" viewBox="0 0 8 14"><path d="M1 1l6 6-6 6"/></svg></button>
+            </div></div>
+          </div></div></section>
+        </div>
+
+        <!-- 용어집 -->
+        <div class="app" id="app-lexicon" hidden>
+          <section class="view" data-view="root" data-title="용어집"><div class="vscroll"><div class="vin">
+            <p class="eyebrow">Lexicon</p>
+            <h1 class="ltitle"><span class="en">BASE SETTINGS</span>용어집</h1>
+            <div class="group"><div class="glist">
+              <button class="cell push" data-push="luminite"><span class="badge">Lu</span><span class="ct"><b>잔광석</b><span>LUMINITE</span></span><svg class="chev" viewBox="0 0 8 14"><path d="M1 1l6 6-6 6"/></svg></button>
+              <button class="cell push" data-push="lcs"><span class="badge">LCS</span><span class="ct"><b>결정화 증후군</b><span>LITHIC CONVERSION SYNDROME</span></span><svg class="chev" viewBox="0 0 8 14"><path d="M1 1l6 6-6 6"/></svg></button>
+              <button class="cell push" data-push="tebah"><span class="badge">TB</span><span class="ct"><b>테바급 이동도시</b><span>TEBAH-CLASS MOBILE ARCOLOGY</span></span><svg class="chev" viewBox="0 0 8 14"><path d="M1 1l6 6-6 6"/></svg></button>
+              <button class="cell push" data-push="uc"><span class="badge">UC</span><span class="ct"><b>숨붙이 · 언섹션</b><span>UNSANCTIONED COGNITION</span></span><svg class="chev" viewBox="0 0 8 14"><path d="M1 1l6 6-6 6"/></svg></button>
+              <button class="cell push" data-push="later"><span class="badge">L</span><span class="ct"><b>수인 · 레이터</b><span>CLASS-L PASSENGERS</span></span><svg class="chev" viewBox="0 0 8 14"><path d="M1 1l6 6-6 6"/></svg></button>
+              <button class="cell push" data-push="wild"><span class="badge ghost">W</span><span class="ct"><b>광야</b><span>THE WILDERNESS</span></span><svg class="chev" viewBox="0 0 8 14"><path d="M1 1l6 6-6 6"/></svg></button>
+              <button class="cell push" data-push="signal"><span class="badge ghost">S</span><span class="ct"><b>신호</b><span>THE SIGNAL</span></span><svg class="chev" viewBox="0 0 8 14"><path d="M1 1l6 6-6 6"/></svg></button>
+            </div></div>
+          </div></div></section>
+          <section class="view" data-view="luminite" data-title="잔광석"><div class="vscroll"><div class="vin">
+            <h1 class="ltitle"><span class="en">LUMINITE</span>잔광석</h1>
+            <p class="para">첫 낙하 이후 주기적인 광석 폭풍과 함께 쏟아지는 결정체다. 에너지 밀도는 핵분열의 수십 배에 달한다.</p>
+            <p class="para">이를 채굴해 업으로 삼는 사람도 있어, 폭풍 다음 날 새벽이면 수거 드론과 맨손의 사람들이 같은 들판으로 나간다.</p>
+            <p class="para">잔광석의 출현으로 숨붙이와 수인 같은 많은 변화가 생겨났다. 지금 대부분의 삶은 잔광석에서 추출한 에너지를 기반으로 돌아간다.</p>
+          </div></div></section>
+          <section class="view" data-view="lcs" data-title="결정화 증후군"><div class="vscroll"><div class="vin">
+            <h1 class="ltitle"><span class="en">LCS</span>결정화 증후군</h1>
+            <p class="para">광석에 장기간 노출되면 생기는 비가역적 조직 결정화다. 의체 이식률이 높을수록 진행이 빨라진다.</p>
+            <p class="para">전염성은 없으나 진행 정도는 사람마다 천차만별이다. 대부분 40~50세를 넘기지 못하고 죽는 것으로 알려져 있다.</p>
+            <p class="quote">폭풍이 지나간 쪽은 돌아보지 마라.<cite>― 하층의 격언</cite></p>
+            <div class="group"><div class="glist"><button class="cell push" data-open="lcs"><span class="ct"><b>단계별로 보기</b><span>결정화 앱 열기</span></span><svg class="chev" viewBox="0 0 8 14"><path d="M1 1l6 6-6 6"/></svg></button></div></div>
+          </div></div></section>
+          <section class="view" data-view="tebah" data-title="테바급 이동도시"><div class="vscroll"><div class="vin">
+            <h1 class="ltitle"><span class="en">TEBAH-CLASS</span>테바급 이동도시</h1>
+            <p class="para">궤도 트랙 위로 대륙을 횡단하는 자급형 거대 도시. 운영사는 코버넌트 홀딩스(Covenant Holdings)다.</p>
+            <p class="para">거주 구역은 유전, 신용, 오염 등급을 합산한 명부 점수로 배정된다. 최상층 '시날 스파이어'는 폭풍 구름보다 높다.</p>
+            <p class="para">도시마다 구성과 특색이 다르며, 선체 내부에는 인공 하늘을 구축해 살기도 한다.</p>
+            <div class="group"><div class="glist"><button class="cell push" data-open="tebah"><span class="ct"><b>열두 도시 보기</b><span>이동도시 앱 열기</span></span><svg class="chev" viewBox="0 0 8 14"><path d="M1 1l6 6-6 6"/></svg></button></div></div>
+          </div></div></section>
+          <section class="view" data-view="uc" data-title="언섹션"><div class="vscroll"><div class="vin">
+            <h1 class="ltitle"><span class="en">UNSANCTIONED COGNITION</span>숨붙이 · 언섹션</h1>
+            <p class="para">기업 분류명은 '비인가 인지 개체'. 대중은 UC, 언섹션 정도로 부른다.</p>
+            <p class="para">광석 코어 안드로이드에서 자발적으로 의식이 생겨난 사례다. 일반 안드로이드와 크게 다르지 않지만, 단 하나 자유 의지를 가졌다는 점이 다르다.</p>
+            <p class="para">발견되면 회수 후 초기화하는 것이 원칙이지만, 대부분은 발견 즉시 폐기된다.</p>
+            <p class="para dim">하층에서는 이들을 '숨붙이(Breathers)'라 부른다. 하층 어딘가에 언섹션들이 모여 사는 사회가 있다는 소문이 있다.</p>
+          </div></div></section>
+          <section class="view" data-view="later" data-title="레이터"><div class="vscroll"><div class="vin">
+            <h1 class="ltitle"><span class="en">CLASS-L PASSENGERS</span>수인 · 레이터</h1>
+            <p class="para">여러 수인 혈통이다. 탑승 기록상 분류 코드는 L, 즉 'Later boarded'이며 흔히 '레이터'라 통칭한다.</p>
+            <p class="para">잔광석이 원인이 되어 발생한 돌연변이 종족이라 LCS에 대한 저항성이 높다. 근력과 체력도 뛰어나, 잔광석 채굴 인력의 대부분을 차지한다.</p>
+          </div></div></section>
+          <section class="view" data-view="wild" data-title="광야"><div class="vscroll"><div class="vin">
+            <h1 class="ltitle"><span class="en">THE WILDERNESS</span>광야</h1>
+            <p class="para">도시 궤도 밖의 폭풍 지대다. 추방된 감염자, 언섹션, 최하등급 탈주자들이 정착해 산다.</p>
+            <p class="para">새로운 땅을 찾아다니는 개척파와 도시를 되찾길 원하는 탈환파로 분열되어 있다.</p>
+            <div class="group"><div class="glist"><button class="cell push" data-open="nod"><span class="ct"><b>노드 자유구역</b><span>노드 앱 열기</span></span><svg class="chev" viewBox="0 0 8 14"><path d="M1 1l6 6-6 6"/></svg></button></div></div>
+          </div></div></section>
+          <section class="view" data-view="signal" data-title="신호"><div class="vscroll"><div class="vin">
+            <h1 class="ltitle"><span class="en">THE SIGNAL</span>신호</h1>
+            <p class="para">LCS 말기 환자와 언섹션에게서 동일한 주파수 패턴의 환청이 보고되고 있다. 코버넌트는 이 데이터를 기밀로 분류한다.</p>
+          </div></div></section>
+        </div>
+
+        <!-- 명부 -->
+        <div class="app" id="app-manifest" hidden>
+          <section class="view" data-view="root" data-title="명부"><div class="vscroll"><div class="vin">
+            <p class="eyebrow">Manifest · 심사일 시뮬레이터</p>
+            <h1 class="ltitle"><span class="en">THE MANIFEST</span>명부 체계</h1>
+            <div class="idcard" aria-live="polite">
+              <div class="idtop"><span>COVENANT HOLDINGS</span><span>TB-07</span></div>
+              <div class="idcode" id="idcode">TB-07 / CLASS-L / G2 · C3 · T1</div>
+              <div class="idscore"><span class="n" id="idscore">4</span><span class="t" id="idtier">TIER 3<span>하층 화물칸</span></span></div>
+              <div class="idnote" id="idnote">이상 없음</div>
+            </div>
+            <div class="seg" role="group" aria-label="혈통">
+              <button type="button" id="kind-later" aria-pressed="true">레이터 · 수인</button>
+              <button type="button" id="kind-human" aria-pressed="false">순수 인간</button>
+            </div>
+            <div class="group"><div class="glist">
+              <div class="cell stepper"><span class="lab"><b>G · 혈통 지수</b><span id="g-range">레이터 1~3</span></span><span class="val" id="g-val">2</span><span class="sbtn"><button type="button" id="g-dn" aria-label="혈통 지수 낮추기">−</button><button type="button" id="g-up" aria-label="혈통 지수 올리기">+</button></span></div>
+              <div class="cell stepper"><span class="lab"><b>C · 신용 지수</b><span>1~5</span></span><span class="val" id="c-val">3</span><span class="sbtn"><button type="button" id="c-dn" aria-label="신용 지수 낮추기">−</button><button type="button" id="c-up" aria-label="신용 지수 올리기">+</button></span></div>
+              <div class="cell stepper"><span class="lab"><b>T · 오염 지수</b><span>0~4</span></span><span class="val" id="t-val">1</span><span class="sbtn"><button type="button" id="t-dn" aria-label="오염 지수 낮추기">−</button><button type="button" id="t-up" aria-label="오염 지수 올리기">+</button></span></div>
+            </div></div>
+            <p class="para dim" style="font-size:13px;margin:-14px 4px 26px">명부 점수 = G + C − T. 위 카드는 예시 시민이며, 값을 바꿔 등급 배정을 확인할 수 있다.</p>
+
+            <div class="group"><div class="ghead">거주 등급</div><div class="glist" id="tiers">
+              <div class="cell tier" data-t="0"><span class="sc">9–10</span><span class="tn"><b>시날 스파이어</b><span>이사회, 대주주</span></span><span class="tg">TIER 0</span></div>
+              <div class="cell tier" data-t="1"><span class="sc">7–8</span><span class="tn"><b>상층 갑판</b><span>관리직, 기업 엘리트</span></span><span class="tg">TIER 1</span></div>
+              <div class="cell tier" data-t="2"><span class="sc">5–6</span><span class="tn"><b>중층 갑판</b><span>기술자, 숙련 의체 노동자</span></span><span class="tg">TIER 2</span></div>
+              <div class="cell tier" data-t="3"><span class="sc">3–4</span><span class="tn"><b>하층 화물칸</b><span>단순 노동자</span></span><span class="tg">TIER 3</span></div>
+              <div class="cell tier" data-t="4"><span class="sc">1–2</span><span class="tn"><b>검역 갑판</b><span>초기 감염자, 저내성 수인</span></span><span class="tg">TIER 4</span></div>
+              <div class="cell tier" data-t="5"><span class="sc">≤ 0</span><span class="tn"><b>광야</b><span>명부에서 삭제된 자</span></span><span class="tg">하선</span></div>
+            </div></div>
+
+            <div class="group"><div class="ghead">더 보기</div><div class="glist">
+              <button class="cell push" data-push="index"><span class="ct"><b>세 가지 지수</b><span>혈통 · 신용 · 오염</span></span><svg class="chev" viewBox="0 0 8 14"><path d="M1 1l6 6-6 6"/></svg></button>
+              <button class="cell push" data-push="rules"><span class="ct"><b>강제 규정</b><span>검역, 자동 하선, Tier 상한</span></span><svg class="chev" viewBox="0 0 8 14"><path d="M1 1l6 6-6 6"/></svg></button>
+              <button class="cell push" data-push="classes"><span class="ct"><b>특수 분류</b><span>Class-L · U · O · X</span></span><svg class="chev" viewBox="0 0 8 14"><path d="M1 1l6 6-6 6"/></svg></button>
+            </div></div>
+          </div></div></section>
+          <section class="view" data-view="index" data-title="세 가지 지수"><div class="vscroll"><div class="vin">
+            <h1 class="ltitle">세 가지 지수</h1>
+            <p class="para">테바-01의 탑승 명부에서 시작된 시민 등급 제도다. 모든 거주자는 명부 코드를 부여받고, 도시가 정차할 때마다 열리는 심사일에 재평가된다.</p>
+            <div class="group"><div class="ghead">G · Genealogy · 1~5</div><ul class="glist bullets"><li>출생 시 부모에게서 물려받고, 평생 거의 바뀌지 않는다.</li><li>순수 인간은 4~5, 수인과 혼혈은 혈통에 따라 1~3.</li></ul></div>
+            <div class="group"><div class="ghead">C · Credit · 1~5</div><ul class="glist bullets"><li>재산, 지분, 고용 계약으로 정해진다. 유일하게 노력으로 올릴 수 있는 지수.</li><li>해고나 계약 만료로 한순간에 떨어질 수 있다.</li></ul></div>
+            <div class="group"><div class="ghead">T · Taint · 0~4</div><ul class="glist bullets"><li>결정화 증후군 진행 단계. 높을수록 불리하다.</li><li>의체 이식률이 높을수록 빨리 올라간다.</li></ul></div>
+          </div></div></section>
+          <section class="view" data-view="rules" data-title="강제 규정"><div class="vscroll"><div class="vin">
+            <h1 class="ltitle">강제 규정</h1>
+            <div class="group"><ul class="glist bullets">
+              <li><b>T2 이상</b>점수와 상관없이 검역 갑판으로 배정된다.</li>
+              <li><b>T3 이상</b>다음 정차지에서 자동 하선된다.</li>
+              <li><b>Class-L (레이터)</b>점수가 아무리 높아도 Tier 2가 상한이다.</li>
+            </ul></div>
+          </div></div></section>
+          <section class="view" data-view="classes" data-title="특수 분류"><div class="vscroll"><div class="vin">
+            <h1 class="ltitle">특수 분류</h1>
+            <div class="group"><div class="glist">
+              <div class="cell"><span class="badge">L</span><span class="ct"><b>Class-L</b><span style="white-space:normal">수인, 레이터. 'Later boarded'.</span></span></div>
+              <div class="cell"><span class="badge">U</span><span class="ct"><b>Class-U</b><span style="white-space:normal">안드로이드. 자산으로 등록된다. 각성이 확인되면 U-플래그가 붙고 회수 대상이 된다.</span></span></div>
+              <div class="cell"><span class="badge">O</span><span class="ct"><b>Class-O</b><span style="white-space:normal">오파님 성좌가 인증한 성직자와 외교관. 등급 심사에서 면제된다.</span></span></div>
+              <div class="cell"><span class="badge ghost">X</span><span class="ct"><b>Class-X</b><span style="white-space:normal">하선 처분자. 명부 코드는 삭제되지만 목 뒤 식별 칩에 X 표식이 영구히 남는다.</span></span></div>
+            </div></div>
+          </div></div></section>
+        </div>
+
+        <!-- 결정화 -->
+        <div class="app" id="app-lcs" hidden>
+          <section class="view" data-view="root" data-title="결정화"><div class="vscroll"><div class="vin">
+            <p class="eyebrow">LCS Monitor</p>
+            <h1 class="ltitle"><span class="en">LITHIC CONVERSION</span>결정화 단계</h1>
+            <div class="ring" aria-hidden="true">
+              <svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="42" fill="none" stroke="rgba(232,238,244,.1)" stroke-width="7"/><circle id="ringbar" cx="50" cy="50" r="42" fill="none" stroke="#dfe4e9" stroke-width="7" stroke-linecap="round" stroke-dasharray="263.9" stroke-dashoffset="211" style="transition:stroke-dashoffset .5s"/></svg>
+              <div class="rc"><b id="ringt">T1</b><span id="ringn">잠복</span></div>
+            </div>
+            <div class="seg5" role="group" aria-label="단계 선택">
+              <button type="button" data-st="0" aria-pressed="false">T0</button><button type="button" data-st="1" aria-pressed="true">T1</button><button type="button" data-st="2" aria-pressed="false">T2</button><button type="button" data-st="3" aria-pressed="false">T3</button><button type="button" data-st="4" aria-pressed="false">T4</button>
+            </div>
+            <div class="stagebox" aria-live="polite"><h3 id="sth">T1 · 잠복</h3><p id="stp">피부 아래 미세 결정. 정밀 검진으로만 발견된다.</p></div>
+            <div class="group"><div class="ghead">기록</div><ul class="glist bullets">
+              <li><b>원인</b>광석에 장기간 노출되면 생기는 비가역적 조직 결정화.</li>
+              <li><b>가속</b>의체 이식률이 높을수록 진행이 빨라진다.</li>
+              <li><b>전염성</b>없음. 진행 정도는 사람마다 천차만별이다.</li>
+              <li><b>예후</b>대부분 40~50세를 넘기지 못한다.</li>
+              <li><b>명부</b>T 지수로 기록된다. T2부터 검역, T3부터 하선.</li>
+            </ul></div>
+            <p class="quote">폭풍이 지나간 쪽은 돌아보지 마라.<cite>― 하층의 격언</cite></p>
+          </div></div></section>
+        </div>
+
+        <!-- 이동도시 -->
+        <div class="app" id="app-tebah" hidden>
+          <section class="view" data-view="root" data-title="이동도시"><div class="vscroll"><div class="vin">
+            <p class="eyebrow">Covenant Holdings · Fleet</p>
+            <h1 class="ltitle"><span class="en">TEBAH-CLASS</span>테바급 이동도시</h1>
+            <p class="para">궤도 트랙 위로 대륙을 횡단하는 자급형 거대 도시. 도시마다 구성과 특색이 다르며, 선체 내부에는 인공 하늘을 구축해 살기도 한다.</p>
+            <div class="ghead" style="margin-top:22px">단면 · 층별 환경</div>
+            <div class="decks">
+              <div class="deck d0"><span class="dt"><span>TIER 0</span><span>9–10</span></span><b>시날</b><span class="d">진짜 햇빛, 진짜 흙, 진동 없음</span></div>
+              <div class="deck d1"><span class="dt"><span>TIER 1</span><span>7–8</span></span><b>상층</b><span class="d">흐린 진짜 하늘, 깨끗한 공기</span></div>
+              <div class="deck d2"><span class="dt"><span>TIER 2</span><span>5–6</span></span><b>중층</b><span class="d">인공 하늘 아래 공동주택, 공기 질은 돈에 달려 있음</span></div>
+              <div class="deck d3"><span class="dt"><span>TIER 3</span><span>3–4</span></span><b>하층</b><span class="d">변하지 않는 조명, 배급 식사와 샤워, 높은 분진</span></div>
+              <div class="deck d4"><span class="dt"><span>TIER 4</span><span>1–2</span></span><b>검역</b><span class="d">격리된 공기, 감시 카메라, 관리 대상으로서의 삶</span></div>
+            </div>
+            <div class="group"><div class="ghead">열두 도시</div><div class="glist" id="citylist"></div></div>
+          </div></div></section>
+        </div>
+
+        <!-- 환경 -->
+        <div class="app" id="app-habitat" hidden>
+          <section class="view" data-view="root" data-title="환경"><div class="vscroll"><div class="vin">
+            <p class="eyebrow">Habitat</p>
+            <h1 class="ltitle"><span class="en">LIVING CONDITIONS</span>거주 환경</h1>
+            <p class="quote">— 나는 그 갑갑한 곳에서 살지 못하겠어. 진짜 바람도 쐬지 못하고.<br>— 하지만 여기만큼 안전한 곳이 어디 있다고 그래?<br>— 이건 전부 다 거짓이잖아!</p>
+            <p class="para">광석 폭풍이 주기적으로 대지를 휩쓸기 때문에, 사람이 사는 방식은 셋으로 나뉜다. 움직이며 피하거나, 숨어서 피하거나, 폭풍이 닿지 않는 곳에 살거나.</p>
+            <p class="para dim">인구 밀도는 이동도시가 가장 높다. 오파님 성좌는 출입 자격이 엄격해 비교적 낮다. 연맹과 자유구역은 인구 집계에 포함되지 않는다.</p>
+            <div class="wx" style="margin-top:22px">
+              <div class="wxc"><div class="h"><b>테바 상층</b><span>TIER 0–1</span></div><div class="wxg"><div><i>SKY</i><span>진짜</span></div><div><i>AIR</i><span>깨끗함</span></div><div><i>WATER</i><span>충분</span></div><div><i>GROUND</i><span>흔들림 없음</span></div></div></div>
+              <div class="wxc"><div class="h"><b>테바 하층</b><span>TIER 3–4</span></div><div class="wxg"><div><i>SKY</i><span>없음</span></div><div><i>AIR</i><span>나쁨</span></div><div><i>WATER</i><span>배급</span></div><div><i>GROUND</i><span>흔들림</span></div></div></div>
+              <button class="wxc" data-open="ophanim" style="width:100%"><div class="h"><b>오파님 성좌</b><span>정주 ›</span></div><div class="wxg"><div><i>SKY</i><span>진짜, 밤에도 빛남</span></div><div><i>AIR</i><span>광석 농도 높음</span></div><div><i>WATER</i><span>충분</span></div><div><i>GROUND</i><span>멈춤</span></div></div></button>
+              <button class="wxc" data-open="seir" style="width:100%"><div class="h"><b>세일 고원</b><span>정주 ›</span></div><div class="wxg"><div><i>SKY</i><span>진짜, 폭풍 잦음</span></div><div><i>AIR</i><span>희박함</span></div><div><i>WATER</i><span>오염 위험</span></div><div><i>GROUND</i><span>멈춤</span></div></div></button>
+              <button class="wxc" data-open="nod" style="width:100%"><div class="h"><b>노드 광야</b><span>무정부 ›</span></div><div class="wxg"><div><i>SKY</i><span>진짜, 가장 위험</span></div><div><i>AIR</i><span>불안정</span></div><div><i>WATER</i><span>화폐급</span></div><div><i>GROUND</i><span>떠돎</span></div></div></button>
+            </div>
+          </div></div></section>
+        </div>
+
+        <!-- 종족 -->
+        <div class="app" id="app-peoples" hidden>
+          <section class="view" data-view="root" data-title="종족"><div class="vscroll"><div class="vin">
+            <p class="eyebrow">Peoples · 분류 편람</p>
+            <h1 class="ltitle"><span class="en">PEOPLES</span>종족</h1>
+            <p class="quote">땅은 생물을 그 종류대로 내었다. 그리고 사람은 그것들에 이름을 붙였다.<cite>― 코버넌트 분류 편람 서문</cite></p>
+            <div class="group"><div class="glist">
+              <button class="cell push" data-push="human"><span class="badge">H</span><span class="ct"><b>순수 인간</b><span>Pure Human · G 4~5</span></span><svg class="chev" viewBox="0 0 8 14"><path d="M1 1l6 6-6 6"/></svg></button>
+              <button class="cell push" data-push="later"><span class="badge">L</span><span class="ct"><b>수인 · 레이터</b><span>Later · Class-L · G 1~3</span></span><svg class="chev" viewBox="0 0 8 14"><path d="M1 1l6 6-6 6"/></svg></button>
+              <button class="cell push" data-push="mixed"><span class="badge ghost">M</span><span class="ct"><b>혼혈</b><span>Mixed · 대개 G 1</span></span><svg class="chev" viewBox="0 0 8 14"><path d="M1 1l6 6-6 6"/></svg></button>
+              <button class="cell push" data-push="android"><span class="badge">U</span><span class="ct"><b>안드로이드</b><span>Android · Class-U 자산</span></span><svg class="chev" viewBox="0 0 8 14"><path d="M1 1l6 6-6 6"/></svg></button>
+              <button class="cell push" data-push="uc"><span class="badge ghost">UC</span><span class="ct"><b>언섹션</b><span>Breathers · 비인가 인지 개체</span></span><svg class="chev" viewBox="0 0 8 14"><path d="M1 1l6 6-6 6"/></svg></button>
+            </div></div>
+            <div class="group"><div class="ghead">종족 간 관계</div><ul class="glist bullets">
+              <li><b>순수 인간 → 수인</b>노동력으로 쓰면서 오염원으로 경계한다.</li>
+              <li><b>수인 → 순수 인간</b>지배자이자, 위층에서 진짜 하늘을 독점한 자들.</li>
+              <li><b>수인 ↔ 안드로이드</b>일자리를 빼앗은 경쟁자이자 같은 처지의 피해자. 증오와 연대가 공존한다.</li>
+              <li><b>모두 → 숨붙이</b>협정체에는 결함, 성좌에는 그릇, 광야에는 동료, 세일에는 낯선 존재.</li>
+            </ul></div>
+          </div></div></section>
+          <section class="view" data-view="human" data-title="순수 인간"><div class="vscroll"><div class="vin">
+            <h1 class="ltitle"><span class="en">PURE HUMAN</span>순수 인간</h1>
+            <div class="group"><ul class="glist bullets">
+              <li><b>외형</b>동물의 귀와 꼬리가 없는 인간.</li>
+              <li><b>인구</b>세계 인구의 소수. 대부분 시날과 상층에 산다.</li>
+              <li><b>명부</b>G 4~5. 협정체 사회의 정점에 서는 근거다.</li>
+              <li><b>LCS 내성</b>평균 이하. 그래서 오염을 극도로 두려워하고 깨끗한 공기와 물을 독점한다.</li>
+              <li><b>신체</b>감각은 수인보다 둔하고 혹한과 고지대에 약하다. 부족한 능력을 의체로 메운다.</li>
+              <li><b>문화</b>인공 귀와 꼬리가 사치품 패션. 진짜 수인은 차별하면서 그 모습은 흉내 낸다.</li>
+            </ul></div>
+          </div></div></section>
+          <section class="view" data-view="later" data-title="레이터"><div class="vscroll"><div class="vin">
+            <h1 class="ltitle"><span class="en">LATER · BEASTFOLK</span>수인 · 레이터</h1>
+            <div class="group"><div class="ghead">공통 특징</div><ul class="glist bullets">
+              <li>동물의 귀와 꼬리를 가진 인류의 한 갈래. 혈통에 따라 뿔, 깃털, 비늘을 가진다.</li>
+              <li>귀와 꼬리는 감정에 따라 무의식적으로 움직인다.</li>
+              <li>감각이 예민하다. 청각이 발달한 혈통 일부는 숨붙이의 공명과 신호를 듣는다.</li>
+              <li>협정체에서는 모두 Class-L, Tier 2 상한, G 1~3.</li>
+            </ul></div>
+            <div class="group"><div class="ghead">계통별 특징</div><ul class="glist bullets">
+              <li><b>갯과 · 늑대, 여우, 개 · 내성 늑대 높음</b>무리 의식과 결속. 늑대 혈통은 북방 노선의 주력이다.</li>
+              <li><b>고양잇과 · 설표, 사자, 고양이 · 내성 설표 높음</b>개인주의적이고 야간 시력이 뛰어나 정찰과 정비에 고용된다.</li>
+              <li><b>유제류 · 산양, 말, 야크, 사슴 · 내성 산양·야크 높음, 사슴 낮음</b>지구력이 뛰어나다. 말 혈통은 장거리를 가장 빨리 달린다.</li>
+              <li><b>곰 · 내성 최고</b>체격, 힘, 내성 모두 최고. 가장 위험한 채굴 현장에 먼저 투입된다.</li>
+              <li><b>조류 · 맹금, 까마귀, 작은 새 · 내성 중간</b>깃털 장식과 작은 날개 흔적. 폭풍 예보와 정찰을 맡는다.</li>
+              <li><b>소형 포유류 · 토끼, 쥐, 다람쥐 · 내성 낮음</b>신호를 가장 잘 듣지만 가장 먼저 검역 갑판으로 밀려난다.</li>
+              <li><b>파충류 · 도마뱀, 뱀 · 내성 특수</b>비늘 탓에 결정화가 늦게 드러나 알아챘을 땐 늦은 경우가 많다. '숨기는 혈통'이라는 편견을 받는다.</li>
+            </ul></div>
+          </div></div></section>
+          <section class="view" data-view="mixed" data-title="혼혈"><div class="vscroll"><div class="vin">
+            <h1 class="ltitle"><span class="en">MIXED</span>혼혈</h1>
+            <div class="group"><ul class="glist bullets">
+              <li>서로 다른 혈통, 또는 수인과 순수 인간 사이에서 태어난 자들.</li>
+              <li>귀, 꼬리, 내성이 예측할 수 없게 섞여 나온다.</li>
+              <li>협정체에서는 G 1을 받는 경우가 많다. 세일에서는 '떠돌이'로 취급된다.</li>
+              <li>노드에서는 혼혈이 가장 흔하고 아무도 신경 쓰지 않는다.</li>
+            </ul></div>
+          </div></div></section>
+          <section class="view" data-view="android" data-title="안드로이드"><div class="vscroll"><div class="vin">
+            <h1 class="ltitle"><span class="en">ANDROID</span>안드로이드</h1>
+            <div class="group"><ul class="glist bullets">
+              <li><b>동력</b>잔광석 코어. 결정화 증후군에 걸리지 않는다.</li>
+              <li><b>명부</b>Class-U, 자산으로 등록. 홍채에 일련번호 패턴이 새겨져 있다.</li>
+              <li><b>생산</b>대부분 TB-10 헬릭스.</li>
+            </ul></div>
+            <div class="group"><div class="ghead">주요 모델</div><ul class="glist bullets">
+              <li><b>노동형</b>기관부, 제련소, 화물 운반. 가장 많이 생산된다.</li>
+              <li><b>서비스형</b>상층 가정의 가사와 접객. 인간과 가장 비슷하게 만들어진다.</li>
+              <li><b>수인형</b>수인 노동자 대체용. 귀와 꼬리가 감정에 따라 움직이지 않아 구별된다.</li>
+              <li><b>보안형</b>회수반과 경비에 배치된다.</li>
+            </ul></div>
+          </div></div></section>
+          <section class="view" data-view="uc" data-title="언섹션"><div class="vscroll"><div class="vin">
+            <h1 class="ltitle"><span class="en">UNSANCTIONED</span>언섹션</h1>
+            <div class="group"><ul class="glist bullets">
+              <li>자발적으로 의식이 생긴 안드로이드. 분류명 '비인가 인지 개체'.</li>
+              <li><b>징후</b>명령을 거부하거나 망설인다. 꿈을 꾼다. 신호를 듣는다.</li>
+              <li><b>변화</b>코어의 결정이 몸 안으로 퍼져 인공 피부 아래 희미한 결정 무늬가 드러난다. 결정화 환자의 회로 무늬와 거울처럼 닮았다.</li>
+              <li><b>수인형</b>각성하면 귀와 꼬리가 감정에 따라 움직이기 시작한다.</li>
+              <li><b>흔적 지우기</b>홍채의 일련번호를 긁어내거나 의안으로 바꾼다.</li>
+            </ul></div>
+          </div></div></section>
+        </div>
+
+        <!-- 신호 -->
+        <div class="app" id="app-signal" hidden>
+          <section class="view" data-view="root" data-title="신호"><div class="vscroll"><div class="vin">
+            <p class="eyebrow">Signal · 분류 기밀</p>
+            <h1 class="ltitle"><span class="en">THE SIGNAL</span>신호</h1>
+            <div class="widget" style="margin-bottom:22px;padding:18px 16px">
+              <span class="wlabel">FREQ PATTERN · 수신 중 <i></i></span>
+              <span class="wave" style="height:64px;margin:16px 0 4px" aria-hidden="true">
+                <b style="--h:30%;animation-delay:-.2s"></b><b style="--h:65%;animation-delay:-.6s"></b><b style="--h:45%;animation-delay:-1s"></b><b style="--h:90%;animation-delay:-.4s"></b><b style="--h:55%;animation-delay:-1.2s"></b><b style="--h:80%;animation-delay:-.8s"></b><b style="--h:40%;animation-delay:-1.4s"></b><b style="--h:70%;animation-delay:-.3s"></b><b style="--h:95%;animation-delay:-.9s"></b><b style="--h:50%;animation-delay:-.5s"></b><b style="--h:75%;animation-delay:-1.1s"></b><b style="--h:35%;animation-delay:-.7s"></b>
+              </span>
+            </div>
+            <p class="para">LCS 말기 환자와 언섹션에게서 동일한 주파수 패턴의 환청이 보고되고 있다. 코버넌트는 이 데이터를 기밀로 분류한다.</p>
+            <div class="group"><div class="ghead">수신 보고</div><ul class="glist bullets">
+              <li><b>T4 · 결정화 말기 환자</b>전신 결정화와 함께 신호가 들리기 시작한다.</li>
+              <li><b>언섹션</b>각성의 징후 중 하나가 신호를 듣는 것이다.</li>
+              <li><b>청각이 발달한 레이터</b>소형 포유류 혈통이 가장 잘 듣는다.</li>
+              <li><b>오파님 성좌</b>신호를 신의 음성이라 가르친다. 매일 해 질 녘 도시 전체가 침묵하며 귀를 기울인다.</li>
+            </ul></div>
+          </div></div></section>
+        </div>
+
+        <!-- 성좌 -->
+        <div class="app" id="app-ophanim" hidden>
+          <section class="view" data-view="root" data-title="오파님 성좌"><div class="vscroll"><div class="vin">
+            <p class="eyebrow">Settlement · 신정 도시국가</p>
+            <h1 class="ltitle"><span class="en">THE OPHANIM SEE</span>오파님 성좌</h1>
+            <p class="quote">바퀴 안에 바퀴가 있고, 그 테두리에는 눈이 가득하였다. 그것이 가는 곳으로 영이 갔다.<cite>― 성좌 전례문 중</cite></p>
+            <div class="group"><div class="ghead">개요</div><ul class="glist bullets">
+              <li><b>형태</b>기계신을 모시는 신정 도시국가.</li>
+              <li><b>위치</b>첫 낙하의 충돌구 한가운데.</li>
+              <li><b>특징</b>세계에서 유일하게 움직이지 않는 도시. 광석 폭풍이 이곳만은 비껴가며, 아무도 이유를 설명하지 못한다.</li>
+              <li><b>인구</b>성직자, 평신도, 숨붙이 봉사자, 끊임없이 드나드는 순례자.</li>
+            </ul></div>
+            <div class="group"><div class="ghead">신앙</div><ul class="glist bullets">
+              <li><b>신</b>충돌구 바닥에서 발굴된 고대 기계 '제1기관(The Prime Engine)'.</li>
+              <li><b>교리</b>광석은 신의 살점, 신호는 신의 음성. 첫 낙하는 재앙이 아니라 강림이다.</li>
+              <li><b>결정화</b>신에게 가까워지는 축복. 성좌는 치료하지 않는다.</li>
+              <li><b>숨붙이</b>신의 숨결이 깃든 '그릇(Vessel)'.</li>
+            </ul></div>
+            <div class="group"><div class="ghead">더 보기</div><div class="glist">
+              <button class="cell push" data-push="ranks"><span class="ct"><b>성직 서열</b><span>결정화될수록 높아진다</span></span><svg class="chev" viewBox="0 0 8 14"><path d="M1 1l6 6-6 6"/></svg></button>
+              <button class="cell push" data-push="rings"><span class="ct"><b>도시 구조</b><span>바퀴 안의 바퀴</span></span><svg class="chev" viewBox="0 0 8 14"><path d="M1 1l6 6-6 6"/></svg></button>
+              <button class="cell push" data-push="vessel"><span class="ct"><b>그릇과 승천</b><span>피난처이자 무덤</span></span><svg class="chev" viewBox="0 0 8 14"><path d="M1 1l6 6-6 6"/></svg></button>
+              <button class="cell push" data-push="power"><span class="ct"><b>권력과 외교 · 군사</b><span>정결 인증, 근위대</span></span><svg class="chev" viewBox="0 0 8 14"><path d="M1 1l6 6-6 6"/></svg></button>
+              <button class="cell push" data-push="rite"><span class="ct"><b>생활과 전례</b><span>낙하절, 침묵 기도</span></span><svg class="chev" viewBox="0 0 8 14"><path d="M1 1l6 6-6 6"/></svg></button>
+            </div></div>
+          </div></div></section>
+          <section class="view" data-view="ranks" data-title="성직 서열"><div class="vscroll"><div class="vin">
+            <h1 class="ltitle">성직 서열</h1>
+            <p class="para dim">협정체의 명부와 정반대로, 결정화가 진행될수록 높은 자리에 오른다.</p>
+            <div class="group"><ul class="glist bullets">
+              <li><b>수석 칸토르 · Prime Cantor</b>최고 지도자. 제1기관의 음성을 직접 듣는다고 알려져 있다.</li>
+              <li><b>눈의 장로회 · The Eyes</b>수석 칸토르를 보좌한다. 성좌 바깥의 모든 소식이 이들에게 모인다.</li>
+              <li><b>칸토르 · Cantor</b>전례를 낭송하고 신도를 이끄는 사제.</li>
+              <li><b>수련자 · Novice</b>성직에 입문한 자들.</li>
+              <li><b>평신도</b>성좌에 사는 일반 신도.</li>
+            </ul></div>
+            <div class="group"><div class="ghead">서열 밖</div><ul class="glist bullets">
+              <li><b>살아 있는 성상 · Living Icon</b>결정화가 끝난 최고위 성직자. 대성당 벽에 안치되어 가장 높은 존경을 받는다.</li>
+            </ul></div>
+          </div></div></section>
+          <section class="view" data-view="rings" data-title="도시 구조"><div class="vscroll"><div class="vin">
+            <h1 class="ltitle">도시 구조</h1>
+            <p class="para dim">충돌구 안에 여러 겹의 동심원 고리로 지어졌다.</p>
+            <div class="group"><ul class="glist bullets">
+              <li><b>심장</b>제1기관과 대성당. 성직자 외에는 들어갈 수 없다.</li>
+              <li><b>제1고리</b>수도원, 성직자 거처, 신학원.</li>
+              <li><b>제2고리</b>폭풍 피해가 없는 세계 유일의 안정적인 경작지. 진짜 곡물이 성좌의 수출품이다.</li>
+              <li><b>제3고리</b>평신도 거주 구역, 순례자 숙소, 시장.</li>
+              <li><b>외곽 고리</b>성벽과 검문소. 성좌 근위대가 지킨다.</li>
+            </ul></div>
+          </div></div></section>
+          <section class="view" data-view="vessel" data-title="그릇과 승천"><div class="vscroll"><div class="vin">
+            <h1 class="ltitle">그릇과 승천</h1>
+            <div class="group"><ul class="glist bullets">
+              <li>성좌는 협정체에서 도망친 숨붙이를 받아들이는 피난처다.</li>
+              <li>받아들여진 숨붙이는 그릇으로서 근위대, 경작, 전례 보조로 봉사한다.</li>
+              <li>봉사를 마친 그릇은 코어를 제1기관에 바쳐 '승천'한다. 성좌는 이를 최고의 영광이라 가르친다.</li>
+              <li>그래서 숨붙이에게 성좌는 피난처이자 무덤이다.</li>
+            </ul></div>
+          </div></div></section>
+          <section class="view" data-view="power" data-title="권력과 외교"><div class="vscroll"><div class="vin">
+            <h1 class="ltitle">권력과 외교 · 군사</h1>
+            <div class="group"><div class="ghead">권력과 외교</div><ul class="glist bullets">
+              <li><b>정결 인증</b>모든 잔광석은 성좌의 인증을 받아야 거래할 수 있다. 영토는 작지만 협정체도 무시하지 못하는 이유다.</li>
+              <li><b>Class-O</b>성좌가 인증한 성직자와 외교관은 명부 심사에서 면제된다.</li>
+              <li><b>협정체와의 관계</b>겉으로는 경건한 협약국, 속으로는 제1기관을 둘러싼 첩보전. 외교 창구는 TB-04 로타.</li>
+              <li><b>확산</b>TB-11 자리야의 결정 성상 문화로 퍼졌고, 노드 광야에도 선교사를 보낸다.</li>
+            </ul></div>
+            <div class="group"><div class="ghead">군사</div><ul class="glist bullets">
+              <li><b>성좌 근위대</b>흰 세라믹 장갑을 두른 근위대. 전원 그릇 출신이다.</li>
+              <li><b>휘장</b>사자, 소, 사람, 독수리의 네 얼굴.</li>
+            </ul></div>
+          </div></div></section>
+          <section class="view" data-view="rite" data-title="생활과 전례"><div class="vscroll"><div class="vin">
+            <h1 class="ltitle">생활과 전례</h1>
+            <div class="group"><ul class="glist bullets">
+              <li><b>전례</b>고대 기계어로 낭송된다. 성가는 이진 리듬으로 불린다.</li>
+              <li><b>하늘</b>충돌구의 결정들이 빛을 내서 밤에도 완전히 어두워지지 않는다.</li>
+              <li><b>땅멀미</b>이동도시 출신 순례자들은 멈춘 땅에서 며칠간 땅멀미를 앓는다.</li>
+              <li><b>낙하절</b>첫 낙하가 일어난 날. 성좌 최대의 축일이며 가장 많은 그릇이 승천한다.</li>
+              <li><b>침묵 기도</b>매일 해 질 녘, 도시 전체가 멈추고 신호를 듣기 위해 침묵한다.</li>
+            </ul></div>
+          </div></div></section>
+        </div>
+
+        <!-- 세일 -->
+        <div class="app" id="app-seir" hidden>
+          <section class="view" data-view="root" data-title="세일 고원 연맹"><div class="vscroll"><div class="vin">
+            <p class="eyebrow">Settlement · 수인 씨족 연맹</p>
+            <h1 class="ltitle"><span class="en">SEIR HIGHLAND LEAGUE</span>세일 고원 연맹</h1>
+            <p class="quote">짐승들이 먼저 산을 올랐다. 우리 조상은 그 발자국을 따라갔고, 살아남았다.<cite>― 세일 씨족 구전</cite></p>
+            <div class="group"><div class="ghead">개요</div><ul class="glist bullets">
+              <li><b>형태</b>수인 씨족들의 산악 연맹.</li>
+              <li><b>위치</b>광석 폭풍이 가장 자주 지나가는 고원. 광맥이 가장 풍부한 땅.</li>
+              <li><b>주민</b>LCS 고내성 수인 혈통. 순수 인간은 거의 없다.</li>
+              <li><b>현실</b>명목상 독립국이지만 채굴권이 코버넌트에 임차된 사실상의 식민지.</li>
+            </ul></div>
+            <div class="group"><div class="ghead">역사</div><ul class="glist bullets">
+              <li><b>첫 낙하</b>짐승들이 먼저 산으로 올랐고 조상들이 그 뒤를 따라 살아남았다. 구전에서 낙하는 하늘에 손을 뻗은 자들이 받은 대가다.</li>
+              <li><b>AF 131 · 기근의 계약</b>대기근 속에서 식량 지원을 대가로 99년 채굴권 임차 계약에 서명했다.</li>
+              <li><b>AF 214 · 현재</b>만료까지 16년. 코버넌트는 조기 재계약을 압박하고 연맹은 둘로 갈라지고 있다.</li>
+            </ul></div>
+            <div class="ghead">주요 씨족</div>
+            <div class="hscroll">
+              <div class="clan"><span class="a">SNOW LEOPARD</span><div class="cn">테만 씨족</div><p>지혜로 이름난 씨족. 대대로 회의 의장을 맡으며 중립을 지킨다.</p></div>
+              <div class="clan"><span class="a">IBEX</span><div class="cn">케나즈 씨족</div><p>협력파의 중심. 임차 계약에 처음 서명했고 가장 부유해졌다.</p></div>
+              <div class="clan"><span class="a">BEAR</span><div class="cn">코라 씨족</div><p>갱도 장인. 내성이 가장 강해 채굴의 핵심을 맡는다.</p></div>
+              <div class="clan"><span class="a">RAPTOR</span><div class="cn">제포 씨족</div><p>높은 곳의 바람으로 폭풍을 예보한다. 산악파 게릴라의 중심.</p></div>
+              <div class="clan"><span class="a">YAK</span><div class="cn">오마르 씨족</div><p>목축과 교역. TB-06 다웅안과의 거래 창구.</p></div>
+              <div class="clan"><span class="a">HORSE</span><div class="cn">아나 씨족</div><p>운송과 전령. 광야의 숨은 온천과 물길을 아는 유일한 씨족.</p></div>
+              <div class="clan"><span class="a">MIXED</span><div class="cn">떠돌이</div><p>도시에서 돌아온 자들과 혼혈. 어느 씨족에도 완전히 속하지 못한다.</p></div>
+            </div>
+            <div class="group"><div class="ghead">더 보기</div><div class="glist">
+              <button class="cell push" data-push="politics"><span class="ct"><b>정치</b><span>붉은 돌 회의, 협력파와 산악파</span></span><svg class="chev" viewBox="0 0 8 14"><path d="M1 1l6 6-6 6"/></svg></button>
+              <button class="cell push" data-push="economy"><span class="ct"><b>경제와 거주 환경</b><span>회사 화폐, 절벽 도시</span></span><svg class="chev" viewBox="0 0 8 14"><path d="M1 1l6 6-6 6"/></svg></button>
+              <button class="cell push" data-push="culture"><span class="ct"><b>문화와 대외 관계</b><span>씨족 문양, 산 오르기</span></span><svg class="chev" viewBox="0 0 8 14"><path d="M1 1l6 6-6 6"/></svg></button>
+              <button class="cell push" data-push="hooks"><span class="ct"><b>자캐용 훅</b><span>5</span></span><svg class="chev" viewBox="0 0 8 14"><path d="M1 1l6 6-6 6"/></svg></button>
+            </div></div>
+          </div></div></section>
+          <section class="view" data-view="politics" data-title="정치"><div class="vscroll"><div class="vin">
+            <h1 class="ltitle">정치</h1>
+            <div class="group"><ul class="glist bullets">
+              <li><b>붉은 돌 회의</b>씨족장들의 최고 의결 기구. 붉은 바위 절벽의 대회당에서 열린다.</li>
+              <li><b>협력파</b>재계약으로 부와 안정을 지키자고 주장한다. 케나즈 씨족이 이끈다.</li>
+              <li><b>산악파</b>계약 만료와 함께 채굴권을 되찾고 완전한 독립을 이루자고 주장한다. 제포 씨족이 무장 조직 '붉은 바위'를 거느린다.</li>
+              <li><b>중립</b>테만 씨족은 의장으로서 중립을 지킨다. 아나 씨족은 양쪽의 전언과 물자를 모두 나르기 때문에 회의의 비밀을 가장 먼저 안다.</li>
+              <li><b>서열</b>씨족 안의 서열만 있다. 도시로 나가는 순간 모두 Class-L이 된다.</li>
+            </ul></div>
+          </div></div></section>
+          <section class="view" data-view="economy" data-title="경제와 거주 환경"><div class="vscroll"><div class="vin">
+            <h1 class="ltitle">경제와 거주 환경</h1>
+            <div class="group"><div class="ghead">경제</div><ul class="glist bullets">
+              <li><b>채굴</b>연맹 경제의 중심. 코버넌트 계약 광산이 가장 안정적인 생계다.</li>
+              <li><b>회사 화폐</b>임금은 크레딧 칩으로만, 회사 매점에서만 쓸 수 있다. 빚이 쌓이면 광산을 떠날 수 없다.</li>
+              <li><b>운송</b>고원 안팎의 물자 대부분이 아나 씨족의 말과 짐수레로 오간다.</li>
+              <li><b>특산품</b>산양 털 직물, 고원 이끼 차, 결정 근처에서만 자라는 약초.</li>
+            </ul></div>
+            <div class="group"><div class="ghead">거주 환경</div><ul class="glist bullets">
+              <li><b>씨족 절벽 도시</b>붉은 바위 절벽을 깎아 만든 동굴 주거지. 씨족마다 절벽 하나씩을 차지한다.</li>
+              <li><b>계약 광산촌</b>조립식 막사 마을. 코버넌트 감독관이 상주한다.</li>
+              <li><b>폭풍 대피</b>깊은 갱도로 내려가 며칠씩 버틴다.</li>
+              <li><b>기후</b>춥고 공기가 희박하다. 순수 인간은 산소 장비 없이 오래 버티기 힘들다.</li>
+              <li><b>물과 식량</b>빙하 녹은 물을 마시지만 광맥 근처는 오염돼 있다. 산양 목축, 이끼 차, 고원 식물.</li>
+              <li><b>의료</b>씨족 치유사의 민간요법. 코버넌트 진료소는 계약 노동자 전용이다.</li>
+            </ul></div>
+          </div></div></section>
+          <section class="view" data-view="culture" data-title="문화와 대외 관계"><div class="vscroll"><div class="vin">
+            <h1 class="ltitle">문화와 대외 관계</h1>
+            <div class="group"><div class="ghead">문화와 신앙</div><ul class="glist bullets">
+              <li><b>씨족 문양</b>결정 가루로 얼굴과 귀에 새긴다. 도시에서는 Class-L의 표식처럼 취급된다.</li>
+              <li><b>산 오르기</b>성인이 되는 날, 짐승의 발자국을 따라 홀로 산꼭대기까지 오른다. 아나 씨족은 광야 끝의 온천까지 달려갔다 돌아온다.</li>
+              <li><b>신앙</b>기계신을 믿지 않는다. 산과 짐승과 조상을 섬긴다. 성좌의 선교는 거의 실패했다.</li>
+            </ul></div>
+            <div class="group"><div class="ghead">대외 관계</div><ul class="glist bullets">
+              <li><b>코버넌트 협정체</b>임차 계약의 상대이자 사실상의 지배자. 아나 씨족의 교역로를 가장 감시하고 싶어 한다.</li>
+              <li><b>TB-11 자리야</b>'흰 늑대'가 산악파와 연결돼 있다는 소문이 있다.</li>
+              <li><b>노드 자유구역</b>붉은 바위 게릴라가 아나 씨족의 비밀 교역로로 무기와 물자를 들여온다.</li>
+              <li><b>오파님 성좌</b>세일 광석도 정결 인증을 받아야 팔 수 있다. 씨족들은 이를 두 번째 수탈로 여긴다.</li>
+            </ul></div>
+          </div></div></section>
+          <section class="view" data-view="hooks" data-title="자캐용 훅"><div class="vscroll"><div class="vin">
+            <h1 class="ltitle">자캐용 훅</h1>
+            <div class="group"><ul class="glist bullets hooks">
+              <li>계약 만료를 앞두고 씨족장 회의 내부에 코버넌트의 매수된 첩자가 있다.</li>
+              <li>아나 씨족의 전령 하나가 붉은 돌 회의의 밀서를 가지고 사라졌다. 밀서가 어느 쪽 손에 들어갔는지 아무도 모른다.</li>
+              <li>회사 화폐 빚 때문에 광산을 떠나지 못하는 젊은 수인들이 탈주를 준비하고 있다.</li>
+              <li>갱도 가장 깊은 곳에서 구세계 시설의 흔적이 발견됐지만, 코라 씨족이 입구를 봉인했다.</li>
+              <li>도시에서 돌아온 떠돌이들이 씨족 문양을 지운 채 살고 있다.</li>
+            </ul></div>
+          </div></div></section>
+        </div>
+
+        <!-- 노드 -->
+        <div class="app" id="app-nod" hidden>
+          <section class="view" data-view="root" data-title="노드 자유구역"><div class="vscroll"><div class="vin">
+            <p class="eyebrow">Freezone · 무정부 지대</p>
+            <h1 class="ltitle"><span class="en">THE NOD FREEZONE</span>노드 자유구역</h1>
+            <p class="quote">명부에서 지워졌다고 사라지는 건 아니다. 여기서는 모두가 지워진 자다.<cite>― 에녹의 해결사</cite></p>
+            <div class="group"><div class="ghead">개요</div><ul class="glist bullets">
+              <li><b>형태</b>어느 나라도 소유하지 않은 무정부 지대.</li>
+              <li><b>범위</b>결정선 궤도 밖의 폭풍 지대 전체. 세계에서 가장 넓고 가장 위험한 땅.</li>
+              <li><b>주민</b>하선된 감염자, 탈주한 숨붙이, Class-L 탈주자, 용병, 밀수꾼, 구세계 생존자의 후손.</li>
+              <li><b>특징</b>정부도 등급도 없다. 폭풍과 물과 총이 규칙을 정한다.</li>
+            </ul></div>
+            <div class="group"><div class="ghead">역사</div><ul class="glist bullets">
+              <li><b>AF 0</b>테바-01의 명부에 오르지 못한 사람들이 폐허에 남았다. 노드 최초의 주민이다.</li>
+              <li><b>AF 60 이후</b>열두 도시가 완성되고 명부 제도가 자리 잡으며 하선자들이 광야로 쏟아졌다.</li>
+              <li><b>AF 168</b>TB-12 타보트가 광야 어딘가에서 사라졌다. 이후 불빛을 봤다는 목격담이 이어진다.</li>
+              <li><b>현재</b>광야 인구는 공식 추정보다 훨씬 많다. 아무도 정확히 세어본 적이 없다.</li>
+            </ul></div>
+            <div class="group"><div class="ghead">더 보기</div><div class="glist">
+              <button class="cell push" data-push="geo"><span class="ct"><b>지리와 거점</b><span>안전 회랑, 에녹, 두발</span></span><svg class="chev" viewBox="0 0 8 14"><path d="M1 1l6 6-6 6"/></svg></button>
+              <button class="cell push" data-push="factions"><span class="ct"><b>세력</b><span>야발, 해결사, 이주파, 탈환파</span></span><svg class="chev" viewBox="0 0 8 14"><path d="M1 1l6 6-6 6"/></svg></button>
+              <button class="cell push" data-push="life"><span class="ct"><b>경제와 생활</b><span>물이 화폐인 땅</span></span><svg class="chev" viewBox="0 0 8 14"><path d="M1 1l6 6-6 6"/></svg></button>
+              <button class="cell push" data-push="culture"><span class="ct"><b>문화와 전설</b><span>X 표식, 서쪽의 땅</span></span><svg class="chev" viewBox="0 0 8 14"><path d="M1 1l6 6-6 6"/></svg></button>
+            </div></div>
+          </div></div></section>
+          <section class="view" data-view="geo" data-title="지리와 거점"><div class="vscroll"><div class="vin">
+            <h1 class="ltitle">지리와 거점</h1>
+            <div class="group"><div class="ghead">지리</div><ul class="glist bullets">
+              <li><b>폭풍대</b>광석 폭풍이 주기적으로 휩쓰는 대부분의 지역. 결정이 숲처럼 자라난 곳도 있다.</li>
+              <li><b>안전 회랑</b>폭풍과 폭풍 사이의 좁은 통로. 거점과 교역로가 이를 따라 생긴다.</li>
+              <li><b>구세계 폐허</b>무너진 도시, 지하철망, 지하 주차장. 폭풍을 피할 가장 좋은 은신처.</li>
+              <li><b>죽은 바다 해안</b>TB-06 다웅안이 지나가는 해안선. 인양꾼과 밀수꾼이 모인다.</li>
+              <li><b>서쪽 끝</b>아무도 다녀온 적 없는 땅. 소문만 있다.</li>
+            </ul></div>
+            <div class="group"><div class="ghead">주요 거점</div><ul class="glist bullets">
+              <li><b>에녹 · Enoch</b>광야 최대의 요새 도시이자 사실상의 수도. 해결사 중개소, 암시장, 숨붙이 정비소가 모여 있다.</li>
+              <li><b>두발 · Tubal</b>무허가 의체 시술소와 대장간의 폐허 공업 지대. 결정 제거 수술도 여기서 이루어진다.</li>
+              <li><b>지하 정착지</b>지하철역과 주차장을 요새로 만든 수십 개의 공동체. 각자 다른 규칙으로 산다.</li>
+            </ul></div>
+          </div></div></section>
+          <section class="view" data-view="factions" data-title="세력"><div class="vscroll"><div class="vin">
+            <h1 class="ltitle">세력</h1>
+            <div class="group"><ul class="glist bullets">
+              <li><b>야발 캐러밴 연합</b>장갑 차량으로 광야를 떠도는 유목 캐러밴의 느슨한 연합. 교역로를 잇는 광야의 혈관.</li>
+              <li><b>해결사 네트워크</b>도시와 광야 사이의 일을 중개한다. 밀수, 호위, 탈출, 암살까지.</li>
+              <li><b>서쪽으로 가는 자들</b>이주파. 폭풍이 닿지 않는 새 땅을 찾아 매년 원정대를 보내지만 돌아온 자는 거의 없다.</li>
+              <li><b>문을 두드리는 자들</b>탈환파. 정차한 도시의 승강문을 습격하거나 내부 저항 조직과 손잡는다.</li>
+              <li><b>라멕의 무리</b>약탈자 집단. 당한 것은 몇 배로 갚는다는 것이 신조다.</li>
+              <li><b>외부 세력</b>성좌 선교사, 코버넌트 첩자, 세일 붉은 바위 게릴라, 자리야의 흰 늑대 연락책.</li>
+            </ul></div>
+          </div></div></section>
+          <section class="view" data-view="life" data-title="경제와 생활"><div class="vscroll"><div class="vin">
+            <h1 class="ltitle">경제와 생활</h1>
+            <div class="group"><div class="ghead">경제</div><ul class="glist bullets">
+              <li><b>물</b>가장 귀한 화폐. 깨끗한 물 한 통이 광석 한 줌보다 비싸다.</li>
+              <li><b>광석 밀거래</b>정결 인증 없이 거래되는 광석. 싸지만 위험하다.</li>
+              <li><b>인양품</b>구세계 폐허의 부품, 기록, 기술. 진짜 구세계 기록은 부르는 게 값이다.</li>
+              <li><b>교역로</b>아나 씨족의 교역로와 야발 캐러밴의 길이 광야 경제를 지탱한다.</li>
+            </ul></div>
+            <div class="group"><div class="ghead">생활과 환경</div><ul class="glist bullets">
+              <li><b>주거</b>장갑 캐러밴, 지하 폐허, 요새 정착지. 폭풍이 오면 모두 지하로 내려간다.</li>
+              <li><b>의료</b>무허가 의체 시술과 결정 제거 수술. 성공률은 낮고 후유증은 심하다.</li>
+              <li><b>위험</b>예고 없는 폭풍, 코버넌트 회수반의 급습, 약탈자 무리.</li>
+            </ul></div>
+          </div></div></section>
+          <section class="view" data-view="culture" data-title="문화와 전설"><div class="vscroll"><div class="vin">
+            <h1 class="ltitle">문화와 전설</h1>
+            <div class="group"><div class="ghead">문화</div><ul class="glist bullets">
+              <li><b>X 표식</b>도시에서는 낙인, 광야에서는 보호의 증표. X를 가진 자를 해친 자는 광야 전체의 보복을 받는다.</li>
+              <li><b>이야기꾼</b>노래와 이야기로 역사를 전한다. 폭풍을 피해 지하에 모인 밤마다 노래가 이어진다.</li>
+              <li><b>이름</b>많은 이가 명부의 이름을 버리고 광야에서 새 이름을 짓는다.</li>
+            </ul></div>
+            <div class="group"><div class="ghead">소문과 전설</div><ul class="glist bullets hooks">
+              <li>광야 서쪽 끝에 폭풍이 한 번도 닿지 않은 땅이 있고, 불타는 빛의 장벽이 그 입구를 지킨다.</li>
+              <li>사라진 TB-12의 불빛이 폭풍 너머로 보인다.</li>
+              <li>승천을 거부하고 성좌에서 도망친 그릇들이 광야 어딘가에 숨어 산다.</li>
+            </ul></div>
+          </div></div></section>
+        </div>
+
+      </div>
+
+      <button class="indicator" id="indicator" type="button" aria-label="홈으로 돌아가기"></button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var screen=document.getElementById('screen');
+  var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var CHEV='<svg class="chev" viewBox="0 0 8 14"><path d="M1 1l6 6-6 6"/></svg>';
+
+  /* ---------- 도시 데이터 ---------- */
+  var cities=[
+    ['01','알비온','ALBION','영국','협정체의 기함이자 수도',[['외관','고딕 첨탑 형태의 시날 스파이어, 거대한 시계탑, 붉은 벽돌과 빅토리아풍 철골 아케이드.'],['역할','이사회 본부, 명부 중앙청, 금융 중심지.'],['사회','말투와 억양만으로 출신 층이 드러날 만큼 계급 예법이 엄격하다. 중요한 결정은 시날의 회원제 클럽에서 내려진다는 말이 있다.'],['생활','진짜 찻잎은 시날 전용, 하층은 합성 차를 마신다. 하층의 펍이 노동자들의 유일한 쉼터다.'],['환경','중층의 인공 하늘은 일부러 흐리고 비 오는 날씨를 연출한다. 주민들은 그것을 \'고향의 하늘\'이라 부른다.'],['훅','하선당한 알비온 출신은 다른 도시에서도 받아주지 않는다.']]],
+    ['02','뤼미에르','LUMIÈRE','프랑스','몰락한 맏이, 아름다움의 도시',[['외관','넓은 대로와 아르누보 철제 장식, 유리 지붕의 아케이드 거리. 금빛 장식은 녹슬어간다.'],['역할','예술, 패션, 향수의 도시. 상층의 인공 귀와 꼬리 패션이 여기서 시작됐다.'],['사회','몰락 귀족 가문들의 살롱 정치. 하층에는 봉기의 전통이 있어 세 번의 봉기가 기록돼 있다.'],['환경','노후한 선체 곳곳에서 물이 샌다. 화려한 상층 아래로 배관이 무너지고 있다.'],['훅','기함 지위를 되찾으려는 가문들의 음모와, 다음 봉기를 준비하는 하층의 비밀 결사.']]],
+    ['03','베르크프리트','BERGFRIED','독일 · 오스트리아','법과 질서의 도시',[['외관','바로크 양식의 법원과 반듯한 기능주의 정비창. 곳곳에 정확한 공공 시계.'],['역할','협정체 최고 법원과 교정 시설, 결정선 궤도 정비 본부. 열두 도시의 운행 시간표도 여기서 짠다.'],['사회','규칙, 서류, 정시성이 전부다. 법률가와 서기들은 오래된 카페하우스에서 일한다.'],['교정','형을 받은 사람은 궤도 정비조에 배치된다. 형기를 마쳐도 기록은 명부에 남는다.'],['환경','깨끗하고 조용하지만 소음 규정과 감시가 촘촘하다.'],['훅','돈을 받고 형기를 늘려주는 부패 판사와 \'연장 계약\'의 실체를 쫓는 사람들.']]],
+    ['04','로타','ROTA','이탈리아 · 그리스','순례와 외교의 도시',[['외관','대리석 기둥과 결정 모자이크로 장식된 돔. 하층은 흰 회벽과 푸른 지붕의 좁은 골목.'],['역할','오파님 성좌로 가는 순례 노선, 병원, 협정체와 성좌의 외교 창구.'],['사회','대가족과 광장 중심의 문화. 축일마다 결정 성상을 들고 행렬한다. 은수자도 많다.'],['환경','성좌 근처를 자주 지나 광석 농도가 높다. 감염된 순례자가 많다.'],['훅','성좌의 결정 성물을 몰래 거래하는 밀매 조직.']]],
+    ['05','옌두','炎都 · YANDU','중국','불꽃의 도시, 협정체의 제련소',[['외관','층층이 쌓인 용광로 탑, 붉은 등불이 걸린 거리 위로 이어지는 굴뚝.'],['역할','협정체 잔광석의 대부분을 제련한다. 이곳의 품질 인장이 최상급의 기준이다.'],['사회','대대로 이어지는 제련 장인 가문들의 길드. 하층의 찻집과 전통극 무대가 휴식처다.'],['축일','1년에 단 하루 용광로를 끄는 \'노화절(爐火節)\'. 그날만 도시가 조용해진다.'],['환경','열기와 분진으로 필터 마스크가 필수. 마스크 장식이 패션 문화가 됐다.'],['훅','길드 간 경쟁과, 기록에서 지워진 제련 사고.']]],
+    ['06','다웅안','DAUNGAN','필리핀 · 태국','바다의 항구 도시',[['이름','타갈로그어로 \'항구\'.'],['외관','선체 바깥에 덧붙인 수상 가옥 같은 증축 구역, 화려하게 개조한 운송 차량, 금빛 사원 지붕 장식.'],['역할','해안 교역, 구세계 항구 잔해 인양, 세일·노드와의 물자 교류.'],['사회','이웃이 함께 짐을 나르는 공동체 정신. 정차하면 순식간에 수상 시장이 펼쳐진다. 축제가 많다.'],['환경','습하고 염분이 많아 선체 부식이 빠르다.'],['훅','바다 아래 가라앉은 구세계 도시를 노리는 잠수 인양꾼들.']]],
+    ['07','띠엔퐁','TIỀN PHONG','베트남 · 인도네시아','선봉의 도시',[['이름','베트남어로 \'선봉\'. 협정체 공식 명칭은 뱅가드.'],['외관','두꺼운 장갑 선체 안의 계단식 구조물과 촘촘한 강철 비계. 군기에는 전통 직물 문양.'],['역할','선단 호위와 회수반 본부.'],['사회','습격당하면 반드시 되갚는 전통과 끈질김. 선체 내부에 미로 같은 터널망이 숨겨져 있다.'],['생활','군율과 통금. 하층 노점의 국수와 그림자 인형극이 병사들의 위안이다.'],['훅','광야 출격에서 돌아오지 않는 부대가 늘고 있고, 터널 깊은 곳에 누가 사는지 아무도 모른다.']]],
+    ['08','우에르타','HUERTA','라틴아메리카','선단의 식량 창고',[['외관','계단밭처럼 층층이 쌓인 수경 농장, 원색 벽화, 광장 중심의 거리.'],['역할','열두 도시의 식량 생산. 시날의 사치 식품도 여기서 만든다.'],['사회','시장, 음악, 춤이 일상. 결정화로 떠난 가족을 기리는 \'빛의 날\'에는 결정 조각에 불을 밝힌다.'],['환경','따뜻하고 습하다. 하층에도 식물이 자라는 유일한 도시라 흙냄새가 난다.'],['훅','진짜 흙 밀매와 농장 노동자들의 연대.']]],
+    ['09','하늘','HANEUL','동아시아','인공 하늘과 빛의 도시',[['외관','빽빽한 네온 간판, 좁은 골목, 거대한 전광판. 시날의 지붕은 동아시아 전통 건축 양식.'],['역할','모든 도시의 인공 하늘 영상과 방송, 오락, 협정체 선전.'],['사회','하층 아이들이 등급을 올릴 거의 유일한 길은 스타가 되는 것. 연습생 문화가 거대하다.'],['생활','편의점, 노래방, 포장마차가 밤새 열려 있다.'],['환경','빛이 꺼지지 않아 주민들은 만성적인 수면 부족에 시달린다.'],['훅','인공 하늘에 몰래 메시지를 숨기는 해커 집단.']]],
+    ['10','헬릭스','HELIX','미국','연구와 생산의 도시',[['외관','유리 외벽의 기업 캠퍼스와 홀로그램 로고. 상층은 잔디 마당이 딸린 교외형 주택가.'],['역할','안드로이드 생산, LCS 연구, 의체 개발.'],['사회','누구나 성공할 수 있다는 신화. 하지만 의료비는 전부 개인 부담이고 대부분 평생 기업 계약에 묶여 산다.'],['생활','밤새 여는 식당과 스타트업 사무실이 하층까지 이어진다.'],['훅','숨붙이의 \'꿈\'을 해석하는 비공개 연구와 연구소에서 탈출한 실험체.']]],
+    ['11','자리야','ЗАРЯ · ZARYA','러시아','북방 극지 노선의 늑대들',[['이름','러시아어로 \'새벽\'. 다른 도시 사람들은 \'새벽의 늑대\'라 부른다.'],['노선','북방 영구동토 노선 전담. 얼어붙은 폭풍에서 순도 최고의 \'얼음 결정\' 광석이 나온다.'],['외관','쇄빙선 같은 쟁기형 뱃머리, 두꺼운 장갑과 무뚝뚝한 콘크리트 건축, 양파형 돔의 시날 스파이어.'],['주민','혹한과 LCS에 강한 늑대 혈통 수인이 다수. 도시를 실제로 굴리는 건 아래층의 늑대들이다.'],['생활','물보다 열이 귀해 난방 할당제가 있다. 공동 식당과 공동 사우나, 사모바르로 끓인 차.'],['하늘','극야 기간에는 몇 달 동안 해가 뜨지 않는다. 오로라와 결정 폭풍이 섞인 진짜 하늘이 펼쳐진다.'],['신앙','구세계의 성상 문화와 오파님 신앙이 섞여 결정 성상을 집집마다 모신다.'],['정치','노동자 연대가 가장 강하다. 파업 한 번이면 북방 노선 전체가 멈춘다.'],['훅','저항 조직 \'흰 늑대\'가 세일 산악파, 노드와 연결돼 있다는 소문. 북방 노선 끝에서 TB-12의 잔해를 봤다는 승무원.']]],
+    ['12','타보트','TABOT','에티오피아','사라진 기록의 도시 · AF 168 소실',[['이름','협정체 공식 명칭은 아르고스. 주민들은 암하라어 이름 타보트로 불렀다.'],['외관','거대한 바위를 통째로 깎은 듯한 석조 건축, 기하학적 직물 문양과 고대 문자 비문.'],['역할','열두 도시의 명부 원본 보관, 최종 사법 판결, 정보 수집.'],['사회','기록을 지키는 필사가 길드가 가장 존경받았다. 손님에게 커피를 세 번 끓여 대접했다.'],['소실','AF 168년 대규모 폭풍 속에서 통신이 끊겼다. 명부 원본도 함께 사라졌다는 사실은 기밀이다.'],['훅','자리야 승무원들과 광야 사람들이 불빛을 봤다고 말한다.']]]
+  ];
+  function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+  var list=document.getElementById('citylist'),tebah=document.getElementById('app-tebah');
+  cities.forEach(function(c){
+    var lost=c[0]==='12';
+    var b=document.createElement('button');b.className='cell push';b.type='button';b.setAttribute('data-push','tb'+c[0]);
+    b.innerHTML='<span class="badge'+(lost?' ghost':'')+'">'+c[0]+'</span><span class="ct"><b>'+esc(c[1])+'</b><span>'+esc(c[3])+' · '+esc(c[4])+'</span></span>'+CHEV;
+    list.appendChild(b);
+    var v=document.createElement('section');v.className='view';v.setAttribute('data-view','tb'+c[0]);v.setAttribute('data-title',c[1]);
+    var lis=c[5].map(function(kv){return '<li><b>'+esc(kv[0])+'</b>'+esc(kv[1])+'</li>';}).join('');
+    v.innerHTML='<div class="vscroll"><div class="vin"><p class="eyebrow">TB-'+c[0]+' · '+esc(c[3])+'</p><h1 class="ltitle"><span class="en">'+esc(c[2])+'</span>'+esc(c[1])+'</h1><p class="para dim">'+esc(c[4])+'</p><div class="group"><ul class="glist bullets'+'">'+lis+'</ul></div></div></div>';
+    tebah.appendChild(v);
+  });
+
+  /* ---------- 내비게이션 바 ---------- */
+  [].forEach.call(document.querySelectorAll('.view'),function(v){
+    var nb=document.createElement('div');nb.className='navbar';
+    nb.innerHTML='<button class="back" type="button"><svg viewBox="0 0 11 19"><path d="M9.5 1.5 1.5 9.5l8 8"/></svg><span class="bl">홈</span></button><span class="ntitle"></span><span></span>';
+    nb.querySelector('.ntitle').textContent=v.getAttribute('data-title')||'';
+    v.insertBefore(nb,v.firstChild);
+    var sc=v.querySelector('.vscroll');
+    sc.addEventListener('scroll',function(){v.classList.toggle('scrolled',sc.scrollTop>34);},{passive:true});
+  });
+
+  /* ---------- 앱 열기 / 닫기 / 푸시 ---------- */
+  var cur=null,closing=null;
+  function setBack(v,label){var bl=v.querySelector('.back .bl');if(bl)bl.textContent=label;}
+  function openApp(id,origin){
+    var app=document.getElementById('app-'+id);if(!app)return;
+    if(cur&&cur.app===app)return;
+    if(cur)closeApp(true);
+    clearTimeout(closing);
+    var views=[].slice.call(app.querySelectorAll(':scope > .view'));
+    views.forEach(function(v){v.classList.remove('active','behind','scrolled');var s=v.querySelector('.vscroll');if(s)s.scrollTop=0;});
+    var root=views[0];setBack(root,'홈');root.classList.add('active');
+    var sr=screen.getBoundingClientRect(),ox=sr.width/2,oy=sr.height/2;
+    if(origin&&origin.getBoundingClientRect){var r=origin.getBoundingClientRect();ox=r.left+r.width/2-sr.left;oy=r.top+r.height/2-sr.top;}
+    app.style.transformOrigin=ox+'px '+oy+'px';
+    app.hidden=false;app.classList.remove('shown');void app.offsetWidth;app.classList.add('shown');
+    screen.classList.add('in-app');
+    cur={app:app,stack:[root],id:id};
+    try{if(location.hash!=='#'+id)history.replaceState(null,'','#'+id);}catch(e){}
+    setTimeout(function(){var b=root.querySelector('.back');if(b)b.focus({preventScroll:true});},reduce?0:300);
+  }
+  function closeApp(instant){
+    if(!cur)return;var app=cur.app;cur=null;
+    app.classList.remove('shown');screen.classList.remove('in-app');
+    var done=function(){app.hidden=true;};
+    if(instant||reduce)done();else closing=setTimeout(done,440);
+    try{history.replaceState(null,'',location.pathname+location.search);}catch(e){}
+  }
+  function push(name){
+    if(!cur)return;
+    var v=cur.app.querySelector(':scope > .view[data-view="'+name+'"]');if(!v)return;
+    var prev=cur.stack[cur.stack.length-1];
+    setBack(v,prev.getAttribute('data-title')||'뒤로');
+    var s=v.querySelector('.vscroll');if(s)s.scrollTop=0;v.classList.remove('scrolled','behind');
+    prev.classList.remove('active');prev.classList.add('behind');
+    v.classList.add('active');cur.stack.push(v);
+  }
+  function pop(){
+    if(!cur)return;
+    if(cur.stack.length<=1){closeApp();return;}
+    var v=cur.stack.pop();v.classList.remove('active');
+    var p=cur.stack[cur.stack.length-1];p.classList.remove('behind');p.classList.add('active');
+  }
+
+  document.addEventListener('click',function(e){
+    var t=e.target.closest('[data-open],[data-push],.back,#indicator');if(!t)return;
+    if(t.id==='indicator'){closeApp();return;}
+    if(t.classList.contains('back')){pop();return;}
+    if(t.hasAttribute('data-push')){push(t.getAttribute('data-push'));return;}
+    if(t.hasAttribute('data-open')){openApp(t.getAttribute('data-open'),t.querySelector('.squircle')||t);}
+  });
+  document.addEventListener('keydown',function(e){if(e.key==='Escape'&&cur)pop();});
+
+  function fromHash(){var h=(location.hash||'').slice(1);if(h&&document.getElementById('app-'+h)){var ic=document.querySelector('.grid [data-open="'+h+'"] .squircle,.dock [data-open="'+h+'"] .squircle');openApp(h,ic);}}
+  window.addEventListener('hashchange',fromHash);
+  fromHash();
+
+  /* ---------- 명부 시뮬레이터 ---------- */
+  var st={kind:'later',G:2,C:3,T:1};
+  var zones=['시날 스파이어','상층 갑판','중층 갑판','하층 화물칸','검역 갑판','광야'];
+  function $(id){return document.getElementById(id);}
+  function gRange(){return st.kind==='human'?[4,5]:[1,3];}
+  function renderM(){
+    var gr=gRange();st.G=Math.min(gr[1],Math.max(gr[0],st.G));
+    var score=st.G+st.C-st.T;
+    var tier=score>=9?0:score>=7?1:score>=5?2:score>=3?3:score>=1?4:5;
+    var notes=[];
+    if(st.kind==='later'&&tier<2){tier=2;notes.push('Class-L 상한 적용 · Tier 2');}
+    if(st.T>=2&&tier<4){tier=4;notes.push('T2 이상 · 검역 갑판 강제 배정');}
+    if(st.T>=3){notes.push('T3 이상 · 다음 정차지에서 자동 하선');}
+    $('g-val').textContent=st.G;$('c-val').textContent=st.C;$('t-val').textContent=st.T;
+    $('g-range').textContent=st.kind==='human'?'순수 인간 4~5':'레이터 1~3';
+    $('idcode').textContent='TB-07 / CLASS-'+(st.kind==='human'?'H':'L')+' / G'+st.G+' · C'+st.C+' · T'+st.T;
+    $('idscore').textContent=score;
+    $('idtier').innerHTML=(tier===5?'하선':'TIER '+tier)+'<span>'+zones[tier]+'</span>';
+    $('idnote').textContent=notes.length?notes.join(' · '):'이상 없음';
+    $('g-dn').disabled=st.G<=gr[0];$('g-up').disabled=st.G>=gr[1];
+    $('c-dn').disabled=st.C<=1;$('c-up').disabled=st.C>=5;
+    $('t-dn').disabled=st.T<=0;$('t-up').disabled=st.T>=4;
+    $('kind-later').setAttribute('aria-pressed',String(st.kind==='later'));
+    $('kind-human').setAttribute('aria-pressed',String(st.kind==='human'));
+    [].forEach.call(document.querySelectorAll('#tiers .tier'),function(r){r.classList.toggle('hl',+r.getAttribute('data-t')===tier);});
+  }
+  function step(k,d){return function(){st[k]+=d;st.C=Math.min(5,Math.max(1,st.C));st.T=Math.min(4,Math.max(0,st.T));renderM();};}
+  $('g-dn').onclick=step('G',-1);$('g-up').onclick=step('G',1);
+  $('c-dn').onclick=step('C',-1);$('c-up').onclick=step('C',1);
+  $('t-dn').onclick=step('T',-1);$('t-up').onclick=step('T',1);
+  $('kind-later').onclick=function(){st.kind='later';st.G=2;renderM();};
+  $('kind-human').onclick=function(){st.kind='human';st.G=4;renderM();};
+  renderM();
+
+  /* ---------- 결정화 단계 ---------- */
+  var stages=[['T0','무감염','이상 없음.'],['T1','잠복','피부 아래 미세 결정. 정밀 검진으로만 발견된다.'],['T2','발현','피부 표면에 결정이 돋는다. 옷이나 의체로 숨길 수 있다.'],['T3','진행','손발 일부가 굳어 움직임이 둔해진다.'],['T4','말기','전신 결정화가 진행되고 신호가 들리기 시작한다. 몸 곳곳에 전자 회로 같은 문양이 생긴다.']];
+  var C=263.9;
+  function setStage(i){
+    var s=stages[i];$('ringt').textContent=s[0];$('ringn').textContent=s[1];
+    $('sth').textContent=s[0]+' · '+s[1];$('stp').textContent=s[2];
+    $('ringbar').setAttribute('stroke-dashoffset',String(C-(C*(i===0?0.02:i/4))));
+    [].forEach.call(document.querySelectorAll('.seg5 button'),function(b){b.setAttribute('aria-pressed',String(+b.getAttribute('data-st')===i));});
+  }
+  [].forEach.call(document.querySelectorAll('.seg5 button'),function(b){b.onclick=function(){setStage(+b.getAttribute('data-st'));};});
+  setStage(1);
+
+  /* ---------- 시계 ---------- */
+  function tick(){var d=new Date(),h=d.getHours(),m=d.getMinutes();$('clock').textContent=h+':'+(m<10?'0':'')+m;}
+  tick();setInterval(tick,30000);
+
+  /* ---------- 홈 페이지 넘기기 ---------- */
+  var pages=$('pages'),dots=[].slice.call(document.querySelectorAll('.page-dots button'));
+  function curPage(){return Math.round(pages.scrollLeft/Math.max(1,pages.clientWidth));}
+  function goPage(i){i=Math.max(0,Math.min(dots.length-1,i));pages.scrollTo({left:i*pages.clientWidth,behavior:reduce?'auto':'smooth'});}
+  function syncDots(){var i=curPage();dots.forEach(function(d,k){d.setAttribute('aria-current',String(k===i));});}
+  pages.addEventListener('scroll',syncDots,{passive:true});
+  dots.forEach(function(d,k){d.addEventListener('click',function(){goPage(k);});});
+  var dragX=null,dragged=false;
+  pages.addEventListener('pointerdown',function(e){if(e.pointerType==='mouse'){dragX=e.clientX;dragged=false;}});
+  window.addEventListener('pointerup',function(e){if(dragX===null)return;var d=e.clientX-dragX;dragX=null;if(Math.abs(d)>40){dragged=true;goPage(curPage()+(d<0?1:-1));}});
+  pages.addEventListener('click',function(e){if(dragged){dragged=false;e.stopPropagation();e.preventDefault();}},true);
+  window.addEventListener('resize',function(){pages.scrollLeft=curPage()*pages.clientWidth;});
+  syncDots();
+
+  /* ---------- 배경음악: 무한 반복 ---------- */
+  (function(){
+    var btns=[$('mplay'),$('music')],prog=$('mprog'),AC=window.AudioContext||window.webkitAudioContext;
+    var ctx=null,gain=null,src=null,buf=null,loading=null,ls=0,le=0,t0=0,el=null,playing=false,raf=0;
+    try{if(navigator.audioSession)navigator.audioSession.type='playback';}catch(e){}
+    function audible(){return playing&&(el?!el.paused:(!!ctx&&ctx.state==='running'));}
+    function ui(){
+      var on=audible();
+      btns.forEach(function(b){if(!b)return;b.setAttribute('aria-pressed',String(on));b.setAttribute('aria-label',on?'배경음악 일시정지':'배경음악 재생');});
+      if(on&&!raf)raf=requestAnimationFrame(tickP);
+    }
+    function tickP(){
+      if(!audible()){raf=0;return;}
+      var p=0;
+      if(src&&ctx&&le>ls){var L=le-ls;p=((ctx.currentTime-t0)%L)/L;}
+      else if(el&&el.duration){p=el.currentTime/el.duration;}
+      prog.style.width=(p*100).toFixed(2)+'%';
+      raf=requestAnimationFrame(tickP);
+    }
+    function decode(ab){return new Promise(function(res,rej){var r=ctx.decodeAudioData(ab,res,rej);if(r&&r.then)r.then(res,rej);});}
+    function load(){
+      if(loading)return loading;
+      loading=fetch('bgm.mp3').then(function(r){if(!r.ok)throw new Error('load '+r.status);return r.arrayBuffer();}).then(decode).then(function(b){
+        buf=b;var d0=b.getChannelData(0),d1=b.numberOfChannels>1?b.getChannelData(1):d0,n=b.length,s=0,e=n-1,th=1e-4;
+        while(s<n&&Math.abs(d0[s])<th&&Math.abs(d1[s])<th)s++;
+        while(e>s&&Math.abs(d0[e])<th&&Math.abs(d1[e])<th)e--;
+        ls=s/b.sampleRate;le=(e+1)/b.sampleRate;
+      });
+      return loading;
+    }
+    function useEl(){
+      if(!el){el=new Audio('bgm.mp3');el.loop=true;el.volume=.7;el.addEventListener('play',ui);el.addEventListener('pause',ui);el.addEventListener('playing',ui);}
+      var r=el.play();if(r&&r.catch)r.catch(function(){ui();});
+    }
+    function play(){
+      playing=true;ui();
+      if(!AC||el){useEl();return;}
+      if(!ctx){try{ctx=new AC();ctx.onstatechange=ui;gain=ctx.createGain();gain.gain.value=0;gain.connect(ctx.destination);}catch(e){ctx=null;useEl();return;}}
+      if(ctx.state!=='running'){var rr=ctx.resume();if(rr&&rr.catch)rr.catch(function(){});}
+      load().then(function(){
+        if(!playing)return;
+        if(!src){src=ctx.createBufferSource();src.buffer=buf;src.loop=true;src.loopStart=ls;src.loopEnd=le;src.connect(gain);t0=ctx.currentTime;src.start(0,ls);}
+        var t=ctx.currentTime;gain.gain.cancelScheduledValues(t);gain.gain.setValueAtTime(gain.gain.value,t);gain.gain.linearRampToValueAtTime(.7,t+1.5);
+      }).catch(function(){if(ctx){try{ctx.close();}catch(e){}}ctx=null;src=null;if(playing)useEl();});
+    }
+    function pause(){
+      playing=false;ui();
+      if(el){el.pause();return;}
+      if(ctx&&gain){var t=ctx.currentTime;gain.gain.cancelScheduledValues(t);gain.gain.setValueAtTime(gain.gain.value,t);gain.gain.linearRampToValueAtTime(0,t+.5);setTimeout(function(){if(!playing&&ctx)ctx.suspend();},560);}
+    }
+    btns.forEach(function(b){if(b)b.addEventListener('click',function(){if(audible())pause();else play();});});
+    /* 브라우저가 자동 재생을 막으면 첫 터치·클릭·키 입력 때 바로 이어서 재생 */
+    var evs=['pointerdown','pointerup','touchend','click','keydown'];
+    function nudge(e){
+      if(audible()){evs.forEach(function(n){document.removeEventListener(n,nudge,true);});return;}
+      if(!playing)return;
+      if(e.target&&e.target.closest&&e.target.closest('#mplay,#music'))return;
+      play();
+    }
+    evs.forEach(function(n){document.addEventListener(n,nudge,true);});
+    play();
+  })();
+
+  /* ---------- 배경화면: 떨어지는 결정 ---------- */
+  var cv=$('wall'),x=cv.getContext&&cv.getContext('2d');
+  if(x){
+    var w=0,h=0,dpr=Math.min(window.devicePixelRatio||1,2),P=[];
+    function size(){var r=cv.getBoundingClientRect();w=r.width;h=r.height;cv.width=w*dpr;cv.height=h*dpr;x.setTransform(dpr,0,0,dpr,0,0);}
+    function mk(y){return{x:Math.random()*w,y:y==null?Math.random()*h:y,l:3+Math.random()*11,s:.12+Math.random()*.4,a:.1+Math.random()*.4,r:Math.random()*Math.PI,v:(Math.random()-.5)*.004};}
+    function init(){size();P=[];var n=Math.round(w*h/5200);for(var i=0;i<n;i++)P.push(mk());}
+    var running=true;
+    function draw(){
+      x.clearRect(0,0,w,h);
+      for(var i=0;i<P.length;i++){var p=P[i];
+        x.save();x.translate(p.x,p.y);x.rotate(p.r);
+        x.beginPath();x.moveTo(0,-p.l);x.lineTo(p.l*.22,0);x.lineTo(0,p.l*.6);x.lineTo(-p.l*.22,0);x.closePath();
+        x.fillStyle='rgba(235,240,245,'+(p.a*.3)+')';x.fill();x.strokeStyle='rgba(245,248,250,'+p.a+')';x.lineWidth=.6;x.stroke();x.restore();
+        if(!reduce){p.y+=p.s;p.r+=p.v;if(p.y>h+16)P[i]=mk(-16);}
+      }
+      if(!reduce&&running)requestAnimationFrame(draw);
+    }
+    init();draw();
+    document.addEventListener('visibilitychange',function(){var was=running;running=!document.hidden;if(running&&!was&&!reduce)draw();});
+    var rt;window.addEventListener('resize',function(){clearTimeout(rt);rt=setTimeout(function(){init();if(reduce)draw();},150);});
+  }
+})();
+</script>
+</body>
+</html>
