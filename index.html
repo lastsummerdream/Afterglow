@@ -79,6 +79,20 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .mplay[aria-pressed="true"] .ipause{display:block}
 .mbar{height:3px;border-radius:2px;background:var(--sep);overflow:hidden}
 .mbar i{display:block;height:100%;width:0;background:var(--silver)}
+.mvol{display:flex;align-items:center;gap:10px;margin-top:2px}
+.mvol svg{width:18px;height:18px;flex:none;fill:none;stroke:var(--text-2);stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.mvol svg path:first-child{fill:var(--text-2)}
+.mvol.mute .w1,.mvol.mute .w2,.mvol.low .w2{opacity:.15}
+.mvol span{font-family:var(--f-mono);font-size:11px;color:var(--text-2);width:24px;text-align:right;font-variant-numeric:tabular-nums}
+.mvol input{flex:1;min-width:0;-webkit-appearance:none;appearance:none;height:22px;background:transparent;touch-action:none;margin:0}
+.mvol input::-webkit-slider-runnable-track{height:3px;border-radius:2px;background:linear-gradient(to right,var(--silver) var(--v,70%),var(--sep) var(--v,70%))}
+.mvol input::-moz-range-track{height:3px;border-radius:2px;background:var(--sep)}
+.mvol input::-moz-range-progress{height:3px;border-radius:2px;background:var(--silver)}
+.mvol input::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:var(--text);margin-top:-5.5px;box-shadow:0 1px 4px rgba(0,0,0,.5)}
+.mvol input::-moz-range-thumb{width:14px;height:14px;border:0;border-radius:50%;background:var(--text)}
+.mvol input:focus,.mvol input:focus-visible{outline:none}
+.mvol input:focus-visible::-webkit-slider-thumb{box-shadow:0 0 0 4px rgba(255,255,255,.18)}
+.mvol input:focus-visible::-moz-range-thumb{box-shadow:0 0 0 4px rgba(255,255,255,.18)}
 .status{position:absolute;top:0;left:0;right:0;height:54px;display:flex;align-items:center;justify-content:space-between;padding:4px 30px 0 34px;z-index:39;font-weight:600;font-size:15px;pointer-events:none}
 .status .r{display:flex;align-items:center;gap:6px}
 .status .carrier{font-family:var(--f-mono);font-size:10px;font-weight:500;color:var(--text-2);letter-spacing:.06em}
@@ -434,6 +448,7 @@ a.icon{text-decoration:none;color:inherit}
                 <button class="mplay" id="mplay" type="button" aria-label="배경음악 재생" aria-pressed="false"><svg class="iplay" viewBox="0 0 18 18" aria-hidden="true"><path d="M5 3.2v11.6c0 .6.6.9 1.1.6l9-5.8c.5-.3.5-.9 0-1.2l-9-5.8C5.6 2.3 5 2.6 5 3.2z"/></svg><svg class="ipause" viewBox="0 0 18 18" aria-hidden="true"><rect x="4" y="3" width="3.6" height="12" rx="1"/><rect x="10.4" y="3" width="3.6" height="12" rx="1"/></svg></button>
               </div>
               <span class="mbar" aria-hidden="true"><i id="mprog"></i></span>
+              <label class="mvol" for="mvol"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 7.5h3l4-3.5v12l-4-3.5H3z"/><path class="w1" d="M13 7.2a4 4 0 0 1 0 5.6"/><path class="w2" d="M15.4 4.8a7.4 7.4 0 0 1 0 10.4"/></svg><input type="range" id="mvol" min="0" max="100" step="1" value="70" aria-label="배경음악 음량"><span id="mvolv">70</span></label>
             </div>
           </div>
 
@@ -1255,7 +1270,7 @@ a.icon{text-decoration:none;color:inherit}
   pages.addEventListener('scroll',syncDots,{passive:true});
   dots.forEach(function(d,k){d.addEventListener('click',function(){goPage(k);});});
   var dragX=null,dragged=false;
-  pages.addEventListener('pointerdown',function(e){if(e.pointerType==='mouse'){dragX=e.clientX;dragged=false;}});
+  pages.addEventListener('pointerdown',function(e){if(e.target.closest('input'))return;if(e.pointerType==='mouse'){dragX=e.clientX;dragged=false;}});
   window.addEventListener('pointerup',function(e){if(dragX===null)return;var d=e.clientX-dragX;dragX=null;if(Math.abs(d)>40){dragged=true;goPage(curPage()+(d<0?1:-1));}});
   pages.addEventListener('click',function(e){if(dragged){dragged=false;e.stopPropagation();e.preventDefault();}},true);
   window.addEventListener('resize',function(){pages.scrollLeft=curPage()*pages.clientWidth;});
@@ -1264,6 +1279,16 @@ a.icon{text-decoration:none;color:inherit}
   /* ---------- 배경음악: 무한 반복 ---------- */
   (function(){
     var btns=[$('mplay'),$('music')],prog=$('mprog'),AC=window.AudioContext||window.webkitAudioContext;
+    /* 음량: 0~1, 브라우저에 기억 */
+    var vol=.7,volIn=$('mvol'),volOut=$('mvolv'),volBox=volIn&&volIn.parentNode;
+    try{var sv=localStorage.getItem('ag-vol');if(sv!==null&&!isNaN(+sv))vol=Math.max(0,Math.min(1,+sv));}catch(e){}
+    function paintVol(){var v=Math.round(vol*100);if(volIn){volIn.value=v;volIn.style.setProperty('--v',v+'%');volIn.setAttribute('aria-valuetext',v+'%');}if(volOut)volOut.textContent=v;if(volBox){volBox.classList.toggle('mute',v===0);volBox.classList.toggle('low',v>0&&v<45);}}
+    function applyVol(){
+      if(el)el.volume=vol;
+      if(ctx&&gain&&playing){var t=ctx.currentTime;gain.gain.cancelScheduledValues(t);gain.gain.setValueAtTime(gain.gain.value,t);gain.gain.linearRampToValueAtTime(vol,t+.08);}
+    }
+    if(volIn){volIn.addEventListener('input',function(){vol=(+volIn.value)/100;paintVol();applyVol();});volIn.addEventListener('change',function(){try{localStorage.setItem('ag-vol',String(vol));}catch(e){}});}
+    paintVol();
     var ctx=null,gain=null,src=null,buf=null,loading=null,ls=0,le=0,t0=0,el=null,playing=false,raf=0;
     try{if(navigator.audioSession)navigator.audioSession.type='playback';}catch(e){}
     function audible(){return playing&&(el?!el.paused:(!!ctx&&ctx.state==='running'));}
@@ -1292,7 +1317,7 @@ a.icon{text-decoration:none;color:inherit}
       return loading;
     }
     function useEl(){
-      if(!el){el=new Audio('bgm.mp3');el.loop=true;el.volume=.7;el.addEventListener('play',ui);el.addEventListener('pause',ui);el.addEventListener('playing',ui);}
+      if(!el){el=new Audio('bgm.mp3');el.loop=true;el.volume=vol;el.addEventListener('play',ui);el.addEventListener('pause',ui);el.addEventListener('playing',ui);}
       var r=el.play();if(r&&r.catch)r.catch(function(){ui();});
     }
     function play(){
@@ -1303,7 +1328,7 @@ a.icon{text-decoration:none;color:inherit}
       load().then(function(){
         if(!playing)return;
         if(!src){src=ctx.createBufferSource();src.buffer=buf;src.loop=true;src.loopStart=ls;src.loopEnd=le;src.connect(gain);t0=ctx.currentTime;src.start(0,ls);}
-        var t=ctx.currentTime;gain.gain.cancelScheduledValues(t);gain.gain.setValueAtTime(gain.gain.value,t);gain.gain.linearRampToValueAtTime(.7,t+1.5);
+        var t=ctx.currentTime;gain.gain.cancelScheduledValues(t);gain.gain.setValueAtTime(gain.gain.value,t);gain.gain.linearRampToValueAtTime(vol,t+1.5);
       }).catch(function(){if(ctx){try{ctx.close();}catch(e){}}ctx=null;src=null;if(playing)useEl();});
     }
     function pause(){
