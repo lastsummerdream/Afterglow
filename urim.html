@@ -3,16 +3,16 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="description" content="잔광(AFTERGLOW) 세계관 설정 검색과 자작 캐릭터 키워드 추천 단말.">
 <meta name="theme-color" content="#000000">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="description" content="잔광(AFTERGLOW) 세계관 설정 검색과 자작 캐릭터 키워드 추천 단말.">
 <meta name="apple-mobile-web-app-title" content="URIM">
-<link rel="icon" href="icon.png" type="image/png">
-<link rel="apple-touch-icon" href="icon.png">
+<link rel="icon" href="urim-icon.png" type="image/png">
+<link rel="apple-touch-icon" href="urim-icon.png">
 <title>URIM 잔광 기록 단말</title>
-<style>html{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}</style>
+<style>html{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:dark}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
 <script>
 /* =====================================================================
    Claude API 연결 설정
@@ -74,8 +74,8 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 /* header */
 .top{border-bottom:1px solid var(--sep);background:var(--void)}
 .top .inner{display:flex;align-items:center;gap:12px;padding-block:12px}
-.logo{flex:none;width:38px;height:38px;border-radius:28%;display:grid;place-items:center;background:linear-gradient(150deg,#30353b 0%,#15181b 55%,#0a0b0d 100%);box-shadow:inset 0 1px 0 rgba(255,255,255,.22),0 6px 16px rgba(0,0,0,.5)}
-.logo svg,.av svg{width:58%;height:58%;fill:none;stroke:var(--silver);stroke-width:1.6}
+.logo{flex:none;width:38px;height:38px;border-radius:28%;display:grid;place-items:center;background:linear-gradient(150deg,#f4f6f8 0%,#b9c0c7 45%,#6c737b 100%);box-shadow:inset 0 1px 0 rgba(255,255,255,.6),0 6px 16px rgba(0,0,0,.5)}
+.logo svg,.av svg{width:60%;height:60%;fill:none;stroke:var(--ink);color:var(--ink);stroke-width:1.7;stroke-linejoin:round}
 .brand{flex:1;min-width:0}
 .brand b{display:block;font-family:var(--f-tech);font-weight:400;font-size:15px;letter-spacing:.2em}
 .brand span{display:block;font-size:12px;color:var(--text-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -91,7 +91,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .log .inner{padding-block:24px 28px;display:flex;flex-direction:column;gap:22px}
 .msg{display:flex;gap:10px;align-items:flex-start;min-width:0}
 .msg.me{justify-content:flex-end}
-.av{flex:none;width:28px;height:28px;border-radius:28%;display:grid;place-items:center;background:linear-gradient(150deg,#30353b 0%,#15181b 55%,#0a0b0d 100%);box-shadow:inset 0 1px 0 rgba(255,255,255,.2);margin-top:2px}
+.av{flex:none;width:28px;height:28px;border-radius:28%;display:grid;place-items:center;background:linear-gradient(150deg,#f4f6f8 0%,#b9c0c7 45%,#6c737b 100%);box-shadow:inset 0 1px 0 rgba(255,255,255,.6);margin-top:2px}
 .body{flex:1;min-width:0;display:flex;flex-direction:column;gap:12px}
 .me .bubble{max-width:82%;background:var(--silver);color:var(--ink);padding:9px 14px;border-radius:18px 18px 4px 18px;font-weight:500;white-space:pre-wrap;word-break:break-word}
 .say{white-space:normal;word-break:break-word}
@@ -201,7 +201,7 @@ mark{background:rgba(223,228,233,.24);color:var(--text);border-radius:3px;paddin
 <div class="app">
   <header class="top">
     <div class="inner">
-      <span class="logo" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.4"/><circle cx="12" cy="12" r="1.3" fill="#dfe4e9" stroke="none"/></svg></span>
+      <span class="logo" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 5h14a2 2 0 0 1 2 2v8.5a2 2 0 0 1-2 2h-6.5L8 21v-3.5H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z"/><path d="M12 7.6l2.4 3.65L12 14.9l-2.4-3.65z" fill="currentColor" stroke="none"/></svg></span>
       <div class="brand"><b>URIM</b><span>잔광 기록 질의 단말 · 설정 검색과 자캐 키워드</span></div>
       <button class="aitog" id="aitog" type="button" aria-pressed="false" hidden><span class="lbl">AI 해설</span><span class="sw" aria-hidden="true"></span></button>
     </div>
@@ -709,7 +709,7 @@ if(typeof module!=='undefined')module.exports=URIM;
   var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var sample=null,aiOn=false,busy=null,history=[];
   var SVG={lockO:'<svg class="open" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9.5" rx="2"/><path d="M8.5 11V7.5a3.5 3.5 0 0 1 6.8-1.2"/></svg>',lockC:'<svg class="closed" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9.5" rx="2"/><path d="M8.5 11V7.5a3.5 3.5 0 0 1 7 0V11"/></svg>',dice:'<svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="4"/><circle cx="9" cy="9" r="1" fill="currentColor"/><circle cx="15" cy="15" r="1" fill="currentColor"/><circle cx="15" cy="9" r="1" fill="currentColor"/><circle cx="9" cy="15" r="1" fill="currentColor"/></svg>',copy:'<svg viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2.5"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg>',spark:'<svg viewBox="0 0 24 24"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5 18 18M18 6l-2.5 2.5M8.5 15.5 6 18"/></svg>'};
-  var AV='<span class="av" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.4"/><circle cx="12" cy="12" r="1.3" fill="#dfe4e9" stroke="none"/></svg></span>';
+  var AV='<span class="av" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 5h14a2 2 0 0 1 2 2v8.5a2 2 0 0 1-2 2h-6.5L8 21v-3.5H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z"/><path d="M12 7.6l2.4 3.65L12 14.9l-2.4-3.65z" fill="currentColor" stroke="none"/></svg></span>';
 
   function el(tag,cls,text){var n=document.createElement(tag);if(cls)n.className=cls;if(text!=null)n.textContent=text;return n;}
   function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}

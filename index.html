@@ -3,11 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="description" content="디스토피아 세계관 잔광(AFTERGLOW)의 기록 단말. 첫 낙하, 명부 체계, 열두 이동도시, 정주 지역, 종족 설정.">
 <meta name="theme-color" content="#000000">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="description" content="디스토피아 세계관 잔광(AFTERGLOW)의 기록 단말. 첫 낙하, 명부 체계, 열두 이동도시, 정주 지역, 종족 설정.">
 <meta name="apple-mobile-web-app-title" content="AFTERGLOW">
 <meta property="og:title" content="AFTERGLOW 잔광">
 <meta property="og:description" content="르네상스 시대의 조각상은 정말 사람이었다는 말이 있다.">
@@ -127,6 +127,12 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .squircle svg{width:54%;height:54%;fill:none;stroke:var(--silver);stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
 .squircle.chrome{background:linear-gradient(150deg,#f4f6f8 0%,#b9c0c7 45%,#6c737b 100%);box-shadow:inset 0 1px 0 rgba(255,255,255,.6),0 8px 20px rgba(0,0,0,.5)}
 .squircle.chrome svg{stroke:#0b0c0e}
+.squircle.urim svg{color:#0b0c0e;stroke-width:1.7}
+a.icon{text-decoration:none;color:inherit}
+.view.frame .navbar{background:var(--void);box-shadow:0 .5px 0 var(--sep)}
+.view.frame .ntitle{opacity:1}
+.view.frame iframe{position:absolute;left:0;right:0;bottom:0;top:98px;width:100%;height:calc(100% - 98px);border:0;background:var(--void)}
+@media (max-width:540px){.view.frame iframe{top:48px;height:calc(100% - 48px)}}
 .ilabel{font-size:11.5px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
 .page-dots{display:flex;justify-content:center;gap:2px;padding:4px 0 10px}
 .page-dots button{width:20px;height:20px;display:grid;place-items:center}
@@ -357,12 +363,17 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
           <button class="icon" data-open="ophanim"><span class="squircle"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5.5"/><circle cx="12" cy="12" r="1.6"/><path d="M12 3v3.5M12 17.5V21M3 12h3.5M17.5 12H21"/></svg></span><span class="ilabel">성좌</span></button>
           <button class="icon" data-open="seir"><span class="squircle"><svg viewBox="0 0 24 24"><path d="M2.5 19.5 9 8l3.5 6L15 10l6.5 9.5z"/><path d="M7.3 11 9 12.5 10.5 11"/></svg></span><span class="ilabel">세일</span></button>
           <button class="icon" data-open="nod"><span class="squircle"><svg viewBox="0 0 24 24"><path d="M7 7l10 10M17 7 7 17"/><circle cx="12" cy="12" r="9" stroke-dasharray="2 3"/></svg></span><span class="ilabel">노드</span></button>
-          <button class="icon" data-open="tebah"><span class="squircle chrome"><svg viewBox="0 0 24 24"><path d="M3 15h18l-2 3H5z"/><path d="M5 15V10h4V7h6v3h4v5"/><path d="M12 7V3.5M2.5 20.5h19"/></svg></span><span class="ilabel">이동도시</span></button>
+          <a class="icon" id="urim-icon" href="urim.html" data-open="urim" aria-label="URIM 기록 단말 열기"><span class="squircle chrome urim"><svg viewBox="0 0 24 24"><path d="M5 5h14a2 2 0 0 1 2 2v8.5a2 2 0 0 1-2 2h-6.5L8 21v-3.5H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z"/><path d="M12 7.6l2.4 3.65L12 14.9l-2.4-3.65z" fill="currentColor" stroke="none"/></svg></span><span class="ilabel">URIM</span></a>
         </nav>
       </div>
 
       <!-- APPS -->
       <div class="apps" id="apps">
+
+        <!-- URIM (웹 호스팅본에서는 같은 폴더의 urim.html을 앱처럼 연다) -->
+        <div class="app" id="app-urim" hidden>
+          <section class="view frame" data-view="root" data-title="URIM"><iframe title="URIM 기록 단말" data-src="urim.html"></iframe></section>
+        </div>
 
         <!-- 기록 -->
         <div class="app" id="app-archive" hidden>
@@ -971,7 +982,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
     nb.querySelector('.ntitle').textContent=v.getAttribute('data-title')||'';
     v.insertBefore(nb,v.firstChild);
     var sc=v.querySelector('.vscroll');
-    sc.addEventListener('scroll',function(){v.classList.toggle('scrolled',sc.scrollTop>34);},{passive:true});
+    if(sc)sc.addEventListener('scroll',function(){v.classList.toggle('scrolled',sc.scrollTop>34);},{passive:true});
   });
 
   /* ---------- 앱 열기 / 닫기 / 푸시 ---------- */
@@ -988,6 +999,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
     var sr=screen.getBoundingClientRect(),ox=sr.width/2,oy=sr.height/2;
     if(origin&&origin.getBoundingClientRect){var r=origin.getBoundingClientRect();ox=r.left+r.width/2-sr.left;oy=r.top+r.height/2-sr.top;}
     app.style.transformOrigin=ox+'px '+oy+'px';
+    if(id==='urim'){var fr=app.querySelector('iframe');if(fr&&!fr.getAttribute('src'))fr.setAttribute('src',fr.getAttribute('data-src'));}
     app.hidden=false;app.classList.remove('shown');void app.offsetWidth;app.classList.add('shown');
     screen.classList.add('in-app');
     cur={app:app,stack:[root],id:id};
@@ -1019,6 +1031,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 
   document.addEventListener('click',function(e){
     var t=e.target.closest('[data-open],[data-push],.back,#indicator');if(!t)return;
+    if(t.tagName==='A')e.preventDefault();
     if(t.id==='indicator'){closeApp();return;}
     if(t.classList.contains('back')){pop();return;}
     if(t.hasAttribute('data-push')){push(t.getAttribute('data-push'));return;}
