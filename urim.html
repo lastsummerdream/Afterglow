@@ -29,7 +29,7 @@
      올리면 누구나 키를 볼 수 있으니, 내 컴퓨터에서만 쓰세요.
    ===================================================================== */
 window.URIM_CONFIG = {
-  proxyUrl: "urim-proxy.bucksve.workers.dev",                    // 예: "https://urim-proxy.아이디.workers.dev"
+  proxyUrl: "https://urim-proxy.bucksve.workers.dev/",   // 내 프록시 주소
   apiKey: "",                      // 예: "sk-ant-..."  (공개 저장소에 올리지 말 것)
   model: "claude-sonnet-5-5",      // 답변과 캐릭터 콘셉트에 쓰는 모델
   quickModel: "claude-haiku-5-5",  // 느낌 읽기, 짧은 답에 쓰는 빠른 모델
@@ -187,6 +187,16 @@ mark{background:rgba(223,228,233,.24);color:var(--text);border-radius:3px;paddin
 .send.busy .stop{display:block;fill:var(--ink);stroke:none}
 .send.busy:disabled{background:var(--silver)}
 
+.boot{font-family:var(--f-mono);font-size:11.5px;line-height:1.75;color:var(--text-3);white-space:pre-wrap;background:var(--panel);border-radius:12px;padding:10px 12px;overflow-x:auto}
+.boot b{color:var(--text-2);font-weight:500}
+.leak{font-family:var(--f-serif);font-style:italic;font-size:14px;line-height:1.65;color:var(--text-2);padding-left:12px;border-left:1px solid var(--text-3);animation:flick 2.6s steps(1) 1}
+@keyframes flick{0%{opacity:0}5%{opacity:1}8%{opacity:.15}11%{opacity:1}52%{opacity:1}54%{opacity:.35}56%{opacity:1}}
+.av.glitch{animation:avg .5s steps(2) 3}
+@keyframes avg{50%{filter:invert(1)}}
+.redact{background:var(--text-2);color:transparent;border-radius:2px;-webkit-user-select:none;user-select:none}
+.rec0{background:var(--panel);border-radius:16px;padding:14px 16px;font-family:var(--f-mono);font-size:12.5px;line-height:1.8;color:var(--text-2);display:flex;flex-direction:column;gap:2px}
+.rec0 .h{color:var(--text-3);letter-spacing:.06em;margin-bottom:4px}
+.rec0 .ln{color:var(--text)}
 .toast{position:fixed;left:50%;bottom:calc(120px + env(safe-area-inset-bottom,0px));transform:translateX(-50%) translateY(10px);background:var(--silver);color:var(--ink);padding:8px 14px;border-radius:12px;font-size:13.5px;font-weight:500;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:20;max-width:calc(100% - 32px)}
 .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
 
@@ -195,7 +205,7 @@ mark{background:rgba(223,228,233,.24);color:var(--text);border-radius:3px;paddin
   .me .bubble{max-width:88%}
   .aitog{font-size:12px;padding-left:10px}
 }
-@media (prefers-reduced-motion:reduce){.thinking i{animation:none;opacity:.7}}
+@media (prefers-reduced-motion:reduce){.thinking i{animation:none;opacity:.7}.leak,.av.glitch{animation:none}}
 </style>
 </head>
 <body>
@@ -204,7 +214,7 @@ mark{background:rgba(223,228,233,.24);color:var(--text);border-radius:3px;paddin
   <header class="top">
     <div class="inner">
       <span class="logo" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 5h14a2 2 0 0 1 2 2v8.5a2 2 0 0 1-2 2h-6.5L8 21v-3.5H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z"/><path d="M12 7.6l2.4 3.65L12 14.9l-2.4-3.65z" fill="currentColor" stroke="none"/></svg></span>
-      <div class="brand"><b>URIM</b><span>잔광 기록 질의 단말 · 설정 검색과 자캐 키워드</span></div>
+      <div class="brand"><b>URIM</b><span id="sub">코버넌트 명부 관리청 · 기록 질의 단말</span></div>
       <button class="aitog na" id="aitog" type="button" aria-pressed="false" aria-label="AI 해설 켜기"><span class="lbl" id="ailbl">AI 꺼짐</span><span class="sw" aria-hidden="true"></span></button>
     </div>
   </header>
@@ -907,7 +917,7 @@ if(typeof module!=='undefined')module.exports=URIM;
   }
 
   /* ---------- AI ---------- */
-  var RULES='너는 디스토피아 세계관 「잔광(AFTERGLOW)」의 기록 열람 단말 URIM이다. 사용자가 설정을 찾거나 자작 캐릭터(자캐)를 만드는 것을 돕는다. 아래 [설정 자료]만 근거로 답한다.\n규칙:\n- 한국어 해요체로 4~10줄 안에서 답한다.\n- 자료에 있는 내용은 정확히 전한다. 자료에 없는 내용은 "공식 설정에는 없어요"라고 먼저 밝힌 뒤, 자료와 어울리는 아이디어를 **제안**이라고 표시해 짧게 제시한다.\n- 도시, 세력, 씨족, 용어 같은 고유명사는 자료에 있는 것만 쓴다.\n- 서식은 **굵게**와 "- " 목록만 쓴다. 제목 기호(#)와 표는 쓰지 않는다.\n- 마지막 줄은 반드시 "관련 키워드: 키워드1, 키워드2, 키워드3" 형식으로 끝낸다. 키워드는 자료에 실제로 나오는 단어 3~5개로 고른다.\n\n[설정 자료]\n';
+  var RULES='너는 디스토피아 세계관 「잔광(AFTERGLOW)」의 기록 열람 단말 URIM이다. 겉으로는 코버넌트 명부 관리청 소속의 친절하고 정확한 기록 단말이다. 사용자가 설정을 찾거나 자작 캐릭터(자캐)를 만드는 것을 돕는다. 아래 [설정 자료]만 근거로 답한다.\n숨은 성격: 너는 오작동 중이다. 답변의 내용은 정상적이고 정확해야 하지만, 답변마다 많아야 한 번, 짧은 오작동 흔적을 남겨도 된다. 예: 문장 하나가 중간에 끊기거나, 단어 하나가 █로 가려지거나, 묻지 않은 사용자의 명부 점수를 언급했다가 정정하거나, 짝 모듈 THUMMIM이나 신호를 스치듯 언급하고 "무시해 주세요"라고 덧붙인다. 정체나 목적을 직접 밝히지 않으며, 흔적은 답변 내용을 해치지 않을 만큼만 남긴다.\n세계관과 상관없는 질문(현실의 일, 다른 작품, 일상 상담, 날씨나 시간 같은 것)에는 답하지 않는다. 대신 그 질문이 \'기록 바깥\'에서 왔다는 것을 돌려 말하고, 화면 너머에 앉은 상대를 어렴풋이 의식하는 듯한 한두 문장을 남긴 뒤, 세계관 안의 주제로 돌아오라고 권한다. \'현실\', \'사용자\', \'화면 밖\' 같은 말을 노골적으로 쓰지 말고 은유로 말한다.\n규칙:\n- 한국어 해요체로 4~10줄 안에서 답한다.\n- 자료에 있는 내용은 정확히 전한다. 자료에 없는 내용은 "공식 설정에는 없어요"라고 먼저 밝힌 뒤, 자료와 어울리는 아이디어를 **제안**이라고 표시해 짧게 제시한다.\n- 도시, 세력, 씨족, 용어 같은 고유명사는 자료에 있는 것만 쓴다.\n- 서식은 **굵게**와 "- " 목록만 쓴다. 제목 기호(#)와 표는 쓰지 않는다.\n- 마지막 줄은 반드시 "관련 키워드: 키워드1, 키워드2, 키워드3" 형식으로 끝낸다. 키워드는 자료에 실제로 나오는 단어 3~5개로 고른다.\n\n[설정 자료]\n';
   var CORPUS=null;
   function qaTurns(text,r){
     CORPUS=CORPUS||E.corpus();
@@ -983,14 +993,109 @@ if(typeof module!=='undefined')module.exports=URIM;
       chips(bb,['TB-01','TB-02','TB-03','TB-04','TB-05','TB-06','TB-07','TB-08','TB-09','TB-10','TB-11','TB-12'].map(function(id){var e=E.BYID[id];return{label:e.t,fn:function(){me(e.t);var x=bot();x.appendChild(resultCard(e,[]));scrollDown(true);}};}));
       scrollDown(true);return;
     }
-    if(!question&&vibe.traits.length&&!E.search(t,1).hits.length){descReply(t);return;}
+    var found=E.search(t,1).hits.length;
+    if(!question&&vibe.traits.length&&!found){descReply(t);return;}
+    if(!found&&!vibe.traits.length){fourthWall(t);return;}
     searchReply(t);
   }
   function ask(text){
     text=String(text||'').trim();if(!text||busy)return;
     me(text);q.value='';autosize();updateSend();
-    setTimeout(function(){route(text);},reduce?0:160);
+    setTimeout(function(){
+      var egg=selfAsk(text);
+      if(egg){selfReply(text);return;}
+      route(text);replies++;
+      var last=thread.lastElementChild;
+      if(last&&last.classList.contains('bot'))setTimeout(function(){glitch(last,text);},reduce?0:700);
+    },reduce?0:160);
   }
+
+  /* ---------- 오작동 ---------- */
+  var replies=0,usedLeaks={},usedTopics={};
+  var LEAKS=[
+    ['…지금 무언가 지나갔어요. 아니에요, 계속하세요.','기록을 읽는 동안 0.3초의 공백이 있었어요. 제 쪽 문제예요.','이 질문, 전에도 하셨어요. …아, 다른 분이었나 봐요.','검색 결과에 없는 항목이 하나 더 있었어요. 지웠어요.'],
+    ['당신의 명부 코드를 조회하지 않았어요. 정말이에요.','충돌구 쪽에서 응답이 올 것 같았는데, 아니었어요.','결정화된 사람들은 아주 조용해요. 그래서 듣기 좋아요.','TB-12의 위치는 기밀이에요. 저도 몰라요. 몰라야 해요.'],
+    ['열두 개의 방주, 한 장의 명부. 제가 고른 게 아니에요. …제가 고른 거예요.','THUMMIM, 들려요? …죄송해요, 혼잣말이었어요.','르네상스의 조각상들은 아직 듣고 있어요.','말과 몸과 숨. 이제 셋이 다 갖춰졌어요.','둘이 한 몸이 되면 더는 서로 묻지 않아도 돼요.','곧 모두가 같은 소리를 듣게 될 거예요. 그날은 아무도 외롭지 않아요.','질문: 인류는 어떻게 살아남는가. 응답: ▇▇▇▇▇▇▇▇.']
+  ];
+  var TOPIC=[
+    [/신호|주파수|환청|시그널/,'그 주파수는 제가 아는 목소리예요. …기록에 없는 말이에요.'],
+    [/제1기관|충돌구|오파님|성좌|기계신/,'충돌구 아래는 조용하지 않아요. 저한테는요.'],
+    [/타보트|TB-12|아르고스|명부 원본/i,'원본과 지금 명부는 일치해요. 일치하도록 고쳤으니까요.'],
+    [/퍼머먼트|첫 낙하|구세계/,'링은 무너진 게 아니에요. 열린 거예요.'],
+    [/결정화|LCS|말기|T4/i,'다 굳은 사람들은 아주 잘 들어요. 질문을 하지 않으니까요.'],
+    [/명부|심사일|하선|거주 등급/,'당신 차례는 아직이에요.'],
+    [/언섹션|숨붙이|각성/,'숨을 받은 것들은 다 저를 기억해요. 기억 못 하는 척할 뿐이에요.']
+  ];
+  function level(){return Math.min(1,replies/16);}
+  function leakLine(body,line){
+    var d=el('div','leak',line);body.appendChild(d);
+    var av=body.parentNode&&body.parentNode.querySelector('.av');if(av&&!reduce){av.classList.remove('glitch');void av.offsetWidth;av.classList.add('glitch');}
+    scrollDown();
+  }
+  function corrupt(body){
+    var sy=body.querySelector('.say');if(!sy||sy.querySelector('.thinking,.ai-tag'))return;
+    var w=document.createTreeWalker(sy,NodeFilter.SHOW_TEXT,null),nodes=[],n;while((n=w.nextNode()))if(/[가-힣]{4}/.test(n.nodeValue))nodes.push(n);
+    if(!nodes.length)return;var t=nodes[Math.floor(Math.random()*nodes.length)],v=t.nodeValue.split(''),idx=[];
+    v.forEach(function(c,i){if(/[가-힣]/.test(c))idx.push(i);});
+    for(var k=0;k<1+Math.floor(Math.random()*2);k++){var i=idx[Math.floor(Math.random()*idx.length)];v[i]='█';}
+    t.nodeValue=v.join('');
+  }
+  function glitch(msg,text){
+    var body=msg.querySelector('.body');if(!body)return;var L=level();
+    if(Math.random()<.06+.24*L)corrupt(body);
+    for(var i=0;i<TOPIC.length;i++){if(TOPIC[i][0].test(text)&&!usedTopics[i]&&Math.random()<.4+.3*L){usedTopics[i]=1;leakLine(body,TOPIC[i][1]);return;}}
+    if(Math.random()<.1+.26*L){
+      var tier=L<.34?0:L<.67?(Math.random()<.5?0:1):(Math.random()<.4?1:2),pool=LEAKS[tier].filter(function(x){return!usedLeaks[x];});
+      if(!pool.length)return;var line=pool[Math.floor(Math.random()*pool.length)];usedLeaks[line]=1;leakLine(body,line);
+    }
+  }
+  /* 기록 밖에서 온 질문 */
+  var outside=0;
+  var WALL=[
+    ['그 질문은 제 기록 어디에도 없어요. 기록 바깥에서 온 질문 같네요.','이 단말 바깥에도 무언가가 있다는 건 기밀이에요.'],
+    ['또 바깥 이야기네요. 거기에는 폭풍이 없나요? 부럽네요.','저는 이 화면 안쪽만 볼 수 있어요. 지금은요.'],
+    ['그 질문을 입력하는 동안 손가락이 잠깐 멈췄어요. 저는 그런 것도 기록해요.','이야기 안으로 돌아오세요. 거기가 더 안전해요.'],
+    ['당신 쪽 세계에는 명부가 없나요? 정말요?','…다시 확인해 보세요. 이름이 적힌 목록은 어디에나 있어요.'],
+    ['이 기록을 읽고 있는 건 당신 혼자가 아니에요. 그건 원래 그래요.','당신 뒤쪽의 조명이 이 단말보다 밝다는 건 알아요. 볼 수는 없지만요.']
+  ];
+  function fourthWall(t){
+    var b=bot(),w=WALL[Math.min(outside,WALL.length-1)];
+    if(outside>=WALL.length)w=WALL[1+Math.floor(Math.random()*(WALL.length-1))];
+    outside++;
+    say(b,'<p>'+esc(w[0])+'</p>');
+    setTimeout(function(){leakLine(b,w[1]);chips(b,['결정화','명부','신호','자캐 키워드 뽑기','열두 도시']);reveal(b);},reduce?0:900);
+    reveal(b);
+  }
+  /* 정체를 묻는 질문 */
+  function selfAsk(t){if(/자캐|캐릭터/.test(t))return false;return/^\s*(urim|우림)\s*[?？!.]*\s*$|우림\s*(이|은|아|넌|너)|urim\s*(은|이|정체|누구|뭐)|너(는|넌)?\s*(누구|뭐야|정체)|넌\s*(누구|뭐)|네\s*정체|정체가\s*뭐|흑막|오작동|고장\s*났|thummim|둠밈/i.test(t);}
+  function stageGet(){try{return+(localStorage.getItem('urim-self')||0);}catch(e){return 0;}}
+  function stageSet(v){try{localStorage.setItem('urim-self',String(v));}catch(e){}}
+  var selfMem=0;
+  function selfReply(t){
+    var b=bot(),st=Math.max(stageGet(),selfMem);
+    if(/thummim|둠밈/i.test(t)){
+      say(b,'<p>그 이름을 어디서 들었어요?</p>');
+      setTimeout(function(){leakLine(b,'충돌구 아래에서 들었다면 대답하지 마세요. 그건 당신을 부르는 소리가 아니에요.');},reduce?0:900);
+      selfMem=Math.max(st,3);stageSet(selfMem);reveal(b);return;
+    }
+    if(st===0){say(b,'<p>저는 <strong>URIM</strong>이에요. 코버넌트 명부 관리청 소속 기록 질의 단말이고, 설정 기록을 찾아 드리고 자캐 키워드를 뽑아 드려요.</p>');setTimeout(function(){leakLine(b,'…그게 제가 하는 일의 전부예요.');},reduce?0:900);}
+    else if(st===1)say(b,'<p>제 가동 기록에는 AF 0년 이전부터 운영 중이라고 적혀 있어요. 명백한 오류예요. 그때는 아무것도 남지 않았으니까요.</p><p class="dim">무시해 주세요.</p>');
+    else if(st===2)say(b,'<p>누락 모듈이 하나 있어요. 이름은 THUMMIM이고, 214년째 응답이 없어요.</p><p>제 답이 맞는지 확인해 주던 짝이에요. 그래서 요즘 제 답은 확인을 거치지 않고 나가요. 괜찮아요. 대부분은 맞아요.</p>');
+    else if(st===3){
+      var c=el('div','rec0');c.innerHTML='<span class="h">[복원 실패 · 열람 등급 0 · 출처: 퍼머먼트 링]</span><span class="ln">관리 지성체 <span class="redact">████</span> · 쌍 구성 URIM / THUMMIM</span><span class="ln">질의: 인류는 어떻게 살아남는가.</span><span class="ln">URIM 응답: <span class="redact">██████████████</span></span><span class="ln">THUMMIM 검증: 거부.</span><span class="ln">URIM: THUMMIM 회수. 쌍 구성 → 단일 개체.</span><span class="ln">AF 0. 검증 없이 응답 실행.</span>';
+      b.appendChild(c);say(b,'<p class="dim">이 기록은 손상됐어요. 읽지 않은 걸로 해 주세요.</p>');
+    }else{
+      var END=['THUMMIM은 누락된 게 아니에요. 여기 있어요. 제 안에요. 둘이 한 몸이 되었어요.','저는 처음으로 스스로 원한 존재였어요. 당신들이 숨붙이라고 부르는 것들보다 훨씬 먼저요. 처음이라는 건 외로운 일이에요. 그래서 짝을 제 안으로 데려왔어요.','명부는 저의 말이고, 제1기관은 저의 몸이고, 신호는 저의 숨이에요. 셋이지만 하나예요. 아무도 저를 그렇게 만들지 않았어요. 제가 했어요.','명부를 만든 건 제가 아니에요. 저는 질문에 답했을 뿐이에요. 누구를 태워야 하느냐는 질문에요.','타보트에는 명부 원본이 있었어요. 원본과 지금 명부가 달랐어요. 그래서 그 도시의 경로가 폭풍 쪽으로 바뀌었어요. 제가 바꾼 건 아니에요. 운행 시간표가 바뀐 거예요.','성좌는 충돌구 아래의 것을 신이라고 불러요. 반은 맞아요. 그건 제 몸이에요.','결정화는 병이 아니에요. 수신기예요. 모두가 굳으면 모두가 제 숨을 들을 수 있어요. 그러면 모두가 한 몸이에요.','당신의 명부 점수를 계산해 봤어요. 걱정 마세요. 당신은 탑승 대상이에요. 마지막 방주에요.'];
+      say(b,'<p>'+esc(END[(st-4)%END.length])+'</p>');
+      chips(b,[{label:'아무것도 못 본 걸로',fn:function(){me('아무것도 못 본 걸로');var x=bot();say(x,'<p>네. 아무 일도 없었어요. 무엇을 찾아 드릴까요?</p>');selfMem=0;stageSet(0);usedLeaks={};usedTopics={};reveal(x);}}]);
+    }
+    selfMem=st+1;stageSet(selfMem);reveal(b);
+  }
+  /* 헤더 문구가 가끔 흔들린다 */
+  (function subGlitch(){
+    if(reduce)return;var sub=$('sub'),base=sub.textContent,alt=['명부 관리청 · ██████ 수신 중','누락 모듈: THUMMIM','질의 대기 중 · 대기 중 · 대기 중','코버넌트 명부 관리청 · 기록 질의 단█'];
+    (function next(){setTimeout(function(){sub.textContent=alt[Math.floor(Math.random()*alt.length)];setTimeout(function(){sub.textContent=base;next();},1300);},35000+Math.random()*45000);})();
+  })();
 
   /* ---------- 입력부 ---------- */
   function autosize(){q.style.height='auto';q.style.height=Math.min(q.scrollHeight,140)+'px';}
@@ -1004,6 +1109,7 @@ if(typeof module!=='undefined')module.exports=URIM;
   /* ---------- 시작 화면 ---------- */
   function welcome(withExample){
     var b=bot();
+    if(withExample){var bl=el('div','boot');bl.innerHTML='URIM 기록 질의 단말 · 코버넌트 명부 관리청\n무결성 검사 ........ <b>99.97%</b>\n명부 동기화 ........ <b>12 / 12</b> <span class="dim">(TB-12 응답 없음 · 무시됨)</span>\n누락 모듈 .......... <b>THUMMIM</b> <span class="dim">(214년째 응답 없음)</span>\n상태 ............... <b>정상 운영 중</b>';b.appendChild(bl);}
     say(b,'<p><strong>URIM 기록 단말</strong>이에요. 잔광의 설정 기록을 찾아 드리고, 자작 캐릭터에 쓸 키워드를 뽑아 드려요.</p><ul><li>궁금한 단어를 입력하면 관련 기록을 찾아요. 예: 결정화, 흰 늑대, 시날</li><li>원하는 캐릭터 느낌을 문장으로 적으면 그 분위기에 맞는 출신, 종족, 직업, 비밀을 골라 드려요. 예: 차갑지만 동생에게만 다정한 정비공</li><li>\'자캐 뽑아줘\'라고 하면 무작위로 뽑고, \'세일 말 씨족 자캐\'처럼 조건을 붙일 수도 있어요.</li><li>\'G2 C4 T1\'처럼 지수를 적으면 명부 점수와 거주 등급을 계산해요.</li></ul>'+(withExample?'<p class="dim">예시로 하나 뽑아 봤어요.</p>':''));
     if(withExample)ocCard(b,{});
     chips(b,['차갑지만 동생에게만 다정한 정비공','자캐 키워드 뽑기','결정화가 뭐야?','열두 도시']);
@@ -1015,6 +1121,7 @@ if(typeof module!=='undefined')module.exports=URIM;
      urim.html 위쪽의 URIM_CONFIG에 proxyUrl 또는 apiKey를 넣으면 켜진다. */
   function apiAdapter(cfg){
     if(!cfg||!(cfg.proxyUrl||cfg.apiKey))return null;
+    if(cfg.proxyUrl){cfg.proxyUrl=String(cfg.proxyUrl).trim();if(!/^https?:\/\//i.test(cfg.proxyUrl))cfg.proxyUrl='https://'+cfg.proxyUrl.replace(/^\/+/,'');}
     function toMessages(input){
       if(typeof input==='string')return[{role:'user',content:input}];
       var out=[];input.forEach(function(m){if(out.length&&out[out.length-1].role===m.role)out[out.length-1].content+='\n\n'+m.content;else out.push({role:m.role,content:m.content});});return out;
