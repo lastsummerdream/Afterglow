@@ -334,8 +334,12 @@ a.icon{text-decoration:none;color:inherit}
   .app.shown{border-radius:12px}
   .app.max{inset:28px 0 0 0;border-radius:0}
   .wctl{display:flex;flex-direction:row;position:absolute;top:16px;left:16px;z-index:8;gap:8px;margin:0}
-  .wctl button{width:12px;height:12px;border-radius:50%;background:#3a3e44;box-shadow:inset 0 0 0 .5px rgba(0,0,0,.4)}
-  .wctl:hover .c{background:#ff5f57}.wctl:hover .m{background:#febc2e}.wctl:hover .x{background:#28c840}
+  .wctl button{width:12px;height:12px;border-radius:50%;box-shadow:inset 0 0 0 .5px rgba(0,0,0,.35);position:relative}
+  .wctl .c{background:#ff5f57}.wctl .m{background:#febc2e}.wctl .x{background:#28c840}
+  .wctl button::after{content:"";position:absolute;inset:0;display:grid;place-items:center;font:700 9px/12px var(--f-ui);color:rgba(0,0,0,.55);opacity:0;text-align:center}
+  .wctl .c::after{content:"×"}.wctl .m::after{content:"−"}.wctl .x::after{content:"+"}
+  .wctl:hover button::after{opacity:1}
+  .view[data-view="root"] .back{visibility:hidden}
   .navbar{height:44px;padding:0 12px 0 84px;background:var(--panel);box-shadow:0 .5px 0 var(--sep)}
   .view.scrolled .navbar{background:var(--panel)}
   .ntitle{opacity:1;font-size:13.5px}
