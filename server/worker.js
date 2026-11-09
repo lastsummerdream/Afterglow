@@ -29,7 +29,7 @@ const MAX_TOKENS = 4000;
 const MAX_MESSAGES = 16;
 
 const SCHEMA_VERSION = 1;
-const MAX_CHARACTERS = 5;
+const MAX_CHARACTERS = 1;
 const SESSION_DAYS = 30;
 const PBKDF2_ITER = 100000;
 

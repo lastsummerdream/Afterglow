@@ -1502,7 +1502,7 @@ a.icon{text-decoration:none;color:inherit}
   var ECHO=[['없음','없음'],['방출형','방출형 · 열, 빛, 충격파'],['조형형','조형형 · 결정 칼날, 갑각, 가시'],['강화형','강화형 · 근력, 반응, 감각'],['간섭형','간섭형 · 코어, 의체, 기계'],['감응형','감응형 · 광맥, 폭풍, 신호']];
   var TIERS=[['Tier 0','시날 스파이어'],['Tier 1','상층 갑판'],['Tier 2','중층 갑판'],['Tier 3','하층 화물칸'],['Tier 4','검역 갑판'],['하선','광야']];
   var LABEL={name:'이름',nameEn:'영문 이름',age:'나이',gender:'성별',origin:'출신',originDetail:'출신 세부',species:'종족',lineage:'혈통',G:'혈통 지수 G',C:'신용 지수 C',T:'결정화 단계 T',echoType:'잔향 갈래',echoAbility:'잔향 능력',job:'직업',faction:'소속',appearance:'외형',personality:'성격',background:'배경',secret:'비밀',notes:'메모'};
-  var ERR={bad_username:'아이디는 영문, 숫자, 밑줄(_)로 4~20자예요.',short_password:'비밀번호는 8자 이상이어야 해요.',long_password:'비밀번호는 72자 이하로 정해 주세요.',username_taken:'이미 쓰이는 아이디예요.',wrong_login:'아이디나 비밀번호가 맞지 않아요.',wrong_password:'비밀번호가 맞지 않아요.',rate_limited:'시도가 너무 많아요. 잠시 뒤 다시 해 주세요.',too_many_characters:'캐릭터는 5명까지 등록할 수 있어요.',not_found:'기록을 찾지 못했어요. 새로고침해 주세요.',server_error:'서버에서 문제가 생겼어요. 잠시 뒤 다시 해 주세요.',server_not_ready:'등록 서버가 아직 준비되지 않았어요.'};
+  var ERR={bad_username:'아이디는 영문, 숫자, 밑줄(_)로 4~20자예요.',short_password:'비밀번호는 8자 이상이어야 해요.',long_password:'비밀번호는 72자 이하로 정해 주세요.',username_taken:'이미 쓰이는 아이디예요.',wrong_login:'아이디나 비밀번호가 맞지 않아요.',wrong_password:'비밀번호가 맞지 않아요.',rate_limited:'시도가 너무 많아요. 잠시 뒤 다시 해 주세요.',too_many_characters:'캐릭터는 한 계정에 하나만 등록할 수 있어요.',not_found:'기록을 찾지 못했어요. 새로고침해 주세요.',server_error:'서버에서 문제가 생겼어요. 잠시 뒤 다시 해 주세요.',server_not_ready:'등록 서버가 아직 준비되지 않았어요.'};
   function jo(w,a,b){w=String(w);var c=w.charCodeAt(w.length-1);if(c<0xAC00||c>0xD7A3)return w+b;return w+((c-0xAC00)%28?a:b);}
   var REASON={required:function(l){return jo(l,'을','를')+' 입력해 주세요.';},range:function(l){return l+'의 값이 범위를 벗어났어요.';},too_long:function(l){return jo(l,'이','가')+' 너무 길어요.';},type:function(l){return l+'의 형식이 맞지 않아요.';},enum:function(l){return jo(l,'을','를')+' 목록에서 골라 주세요.';}};
 
@@ -1529,7 +1529,7 @@ a.icon{text-decoration:none;color:inherit}
   var mode='login';
   function renderAuth(){
     root.innerHTML=
-      '<p class="para">명부 관리청에 사용자로 등록하면 자작 캐릭터의 기록을 남길 수 있어요. 등록한 캐릭터로 URIM과 대화할 수 있고, 이 기록은 앞으로 열릴 롤플레잉 사이트에서도 그대로 쓰여요.</p>'+
+      '<p class="para">명부 관리청에 사용자로 등록하면 자작 캐릭터 한 명의 기록을 남길 수 있어요. 등록한 캐릭터로 URIM과 대화할 수 있고, 이 기록은 앞으로 열릴 롤플레잉 사이트에서도 그대로 쓰여요.</p>'+
       '<div class="seg" role="group" aria-label="로그인 또는 가입"><button type="button" data-m="login" aria-pressed="'+(mode==='login')+'">로그인</button><button type="button" data-m="signup" aria-pressed="'+(mode==='signup')+'">새로 등록</button></div>'+
       '<form class="rgbox" id="rg-auth" novalidate><div class="group"><div class="glist">'+
         '<label class="fld"><span>아이디'+(mode==='signup'?'<em>영문, 숫자, 밑줄 4~20자</em>':'')+'</span><input name="username" autocomplete="username" autocapitalize="off" spellcheck="false" maxlength="20" required></label>'+
@@ -1567,15 +1567,15 @@ a.icon{text-decoration:none;color:inherit}
     return a.filter(Boolean).join(' · ');
   }
   function renderMe(){
-    var u=me.user,cs=me.characters||[],max=(me.limits&&me.limits.maxCharacters)||5;
+    var u=me.user,cs=me.characters||[],max=(me.limits&&me.limits.maxCharacters)||1,one=max===1;
     var active=null;cs.forEach(function(c){if(c.id===u.activeCharacterId)active=c;});
     var h='<div class="rgid"><span class="av" aria-hidden="true">'+esc(u.username.slice(0,1).toUpperCase())+'</span><div><b>'+esc(u.username)+'</b><span>REGISTERED OPERATOR</span></div></div>';
-    h+='<div class="group"><div class="ghead">내 캐릭터 · '+cs.length+' / '+max+'</div><div class="glist">';
+    h+='<div class="group"><div class="ghead">'+(one?'내 캐릭터':'내 캐릭터 · '+cs.length+' / '+max)+'</div><div class="glist">';
     cs.forEach(function(c){
-      h+='<button class="cell push" type="button" data-edit="'+esc(c.id)+'"><span class="ct"><b>'+esc(c.name)+'</b><span>'+esc(summaryOf(c.data||{}))+'</span></span>'+(c.id===u.activeCharacterId?'<span class="tag">URIM</span>':'')+'<svg class="chev" viewBox="0 0 8 14"><path d="M1 1l6 6-6 6"/></svg></button>';
+      h+='<button class="cell push" type="button" data-edit="'+esc(c.id)+'"><span class="ct"><b>'+esc(c.name)+'</b><span>'+esc(summaryOf(c.data||{}))+'</span></span>'+(!one&&c.id===u.activeCharacterId?'<span class="tag">URIM</span>':'')+'<svg class="chev" viewBox="0 0 8 14"><path d="M1 1l6 6-6 6"/></svg></button>';
     });
-    if(cs.length<max)h+='<button class="cell push add" type="button" data-edit="new"><span class="ct"><b>+ 새 캐릭터 등록</b><span>정보를 직접 입력해요</span></span><svg class="chev" viewBox="0 0 8 14"><path d="M1 1l6 6-6 6"/></svg></button>';
-    h+='</div>'+(cs.length?'<p class="rgnote">URIM 표시가 붙은 캐릭터로 URIM과 대화해요. 캐릭터를 열어 바꿀 수 있어요.</p>':'<p class="rgnote">캐릭터를 등록하면 URIM이 그 캐릭터로 접속한 당신을 알아봐요.</p>')+'</div>';
+    if(cs.length<max)h+='<button class="cell push add" type="button" data-edit="new"><span class="ct"><b>+ '+(one?'캐릭터 등록':'새 캐릭터 등록')+'</b><span>'+(one?'한 계정에 한 명 · 정보를 직접 입력해요':'정보를 직접 입력해요')+'</span></span><svg class="chev" viewBox="0 0 8 14"><path d="M1 1l6 6-6 6"/></svg></button>';
+    h+='</div>'+(cs.length?(one?'<p class="rgnote">이 캐릭터로 URIM과 대화해요. 눌러서 정보를 고칠 수 있어요.</p>':'<p class="rgnote">URIM 표시가 붙은 캐릭터로 URIM과 대화해요. 캐릭터를 열어 바꿀 수 있어요.</p>'):'<p class="rgnote">캐릭터를 등록하면 URIM이 그 캐릭터로 접속한 당신을 알아봐요.</p>')+'</div>';
     if(active)h+='<div class="rgbtns"><button class="abtn pri wide" type="button" id="rg-urim">'+esc(ro(active.name))+' URIM 접속</button></div>';
     h+='<div class="group"><div class="ghead">계정</div><div class="glist">'+
        '<button class="cell push" type="button" id="rg-out"><span class="ct"><b>로그아웃</b></span></button>'+

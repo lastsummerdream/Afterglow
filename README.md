@@ -8,9 +8,9 @@
 
 ## 사용자 등록
 
-터미널의 **사용자 등록** 앱에서 아이디와 비밀번호로 가입하고 자작 캐릭터를 최대 5명까지 등록한다.
+터미널의 **사용자 등록** 앱에서 아이디와 비밀번호로 가입하고 자작 캐릭터를 한 명 등록한다 (한 계정에 캐릭터 하나).
 로그인 토큰은 브라우저 `localStorage`의 `ag-token`에 저장되고, 같은 사이트의 URIM이 이 토큰으로
-대표 캐릭터를 불러와 그 캐릭터를 상대로 대화한다.
+그 캐릭터를 불러와 그 캐릭터를 상대로 대화한다.
 
 - 서버: `https://urim-proxy.bucksve.workers.dev` (`server/worker.js`)
 - 데이터베이스: Cloudflare D1 `afterglow-users` (`server/schema.sql`)
@@ -28,7 +28,7 @@
 | `PUT /me/active` `{id}` | URIM 대화 캐릭터 지정 |
 | `POST /me/password` `{password, newPassword}` | 비밀번호 변경 |
 | `DELETE /me` `{password}` | 계정과 캐릭터 삭제 |
-| `POST /characters` `{data}` | 캐릭터 등록 |
+| `POST /characters` `{data}` | 캐릭터 등록 (이미 있으면 `too_many_characters`) |
 | `PUT /characters/:id` `{data}` | 캐릭터 수정 |
 | `DELETE /characters/:id` | 캐릭터 삭제 |
 
