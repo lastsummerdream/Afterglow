@@ -340,6 +340,9 @@ a.icon{text-decoration:none;color:inherit}
   .wctl .c::after{content:"×"}.wctl .m::after{content:"−"}.wctl .x::after{content:"+"}
   .wctl:hover button::after{opacity:1}
   .view[data-view="root"] .back{visibility:hidden}
+  .app:not(.max) .navbar{cursor:grab}
+  .screen.dragging,.screen.dragging .navbar{cursor:grabbing!important;user-select:none;-webkit-user-select:none}
+  .screen.dragging iframe{pointer-events:none}
   .navbar{height:44px;padding:0 12px 0 84px;background:var(--panel);box-shadow:0 .5px 0 var(--sep)}
   .view.scrolled .navbar{background:var(--panel)}
   .ntitle{opacity:1;font-size:13.5px}
@@ -1079,12 +1082,47 @@ a.icon{text-decoration:none;color:inherit}
   [].forEach.call(document.querySelectorAll('.app'),function(app){
     var tl=document.createElement('div');tl.className='wctl';
     tl.innerHTML='<button type="button" class="c" aria-label="창 닫기"></button><button type="button" class="m" aria-label="창 내리기"></button><button type="button" class="x" aria-label="창 크게"></button>';
-    tl.addEventListener('click',function(e){var b=e.target.closest('button');if(!b)return;e.stopPropagation();if(b.classList.contains('x'))app.classList.toggle('max');else closeApp();});
+    tl.addEventListener('click',function(e){var b=e.target.closest('button');if(!b)return;e.stopPropagation();if(b.classList.contains('x'))toggleMax(app);else closeApp();});
     app.appendChild(tl);
+  });
+  /* PC: 창 끌어서 옮기기 */
+  var desk=window.matchMedia('(min-width:901px) and (hover:hover) and (pointer:fine)');
+  function toggleMax(app){
+    if(app.classList.contains('max')){app.classList.remove('max');if(app._pos)app.style.cssText+=app._pos;}
+    else{var st=app.style;app._pos=st.left?('left:'+st.left+';top:'+st.top+';width:'+st.width+';height:'+st.height+';right:auto;bottom:auto;'):'';['left','top','width','height','right','bottom'].forEach(function(k){st[k]='';});app.classList.add('max');}
+  }
+  function clampWin(app,left,top){
+    var sw=screen.clientWidth,sh=screen.clientHeight,w=app.offsetWidth,h=app.offsetHeight;
+    return[Math.max(0,Math.min(sw-w,left)),Math.max(28,Math.min(sh-h,top))];
+  }
+  var drag=null;
+  document.addEventListener('pointerdown',function(e){
+    if(!desk.matches||e.button!==0)return;
+    var bar=e.target.closest('.app.shown .navbar');if(!bar||e.target.closest('button,a'))return;
+    var app=bar.closest('.app');if(app.classList.contains('max'))return;
+    var st=app.style;if(!st.left){st.width=app.offsetWidth+'px';st.height=app.offsetHeight+'px';st.left=app.offsetLeft+'px';st.top=app.offsetTop+'px';st.right='auto';st.bottom='auto';}
+    drag={app:app,x:e.clientX,y:e.clientY,l:app.offsetLeft,t:app.offsetTop,id:e.pointerId};
+    screen.classList.add('dragging');e.preventDefault();
+  });
+  window.addEventListener('pointermove',function(e){
+    if(!drag||e.pointerId!==drag.id)return;
+    var p=clampWin(drag.app,drag.l+e.clientX-drag.x,drag.t+e.clientY-drag.y);
+    drag.app.style.left=p[0]+'px';drag.app.style.top=p[1]+'px';
+  });
+  function endDrag(){if(!drag)return;drag=null;screen.classList.remove('dragging');}
+  window.addEventListener('pointerup',endDrag);window.addEventListener('pointercancel',endDrag);
+  document.addEventListener('dblclick',function(e){
+    if(!desk.matches)return;var bar=e.target.closest('.app.shown .navbar');if(!bar||e.target.closest('button,a'))return;toggleMax(bar.closest('.app'));
+  });
+  window.addEventListener('resize',function(){
+    [].forEach.call(document.querySelectorAll('.app'),function(app){
+      if(!desk.matches){['left','top','width','height','right','bottom'].forEach(function(k){app.style[k]='';});app._pos='';return;}
+      if(app.style.left&&!app.hidden){var p=clampWin(app,app.offsetLeft,app.offsetTop);app.style.left=p[0]+'px';app.style.top=p[1]+'px';}
+    });
   });
   function closeApp(instant){
     if(!cur)return;var app=cur.app;cur=null;
-    setTimeout(function(){app.classList.remove('max');},instant?0:460);
+    setTimeout(function(){if(app.classList.contains('max'))toggleMax(app);},instant?0:460);
     app.classList.remove('shown');screen.classList.remove('in-app');
     var done=function(){app.hidden=true;};
     if(instant||reduce)done();else closing=setTimeout(done,440);
