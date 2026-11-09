@@ -29,7 +29,7 @@
      올리면 누구나 키를 볼 수 있으니, 내 컴퓨터에서만 쓰세요.
    ===================================================================== */
 window.URIM_CONFIG = {
-  proxyUrl: "urim-proxy.bucksve.workers.dev",                    // 예: "https://urim-proxy.아이디.workers.dev"
+  proxyUrl: "",                    // 예: "https://urim-proxy.아이디.workers.dev"
   apiKey: "",                      // 예: "sk-ant-..."  (공개 저장소에 올리지 말 것)
   model: "claude-sonnet-5-5",      // 답변과 캐릭터 콘셉트에 쓰는 모델
   quickModel: "claude-haiku-5-5",  // 느낌 읽기, 짧은 답에 쓰는 빠른 모델
@@ -83,6 +83,8 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .aitog .sw{width:34px;height:20px;border-radius:999px;background:var(--glass-hi);position:relative;transition:background .2s}
 .aitog .sw::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:var(--text-2);transition:transform .2s,background .2s}
 .aitog[aria-pressed="true"]{color:var(--text)}
+.aitog.na{opacity:.55}
+.aitog .lbl{white-space:nowrap}
 .aitog[aria-pressed="true"] .sw{background:var(--silver)}
 .aitog[aria-pressed="true"] .sw::after{transform:translateX(14px);background:var(--ink)}
 
@@ -191,7 +193,7 @@ mark{background:rgba(223,228,233,.24);color:var(--text);border-radius:3px;paddin
 @media (max-width:540px){
   .ocrow{grid-template-columns:62px minmax(0,1fr) 32px;padding-left:14px}
   .me .bubble{max-width:88%}
-  .aitog .lbl{display:none}
+  .aitog{font-size:12px;padding-left:10px}
 }
 @media (prefers-reduced-motion:reduce){.thinking i{animation:none;opacity:.7}}
 </style>
@@ -203,7 +205,7 @@ mark{background:rgba(223,228,233,.24);color:var(--text);border-radius:3px;paddin
     <div class="inner">
       <span class="logo" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 5h14a2 2 0 0 1 2 2v8.5a2 2 0 0 1-2 2h-6.5L8 21v-3.5H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z"/><path d="M12 7.6l2.4 3.65L12 14.9l-2.4-3.65z" fill="currentColor" stroke="none"/></svg></span>
       <div class="brand"><b>URIM</b><span>잔광 기록 질의 단말 · 설정 검색과 자캐 키워드</span></div>
-      <button class="aitog" id="aitog" type="button" aria-pressed="false" hidden><span class="lbl">AI 해설</span><span class="sw" aria-hidden="true"></span></button>
+      <button class="aitog na" id="aitog" type="button" aria-pressed="false" aria-label="AI 해설 켜기"><span class="lbl" id="ailbl">AI 꺼짐</span><span class="sw" aria-hidden="true"></span></button>
     </div>
   </header>
 
@@ -713,7 +715,7 @@ if(typeof module!=='undefined')module.exports=URIM;
 
   function el(tag,cls,text){var n=document.createElement(tag);if(cls)n.className=cls;if(text!=null)n.textContent=text;return n;}
   function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
-  function toast(t){toastEl.textContent=t;toastEl.classList.add('on');clearTimeout(toast._t);toast._t=setTimeout(function(){toastEl.classList.remove('on');},2200);}
+  function toast(t,ms){toastEl.textContent=t;toastEl.classList.add('on');clearTimeout(toast._t);toast._t=setTimeout(function(){toastEl.classList.remove('on');},ms||2400);}
   function atBottom(){return log.scrollHeight-log.scrollTop-log.clientHeight<80;}
   function reveal(body){var m=body.closest('.msg');if(!m)return;var top=log.scrollTop+m.getBoundingClientRect().top-log.getBoundingClientRect().top-12;log.scrollTo({top:top,behavior:reduce?'auto':'smooth'});}
   function scrollDown(force){if(force||atBottom())log.scrollTo({top:log.scrollHeight,behavior:reduce?'auto':'smooth'});}
@@ -940,9 +942,26 @@ if(typeof module!=='undefined')module.exports=URIM;
       target.innerHTML=e&&e.text&&code!=='refused'?md(splitKw(e.text).body):'';target.appendChild(el('div','note',msg));after(false);
     });
   }
-  function disableAI(){sample=null;aiOn=false;aitog.hidden=true;document.querySelectorAll('.ai-only').forEach(function(n){n.hidden=true;});}
-  function setAI(on){aiOn=!!on&&!!sample;aitog.setAttribute('aria-pressed',String(aiOn));aitog.setAttribute('aria-label','AI 해설 '+(aiOn?'끄기':'켜기'));try{localStorage.setItem('urim-ai',aiOn?'on':'off');}catch(e){}}
-  aitog.addEventListener('click',function(){setAI(!aiOn);toast(aiOn?'AI 해설을 켰어요':'AI 해설을 껐어요 · 기록 검색만 써요');});
+  var ailbl=$('ailbl');
+  function paintAI(){
+    aitog.setAttribute('aria-pressed',String(aiOn));
+    aitog.classList.toggle('na',!sample);
+    ailbl.textContent=aiOn?'AI 켜짐':'AI 꺼짐';
+    aitog.setAttribute('aria-label',!sample?'AI 해설 (연결 안 됨)':aiOn?'AI 해설 끄기':'AI 해설 켜기');
+    aitog.title=!sample?'AI가 연결되지 않았어요':aiOn?'누르면 AI 해설을 꺼요':'누르면 AI 해설을 켜요';
+  }
+  function disableAI(){sample=null;aiOn=false;paintAI();document.querySelectorAll('.ai-only').forEach(function(n){n.hidden=true;});}
+  function setAI(on,save){aiOn=!!on&&!!sample;paintAI();if(save){try{localStorage.setItem('urim-ai',aiOn?'on':'off');}catch(e){}}}
+  aitog.addEventListener('click',function(){
+    if(!sample){
+      toast(window.URIM_CONFIG?'AI가 연결되지 않았어요. urim.html의 URIM_CONFIG에 proxyUrl을 넣으면 켤 수 있어요':'지금은 AI를 쓸 수 없어요. 기록 검색과 키워드 뽑기는 그대로 돼요',4200);
+      return;
+    }
+    if(busy)busy.abort();
+    setAI(!aiOn,true);
+    toast(aiOn?'AI 해설을 켰어요 · 답변과 콘셉트를 Claude가 써요':'AI 해설을 껐어요 · 단말이 직접 검색하고 뽑아요');
+  });
+  paintAI();
 
   /* ---------- 의도 판별 ---------- */
   function route(text){
@@ -1034,13 +1053,13 @@ if(typeof module!=='undefined')module.exports=URIM;
   /* ---------- AI 사용 가능 여부 ---------- */
   var api=apiAdapter(window.URIM_CONFIG);
   if(api){
-    sample=api;aitog.hidden=false;
+    sample=api;
     var pref0=null;try{pref0=localStorage.getItem('urim-ai');}catch(e){}
     setAI(pref0!=='off');
     document.querySelectorAll('.ai-only').forEach(function(n){n.hidden=false;});
   }else if(window.claude&&typeof window.claude.use==='function'){
     window.claude.use('sample').then(function(s){
-      if(!s)return;sample=s;aitog.hidden=false;
+      if(!s)return;sample=s;
       var pref=null;try{pref=localStorage.getItem('urim-ai');}catch(e){}
       setAI(pref!=='off');
       document.querySelectorAll('.ai-only').forEach(function(n){n.hidden=false;});
