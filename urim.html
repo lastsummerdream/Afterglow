@@ -33,7 +33,7 @@ window.URIM_CONFIG = {
   apiKey: "",                      // 예: "sk-ant-..."  (공개 저장소에 올리지 말 것)
   model: "claude-sonnet-5-5",      // 답변과 캐릭터 콘셉트에 쓰는 모델
   quickModel: "claude-haiku-5-5",  // 느낌 읽기, 짧은 답에 쓰는 빠른 모델
-  maxTokens: 1600                  // 한 번에 받을 최대 답변 길이
+  maxTokens: 4000                  // 한 번에 받을 최대 답변 길이
 };
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1129,7 +1129,7 @@ if(typeof module!=='undefined')module.exports=URIM;
     function call(input,opts){
       opts=opts||{};
       return new Promise(function(resolve,reject){
-        var body={model:opts.modelTier==='quick'?(cfg.quickModel||cfg.model):cfg.model,max_tokens:cfg.maxTokens||1600,stream:true,messages:toMessages(input)};
+        var body={model:opts.modelTier==='quick'?(cfg.quickModel||cfg.model):cfg.model,max_tokens:cfg.maxTokens||4000,stream:true,messages:toMessages(input)};
         var url=cfg.proxyUrl||'https://api.anthropic.com/v1/messages',headers={'content-type':'application/json'};
         if(!cfg.proxyUrl){headers['x-api-key']=cfg.apiKey;headers['anthropic-version']='2023-06-01';headers['anthropic-dangerous-direct-browser-access']='true';}
         var text='',trunc=false,failed=false;
