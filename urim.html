@@ -467,6 +467,18 @@ var URIM=(function(){
     else if(/레이터|수인|케모/.test(s))f.species={cat:'later'};
     var m=s.match(/(?:^|[^a-z])t\s?([0-4])(?![0-9])/i);if(m&&!/tb-/i.test(s.slice(Math.max(0,m.index-1),m.index+3)))f.T=+m[1];
     var bm=s.match(/에녹|두발|지하 정착지|캐러밴/);if(bm)f.base=bm[0]==='캐러밴'?'야발 캐러밴':bm[0];
+    if(/무감염|감염(되지|이) 안|결정화(가|는|되지)? ?(안|없)|건강한 몸/.test(s)){if(f.T==null)f.T=0;}
+    else if(/결정화|LCS|감염|결정이 (돋|자라|번지)|몸이 굳|에코|잔향|이능|능력자/i.test(s)){
+      f.noUC=true;
+      if(f.species&&f.species.cat==='uc')delete f.noUC;
+      else if(f.T==null){
+        if(/말기|다 굳|전신/.test(s))f.T=4;
+        else if(/잠복|초기|막 시작|이제 막|살짝/.test(s))f.T=1;
+        else if(/발현|돋/.test(s))f.T=2;
+        else if(/진행|꽤|많이|심한|심하게|심각/.test(s))f.Tcurve=[0,0,50,40,10];
+        else f.Tcurve=[0,30,42,22,6];
+      }
+    }
     return f;
   }
 
@@ -505,7 +517,7 @@ var URIM=(function(){
 
   function roll(prev,locks,force){
     prev=prev||{};locks=locks||{};force=force||{};
-    var o={},B=force.bias||null,L=function(k){return locks[k]&&prev[k]!==undefined;};
+    var o={},B=force.bias||null,PROP={lcs:'T',manifest:'G'},L=function(k){return!!locks[k]&&prev[PROP[k]||k]!==undefined;};
     // 출신
     if(L('origin')){o.origin=prev.origin;o.clan=prev.clan;o.base=prev.base;}
     else{
@@ -519,7 +531,13 @@ var URIM=(function(){
     // 종족
     if(L('species'))o.species=prev.species;
     else o.species=fillSpecies(force.species||(B&&B.species&&B.species.length&&!(o.origin==='SEIR'&&o.clan)&&Math.random()<.8?wpick(B.species):rollSpecies(o.origin,o.clan)));
-    if(L('echo')&&prev.echo&&!L('species')){for(var st=0;st<20&&o.species.cat==='uc';st++)o.species=fillSpecies(rollSpecies(o.origin,o.clan));if(o.species.cat==='uc')o.species=fillSpecies({cat:'mixed'});}
+    var keepT=(L('lcs')||L('manifest')||(L('echo')&&!prev.echo))&&prev.T!=null;
+    var prevUC=!!(prev.species&&prev.species.cat==='uc');
+    var needUC=prevUC&&(L('lcs')||(L('echo')&&!prev.echo));
+    var grp=function(sp){return sp.cat==='human'?'H':sp.cat==='uc'?'U':'L';};
+    if(!L('species')&&L('manifest')&&grp(o.species)!==grp(prev.species)){for(var sg=0;sg<30&&grp(o.species)!==grp(prev.species);sg++)o.species=fillSpecies(rollSpecies(o.origin,o.clan));if(grp(o.species)!==grp(prev.species))o.species=prev.species;}
+    if(!L('species')&&needUC)o.species=prev.species;
+    else if(!L('species')&&((L('echo')&&prev.echo)||keepT||force.noUC)){for(var st=0;st<20&&o.species.cat==='uc';st++)o.species=fillSpecies(rollSpecies(o.origin,o.clan));if(o.species.cat==='uc')o.species=fillSpecies({cat:'mixed'});}
     if(o.origin==='SEIR'){
       if(!o.clan){var match=null;Object.keys(CLANS).forEach(function(c){if(CLANS[c].sp&&o.species.cat==='later'&&CLANS[c].sp===o.species.lin)match=c;});o.clan=match||'떠돌이';}
       else if(CLANS[o.clan].sp&&!(o.species.cat==='later'&&o.species.lin===CLANS[o.clan].sp)&&!L('origin')){var m2=null;Object.keys(CLANS).forEach(function(c){if(CLANS[c].sp&&o.species.cat==='later'&&CLANS[c].sp===o.species.lin)m2=c;});o.clan=m2||'떠돌이';}
@@ -527,8 +545,8 @@ var URIM=(function(){
     // 결정화 / 명부
     if(o.species.cat==='uc')o.T=null;
     else if(L('lcs')&&prev.T!=null)o.T=prev.T;
-    else if((L('manifest')||(L('echo')&&prev.echo))&&prev.T!=null)o.T=prev.T;
-    else o.T=(force.T!=null)?force.T:(B&&B.T?wpick(B.T.map(function(v,i){return[i,v];})):rollT(o.species,o.origin));
+    else if((L('manifest')||L('echo'))&&prev.T!=null)o.T=prev.T;
+    else o.T=(force.T!=null)?force.T:force.Tcurve?wpick(force.Tcurve.map(function(v,i){return[i,v];})):(B&&B.T?wpick(B.T.map(function(v,i){return[i,v];})):rollT(o.species,o.origin));
     if(L('manifest')&&prev.G!=null){o.G=prev.G;o.C=prev.C;}else{var gc=rollGC(o.species);o.G=gc.G;o.C=gc.C;if(B&&B.C==='high')o.C=wpick([[4,55],[5,45]]);if(B&&B.C==='low')o.C=wpick([[1,55],[2,45]]);}
     if(o.species.cat==='human'&&(o.G<4))o.G=4;
     if(o.species.cat!=='human'&&o.species.cat!=='uc'&&o.G>3)o.G=3;
@@ -908,10 +926,13 @@ if(typeof module!=='undefined')module.exports=URIM;
     var ctl=new AbortController();setBusy(ctl);
     var prompt='너는 디스토피아 세계관 「잔광(AFTERGLOW)」의 자캐 키워드 추천 단말이다. 사용자가 원하는 캐릭터 느낌을 읽고, 아래 [선택지]에서 그 느낌에 가장 어울리는 값을 골라라. 사용자가 명시한 출신이나 종족이 있으면 반드시 따른다. 느낌과 상관없는 항목은 null로 둔다.\n'
       +'오직 JSON 객체 하나로 답한다. 형식: {"origin":"TB-03","clan":null,"base":null,"species":{"cat":"later","lin":"늑대"},"T":1,"echoType":"감응형","job":"궤도 정비조 수형자","faction":"무소속","secret":"…","traits":["냉정한","손재주 좋은","동생 바보"],"reason":"…"}\n'
-      +'- origin은 TB-01~TB-12, OPH, SEIR, NOD 중 하나. clan은 SEIR일 때만, base는 NOD일 때만.\n- echoType은 잔향 갈래. 능력과 관련된 느낌이 있을 때만 고르고, T가 0이거나 언섹션이면 null.\n- job은 선택지의 직업을 우선 쓰고, 꼭 필요하면 그 출신에 어울리는 직업을 20자 안으로 새로 써도 된다.\n- faction은 선택지에 나온 세력이나 \'무소속\'.\n- secret은 사용자의 느낌을 살린 비밀 한 문장(~다 체, 40자 안).\n- traits는 사용자의 느낌을 요약한 성격 키워드 2~4개.\n- reason은 왜 그렇게 골랐는지 해요체 한 문장.\n\n[선택지]\n'+E.guide()+'\n\n[사용자가 원하는 느낌]\n'+text;
+      +'- origin은 TB-01~TB-12, OPH, SEIR, NOD 중 하나. clan은 SEIR일 때만, base는 NOD일 때만.\n- 언섹션(uc)은 결정화 증후군에 걸리지 않는다. 사용자가 결정화, 감염, 잔향, 능력을 말하거나 사람·인간이라고 하면 species는 uc가 아니다. 결정화가 진행됐다고 하면 T는 2 이상, 말기면 4.\n- 사용자가 인간·사람이라고만 하면 human을 우선한다. 수인·레이터나 동물 혈통을 말하면 later.\n- echoType은 잔향 갈래. 능력과 관련된 느낌이 있을 때만 고르고, T가 0이거나 언섹션이면 null.\n- job은 선택지의 직업을 우선 쓰고, 꼭 필요하면 그 출신에 어울리는 직업을 20자 안으로 새로 써도 된다.\n- faction은 선택지에 나온 세력이나 \'무소속\'.\n- secret은 사용자의 느낌을 살린 비밀 한 문장(~다 체, 40자 안).\n- traits는 사용자의 느낌을 요약한 성격 키워드 2~4개.\n- reason은 왜 그렇게 골랐는지 해요체 한 문장.\n\n[선택지]\n'+E.guide()+'\n\n[사용자가 원하는 느낌]\n'+text;
     sample.json(prompt,{modelTier:'quick',cache:false,signal:ctl.signal}).then(function(r){
       setBusy(null);wait.remove();
       var f=E.sanitize(r);Object.keys(locks).forEach(function(k){f[k]=locks[k];});
+      if(f.noUC&&f.species&&f.species.cat==='uc')delete f.species;
+      if(locks.Tcurve&&f.T!=null&&!locks.Tcurve[f.T])delete f.T;
+      if(f.species&&f.species.cat==='uc'){delete f.T;delete f.Tcurve;delete f.echoType;}
       if(f.origin&&f.origin!=='SEIR')delete f.clan;if(f.origin&&f.origin!=='NOD')delete f.base;
       f.bias=vibe.bias;
       var traits=Array.isArray(r&&r.traits)?r.traits.filter(function(t){return typeof t==='string'&&t.trim();}).map(function(t){return t.trim().slice(0,14);}).slice(0,4):vibe.traits;
