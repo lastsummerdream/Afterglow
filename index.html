@@ -44,6 +44,12 @@ body{background:var(--ground);color:var(--text);font-family:var(--f-ui);font-siz
 button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer;text-align:left}
 :focus-visible{outline:1.5px solid var(--silver);outline-offset:2px}
 
+/* 페이지 배경 그림: 첫 낙하(기록), 이동도시 */
+#app-archive .view[data-view="root"]::before,#app-tebah .view[data-view="root"]::before{content:"";position:absolute;inset:0;background:center/cover no-repeat;opacity:.6;pointer-events:none;z-index:0}
+#app-archive .view[data-view="root"]::before{background-image:url(firstfall.jpg)}
+#app-tebah .view[data-view="root"]::before{background-image:url(tebah.jpg)}
+#app-archive .view[data-view="root"] .vscroll,#app-tebah .view[data-view="root"] .vscroll{z-index:1}
+
 /* stage & device */
 .stage{height:100%;display:flex;align-items:center;justify-content:center;gap:56px;padding-block:20px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));background:var(--ground)}
 .caption{max-width:260px;display:flex;flex-direction:column;gap:14px}
