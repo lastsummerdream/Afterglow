@@ -280,6 +280,66 @@ a.icon{text-decoration:none;color:inherit}
 .indicator::before{content:"";width:100%;height:5px;border-radius:3px;background:var(--text);opacity:.85}
 .screen:not(.in-app) .indicator{pointer-events:none}
 
+
+/* ===== PC: 맥북 화면 ===== */
+.topline,.status .mb,.wctl{display:none}
+@media (min-width:901px) and (hover:hover) and (pointer:fine){
+  .stage{flex-direction:column;gap:14px;padding-block:16px 34px}
+  .topline{display:flex;align-items:baseline;gap:14px;width:min(1240px,100%,calc((100vh - 120px) * 1.5));white-space:nowrap;overflow:hidden;min-width:0}
+  .tl-mark{font-family:var(--f-tech);font-size:13px;letter-spacing:.24em;color:var(--text)}
+  .tl-name{font-family:var(--f-serif);font-size:14px;color:var(--text);letter-spacing:.08em}
+  .tl-name span{margin-left:4px;color:var(--text-2)}
+  .tl-dot{width:4px;height:4px;border-radius:50%;background:var(--text-3);align-self:center;flex:none}
+  .tl-q{font-family:var(--f-serif);font-style:italic;font-size:13px;color:var(--text-2);overflow:hidden;text-overflow:ellipsis;min-width:0}
+  .tl-rec{margin-left:auto;font-family:var(--f-mono);font-size:10.5px;letter-spacing:.08em;color:var(--text-3);flex:none}
+
+  /* 맥북 본체 */
+  .phone{width:min(1240px,100%,calc((100vh - 120px) * 1.5));height:auto;aspect-ratio:16/10.5;border-radius:18px 18px 8px 8px;padding:13px 13px 16px;background:#0c0d0f;box-shadow:inset 0 0 0 1px rgba(255,255,255,.13),inset 0 0 0 3px #050506}
+  .phone::after{content:"";position:absolute;left:-7%;right:-7%;bottom:-20px;height:20px;border-radius:2px 2px 16px 16px;background:linear-gradient(180deg,#d6dbe0 0%,#a7aeb5 45%,#7d848b 100%);box-shadow:0 18px 40px rgba(0,0,0,.6)}
+  .phone::before{content:"";position:absolute;left:50%;bottom:-20px;width:15%;height:6px;transform:translateX(-50%);border-radius:0 0 8px 8px;background:#868d94;z-index:1}
+  .screen{border-radius:9px 9px 3px 3px}
+
+  /* 노치 */
+  .island,.island[aria-pressed="true"]{top:0;width:150px;height:24px;border-radius:0 0 10px 10px;padding:0 12px;justify-content:center;box-shadow:none}
+  .island[aria-pressed="true"]{width:176px}
+
+  /* 메뉴 막대 */
+  .status{height:28px;padding:0 14px;font-size:12.5px;font-weight:500;justify-content:flex-start;gap:14px;background:#0b0c0e;box-shadow:0 .5px 0 var(--sep)}
+  .status .mb{display:flex;align-items:center;gap:16px;order:0}
+  .status .mb b{font-family:var(--f-tech);font-weight:400;font-size:11px;letter-spacing:.14em}
+  .status .mb span{color:var(--text-2)}
+  .status .r{margin-left:auto;order:1}
+  .status #clock{order:2;font-variant-numeric:tabular-nums}
+
+  /* 바탕화면: 왼쪽 위젯, 오른쪽 아이콘 */
+  .pages{display:grid;grid-template-columns:minmax(300px,30%) 1fr;overflow:hidden;scroll-snap-type:none}
+  .page{flex:none;padding-top:46px;padding-left:22px;padding-right:22px;padding-bottom:110px;overflow-y:auto}
+  .page + .page .widgets{display:flex;justify-content:flex-end;margin-bottom:18px}
+  .page + .page .w-music{width:min(340px,100%)}
+  .grid{grid-template-columns:repeat(auto-fill,96px);justify-content:end;gap:18px 6px}
+  .squircle{width:58px}
+  .page-dots{display:none}
+  .screen.in-app .home{transform:none;opacity:1;filter:none}
+  .indicator{display:none}
+
+  /* 독 */
+  .dock{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);margin:0;padding:8px 12px;border-radius:20px;display:flex;gap:12px;z-index:3}
+  .dock .squircle{width:52px}
+
+  /* 앱은 창으로 열린다 */
+  .app{inset:8% 15% 10% 15%;border-radius:12px;box-shadow:0 30px 80px rgba(0,0,0,.65),0 0 0 1px rgba(255,255,255,.14)}
+  .app.shown{border-radius:12px}
+  .app.max{inset:28px 0 0 0;border-radius:0}
+  .wctl{display:flex;flex-direction:row;position:absolute;top:16px;left:16px;z-index:8;gap:8px;margin:0}
+  .wctl button{width:12px;height:12px;border-radius:50%;background:#3a3e44;box-shadow:inset 0 0 0 .5px rgba(0,0,0,.4)}
+  .wctl:hover .c{background:#ff5f57}.wctl:hover .m{background:#febc2e}.wctl:hover .x{background:#28c840}
+  .navbar{height:44px;padding:0 12px 0 84px;background:var(--panel);box-shadow:0 .5px 0 var(--sep)}
+  .view.scrolled .navbar{background:var(--panel)}
+  .ntitle{opacity:1;font-size:13.5px}
+  .back{font-size:14px}
+  .vin{padding-top:68px;max-width:760px;margin-inline:auto}
+  .view.frame iframe{top:44px;height:calc(100% - 44px)}
+}
 @media (prefers-reduced-motion:reduce){
   .app,.view,.home{transition:none!important}
   .wave b{animation:none;height:var(--h,60%)}
@@ -289,18 +349,20 @@ a.icon{text-decoration:none;color:inherit}
 <body>
 
 <div class="stage">
-  <aside class="caption" aria-label="소개">
-    <span class="rec">COVENANT ARCHIVE TERMINAL · AF 214</span>
-    <span class="cmark">AFTERGLOW</span>
-    <p class="cq">르네상스 시대의 조각상은 정말 사람이었다는 말이 있다.</p>
-    <p>잔광 세계관 열람 단말. 앱을 눌러 기록을 열고, 아래 막대를 눌러 홈으로 돌아간다.</p>
-  </aside>
+  <header class="topline">
+    <span class="tl-mark">AFTERGLOW</span>
+    <span class="tl-name">잔광 <span lang="zh-Hans">残光</span></span>
+    <span class="tl-dot" aria-hidden="true"></span>
+    <span class="tl-q">르네상스 시대의 조각상은 정말 사람이었다는 말이 있다.</span>
+    <span class="tl-rec">COVENANT ARCHIVE TERMINAL · AF 214</span>
+  </header>
 
   <div class="phone">
     <div class="screen" id="screen">
       <canvas id="wall" aria-hidden="true"></canvas>
       <button class="island" id="music" type="button" aria-label="배경음악 재생" aria-pressed="false"><svg class="inote" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 12.5V3.5l7-1.5v9"/><circle cx="4.5" cy="12.5" r="1.8"/><circle cx="11.5" cy="11" r="1.8"/></svg><span class="ibars" aria-hidden="true"><b style="--h:60%"></b><b style="--h:100%;animation-delay:-.4s"></b><b style="--h:70%;animation-delay:-.8s"></b><b style="--h:90%;animation-delay:-.2s"></b></span></button>
       <div class="status" aria-hidden="true">
+        <span class="mb"><svg viewBox="0 0 24 24" width="14" height="14"><circle cx="12" cy="12" r="8.5" fill="none" stroke="#f2f4f6" stroke-width="2"/><circle cx="12" cy="12" r="4.2" fill="none" stroke="#f2f4f6" stroke-width="2"/><circle cx="12" cy="12" r="1.4" fill="#f2f4f6"/></svg><b>AFTERGLOW</b><span>기록</span><span>보기</span><span>이동</span><span>창</span><span>도움말</span></span>
         <span id="clock">AF 214</span>
         <span class="r">
           <span class="carrier">COVENANT</span>
@@ -998,16 +1060,24 @@ a.icon{text-decoration:none;color:inherit}
     var root=views[0];setBack(root,'홈');root.classList.add('active');
     var sr=screen.getBoundingClientRect(),ox=sr.width/2,oy=sr.height/2;
     if(origin&&origin.getBoundingClientRect){var r=origin.getBoundingClientRect();ox=r.left+r.width/2-sr.left;oy=r.top+r.height/2-sr.top;}
-    app.style.transformOrigin=ox+'px '+oy+'px';
     if(id==='urim'){var fr=app.querySelector('iframe');if(fr&&!fr.getAttribute('src'))fr.setAttribute('src',fr.getAttribute('data-src'));}
-    app.hidden=false;app.classList.remove('shown');void app.offsetWidth;app.classList.add('shown');
+    app.hidden=false;app.classList.remove('shown');
+    app.style.transformOrigin=(ox-app.offsetLeft)+'px '+(oy-app.offsetTop)+'px';
+    void app.offsetWidth;app.classList.add('shown');
     screen.classList.add('in-app');
     cur={app:app,stack:[root],id:id};
     try{if(location.hash!=='#'+id)history.replaceState(null,'','#'+id);}catch(e){}
     setTimeout(function(){var b=root.querySelector('.back');if(b)b.focus({preventScroll:true});},reduce?0:300);
   }
+  [].forEach.call(document.querySelectorAll('.app'),function(app){
+    var tl=document.createElement('div');tl.className='wctl';
+    tl.innerHTML='<button type="button" class="c" aria-label="창 닫기"></button><button type="button" class="m" aria-label="창 내리기"></button><button type="button" class="x" aria-label="창 크게"></button>';
+    tl.addEventListener('click',function(e){var b=e.target.closest('button');if(!b)return;e.stopPropagation();if(b.classList.contains('x'))app.classList.toggle('max');else closeApp();});
+    app.appendChild(tl);
+  });
   function closeApp(instant){
     if(!cur)return;var app=cur.app;cur=null;
+    setTimeout(function(){app.classList.remove('max');},instant?0:460);
     app.classList.remove('shown');screen.classList.remove('in-app');
     var done=function(){app.hidden=true;};
     if(instant||reduce)done();else closing=setTimeout(done,440);
