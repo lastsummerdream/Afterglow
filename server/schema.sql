@@ -22,6 +22,7 @@ CREATE TABLE IF NOT EXISTS characters (
   name TEXT NOT NULL,
   schema_version INTEGER NOT NULL DEFAULT 1,
   data TEXT NOT NULL,               -- 캐릭터 정보 JSON (README 참고)
+  avatar TEXT,                      -- 프로필 사진 data URL (정사각형 320px, webp 또는 jpeg)
   created_at INTEGER NOT NULL,
   updated_at INTEGER NOT NULL
 );

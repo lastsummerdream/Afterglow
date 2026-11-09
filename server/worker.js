@@ -17,8 +17,8 @@
 //   PUT    /me/active           { id } 대표 캐릭터 지정
 //   POST   /me/password         { password, newPassword }
 //   DELETE /me                  { password } 계정 삭제
-//   POST   /characters          { data } → { character }
-//   PUT    /characters/:id      { data } → { character }
+//   POST   /characters          { data, avatar? } → { character }
+//   PUT    /characters/:id      { data, avatar? } → { character }  (avatar: data URL, null이면 삭제, 생략하면 그대로)
 //   DELETE /characters/:id
 //
 // 캐릭터 정보(data)의 형식은 아래 CHARACTER_SCHEMA를 따른다. 나중에 롤플레잉·전투
@@ -32,6 +32,7 @@ const SCHEMA_VERSION = 1;
 const MAX_CHARACTERS = 1;
 const SESSION_DAYS = 30;
 const PBKDF2_ITER = 100000;
+const AVATAR_MAX = 200000; // 프로필 사진 data URL 최대 길이 (정사각형, 약 150KB)
 
 const ORIGINS = ["TB-01","TB-02","TB-03","TB-04","TB-05","TB-06","TB-07","TB-08","TB-09","TB-10","TB-11","TB-12","OPH","SEIR","NOD"];
 const SPECIES = ["human","later","mixed","uc"];
@@ -117,10 +118,12 @@ export default {
         const b = await body(request);
         const v = validateCharacter(b && b.data);
         if (v.error) return json({ error: "invalid_character", field: v.field, reason: v.error }, 400, cors);
+        const avatar = parseAvatar(b.avatar);
+        if (avatar === false) return json({ error: "bad_avatar" }, 400, cors);
         const id = randomId();
         const now = Date.now();
-        await env.DB.prepare("INSERT INTO characters (id, user_id, name, schema_version, data, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)")
-          .bind(id, user.id, v.data.name, SCHEMA_VERSION, JSON.stringify(v.data), now, now).run();
+        await env.DB.prepare("INSERT INTO characters (id, user_id, name, schema_version, data, avatar, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)")
+          .bind(id, user.id, v.data.name, SCHEMA_VERSION, JSON.stringify(v.data), avatar || null, now, now).run();
         if (!user.active_character_id) await env.DB.prepare("UPDATE users SET active_character_id = ? WHERE id = ?").bind(id, user.id).run();
         return json(await mePayload(env, { ...user, active_character_id: user.active_character_id || id }, id), 200, cors);
       }
@@ -129,8 +132,16 @@ export default {
         const b = await body(request);
         const v = validateCharacter(b && b.data);
         if (v.error) return json({ error: "invalid_character", field: v.field, reason: v.error }, 400, cors);
-        const r = await env.DB.prepare("UPDATE characters SET name = ?, schema_version = ?, data = ?, updated_at = ? WHERE id = ? AND user_id = ?")
-          .bind(v.data.name, SCHEMA_VERSION, JSON.stringify(v.data), Date.now(), m[1], user.id).run();
+        let r;
+        if (b.avatar === undefined) {
+          r = await env.DB.prepare("UPDATE characters SET name = ?, schema_version = ?, data = ?, updated_at = ? WHERE id = ? AND user_id = ?")
+            .bind(v.data.name, SCHEMA_VERSION, JSON.stringify(v.data), Date.now(), m[1], user.id).run();
+        } else {
+          const avatar = parseAvatar(b.avatar);
+          if (avatar === false) return json({ error: "bad_avatar" }, 400, cors);
+          r = await env.DB.prepare("UPDATE characters SET name = ?, schema_version = ?, data = ?, avatar = ?, updated_at = ? WHERE id = ? AND user_id = ?")
+            .bind(v.data.name, SCHEMA_VERSION, JSON.stringify(v.data), avatar, Date.now(), m[1], user.id).run();
+        }
         if (!r.meta || !r.meta.changes) return json({ error: "not_found" }, 404, cors);
         return json(await mePayload(env, user, m[1]), 200, cors);
       }
@@ -238,10 +249,11 @@ async function newSession(env, userId) {
 }
 
 async function mePayload(env, user, touchedId) {
-  const rows = await env.DB.prepare("SELECT id, name, schema_version, data, created_at, updated_at FROM characters WHERE user_id = ? ORDER BY created_at").bind(user.id).all();
+  const rows = await env.DB.prepare("SELECT id, name, schema_version, data, avatar, created_at, updated_at FROM characters WHERE user_id = ? ORDER BY created_at").bind(user.id).all();
   const characters = (rows.results || []).map(r => ({
     id: r.id, name: r.name, schemaVersion: r.schema_version, createdAt: r.created_at, updatedAt: r.updated_at,
     data: safeParse(r.data),
+    avatar: r.avatar || null,
   }));
   const out = {
     user: { id: user.id, username: user.username, activeCharacterId: user.active_character_id || null, createdAt: user.created_at },
@@ -292,6 +304,15 @@ function validateCharacter(d) {
   }
   if (out.species === "later" && !out.lineage) return { error: "required", field: "lineage" };
   return { data: out };
+}
+
+/* ---------------- 프로필 사진 ---------------- */
+// null이면 지우고, 정사각형으로 잘라 줄인 이미지의 data URL이면 저장한다. 그 밖의 값은 false.
+function parseAvatar(a) {
+  if (a === null || a === undefined || a === "") return null;
+  if (typeof a !== "string" || a.length > AVATAR_MAX) return false;
+  if (!/^data:image\/(webp|jpeg|png);base64,[A-Za-z0-9+\/]+={0,2}$/.test(a)) return false;
+  return a;
 }
 
 /* ---------------- 비밀번호 ---------------- */

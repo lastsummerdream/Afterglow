@@ -28,8 +28,8 @@
 | `PUT /me/active` `{id}` | URIM 대화 캐릭터 지정 |
 | `POST /me/password` `{password, newPassword}` | 비밀번호 변경 |
 | `DELETE /me` `{password}` | 계정과 캐릭터 삭제 |
-| `POST /characters` `{data}` | 캐릭터 등록 (이미 있으면 `too_many_characters`) |
-| `PUT /characters/:id` `{data}` | 캐릭터 수정 |
+| `POST /characters` `{data, avatar?}` | 캐릭터 등록 (이미 있으면 `too_many_characters`) |
+| `PUT /characters/:id` `{data, avatar?}` | 캐릭터 수정. `avatar`를 생략하면 사진은 그대로, `null`이면 삭제 |
 | `DELETE /characters/:id` | 캐릭터 삭제 |
 
 로그인이 필요한 요청은 `Authorization: Bearer <token>` 헤더를 붙인다.
@@ -49,5 +49,16 @@
 | `echoAbility` | 잔향 능력 설명 |
 | `job`, `faction` | 직업, 소속 |
 | `appearance`, `personality`, `background`, `secret`, `notes` | 서술 |
+
+### 프로필 사진
+
+캐릭터마다 `avatar` 하나. 사이트에서 사진을 고르면 바로 정사각형으로 잘라 320×320으로 줄인 뒤
+`data:image/webp;base64,…`(지원하지 않는 브라우저는 jpeg) 형태로 저장한다. 최대 200,000자.
+`GET /me`의 각 캐릭터에 `avatar`로 함께 온다.
+
+### URIM과 제4의 벽
+
+로그인한 상태로 URIM과 대화하면 URIM은 상대를 세계관 속 그 캐릭터로 대한다. 현실, AI, 제작자, 롤플레이 자체처럼
+세계관 밖을 묻는 질문에는 'ACCESS DENIED · 접근 차단' 카드만 보여 준다.
 
 형식을 바꿀 때는 `server/worker.js`의 `SCHEMA_VERSION`을 올리고, 저장된 `schema_version`을 보고 옛 기록을 옮긴다.
