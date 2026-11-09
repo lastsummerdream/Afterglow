@@ -467,6 +467,7 @@ var URIM=(function(){
     else if(/레이터|수인|케모/.test(s))f.species={cat:'later'};
     var m=s.match(/(?:^|[^a-z])t\s?([0-4])(?![0-9])/i);if(m&&!/tb-/i.test(s.slice(Math.max(0,m.index-1),m.index+3)))f.T=+m[1];
     var bm=s.match(/에녹|두발|지하 정착지|캐러밴/);if(bm)f.base=bm[0]==='캐러밴'?'야발 캐러밴':bm[0];
+    if(/사람/.test(s)&&!f.species)f.noUC=true;
     if(/무감염|감염(되지|이) 안|결정화(가|는|되지)? ?(안|없)|건강한 몸/.test(s)){if(f.T==null)f.T=0;}
     else if(/결정화|LCS|감염|결정이 (돋|자라|번지)|몸이 굳|에코|잔향|이능|능력자/i.test(s)){
       f.noUC=true;
