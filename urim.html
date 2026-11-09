@@ -1,0 +1,1052 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="잔광(AFTERGLOW) 세계관 설정 검색과 자작 캐릭터 키워드 추천 단말.">
+<meta name="theme-color" content="#000000">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="URIM">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<title>URIM 잔광 기록 단말</title>
+<style>html{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}</style>
+<script>
+/* =====================================================================
+   Claude API 연결 설정
+   ---------------------------------------------------------------------
+   비워 두면 AI 없이 기록 검색과 키워드 뽑기만 동작합니다.
+   둘 중 하나만 채우세요. 자세한 방법은 README.md를 보세요.
+
+   [방법 A · 권장] proxyUrl
+     API 키를 서버(예: Cloudflare Worker)에 숨기고 그 주소만 적습니다.
+     함께 들어 있는 worker.js를 그대로 배포하면 됩니다.
+
+   [방법 B · 개인 테스트용] apiKey
+     키를 여기에 직접 적습니다. 이 파일을 공개 저장소(GitHub Pages)에
+     올리면 누구나 키를 볼 수 있으니, 내 컴퓨터에서만 쓰세요.
+   ===================================================================== */
+window.URIM_CONFIG = {
+  proxyUrl: "",                    // 예: "https://urim-proxy.아이디.workers.dev"
+  apiKey: "",                      // 예: "sk-ant-..."  (공개 저장소에 올리지 말 것)
+  model: "claude-sonnet-5-5",      // 답변과 캐릭터 콘셉트에 쓰는 모델
+  quickModel: "claude-haiku-5-5",  // 느낌 읽기, 짧은 답에 쓰는 빠른 모델
+  maxTokens: 1600                  // 한 번에 받을 최대 답변 길이
+};
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Michroma&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=Noto+Serif+KR:wght@400;600&display=swap">
+<style>
+/* Layout: 코버넌트 기록 질의 단말 — 상단 헤더, 가운데 대화 기록(760px 열), 하단 고정 입력부. 잔광 단말 사이트와 같은 검정·실버 톤 */
+:root{
+  --void:#000000;
+  --panel:#111316;
+  --panel-2:#181a1e;
+  --glass:rgba(232,238,244,.075);
+  --glass-hi:rgba(232,238,244,.14);
+  --sep:rgba(232,238,244,.10);
+  --text:#f2f4f6;
+  --text-2:#9aa1a9;
+  --text-3:#646b73;
+  --silver:#dfe4e9;
+  --ink:#0b0c0e;
+  --f-ui:"IBM Plex Sans KR",-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  --f-tech:"Michroma","Eurostile","Arial Black",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+  --f-serif:"Noto Serif KR","AppleMyungjo",serif;
+  --col:760px;
+  color-scheme:dark;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+[hidden]{display:none!important}
+html,body{height:100%;background:var(--void)}
+body{margin:0;color:var(--text);font-family:var(--f-ui);font-size:15px;line-height:1.6;-webkit-font-smoothing:antialiased;overflow:hidden}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
+:focus-visible{outline:1.5px solid var(--silver);outline-offset:2px}
+.inner{max-width:var(--col);margin-inline:auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+
+.app{height:100%;display:grid;grid-template-rows:auto minmax(0,1fr) auto;grid-template-columns:minmax(0,1fr)}
+.app > *{min-width:0}
+
+/* header */
+.top{border-bottom:1px solid var(--sep);background:var(--void)}
+.top .inner{display:flex;align-items:center;gap:12px;padding-block:12px}
+.logo{flex:none;width:38px;height:38px;border-radius:28%;display:grid;place-items:center;background:linear-gradient(150deg,#30353b 0%,#15181b 55%,#0a0b0d 100%);box-shadow:inset 0 1px 0 rgba(255,255,255,.22),0 6px 16px rgba(0,0,0,.5)}
+.logo svg,.av svg{width:58%;height:58%;fill:none;stroke:var(--silver);stroke-width:1.6}
+.brand{flex:1;min-width:0}
+.brand b{display:block;font-family:var(--f-tech);font-weight:400;font-size:15px;letter-spacing:.2em}
+.brand span{display:block;font-size:12px;color:var(--text-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.aitog{flex:none;display:flex;align-items:center;gap:8px;padding:6px 6px 6px 12px;border-radius:999px;background:var(--glass);font-size:12.5px;color:var(--text-2)}
+.aitog .sw{width:34px;height:20px;border-radius:999px;background:var(--glass-hi);position:relative;transition:background .2s}
+.aitog .sw::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:var(--text-2);transition:transform .2s,background .2s}
+.aitog[aria-pressed="true"]{color:var(--text)}
+.aitog[aria-pressed="true"] .sw{background:var(--silver)}
+.aitog[aria-pressed="true"] .sw::after{transform:translateX(14px);background:var(--ink)}
+
+/* log */
+.log{overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:var(--glass-hi) transparent}
+.log .inner{padding-block:24px 28px;display:flex;flex-direction:column;gap:22px}
+.msg{display:flex;gap:10px;align-items:flex-start;min-width:0}
+.msg.me{justify-content:flex-end}
+.av{flex:none;width:28px;height:28px;border-radius:28%;display:grid;place-items:center;background:linear-gradient(150deg,#30353b 0%,#15181b 55%,#0a0b0d 100%);box-shadow:inset 0 1px 0 rgba(255,255,255,.2);margin-top:2px}
+.body{flex:1;min-width:0;display:flex;flex-direction:column;gap:12px}
+.me .bubble{max-width:82%;background:var(--silver);color:var(--ink);padding:9px 14px;border-radius:18px 18px 4px 18px;font-weight:500;white-space:pre-wrap;word-break:break-word}
+.say{white-space:normal;word-break:break-word}
+.say p{margin:0 0 8px}
+.say p:last-child{margin-bottom:0}
+.say ul{margin:4px 0 8px;padding-left:18px}
+.say li{margin:2px 0}
+.say strong{font-weight:600;color:var(--text)}
+.say .dim{color:var(--text-2)}
+.say code{font-family:var(--f-mono);font-size:13px;background:var(--glass);padding:1px 6px;border-radius:5px}
+.thinking{color:var(--text-2);font-size:14px;display:flex;align-items:center;gap:8px}
+.thinking i{width:6px;height:6px;border-radius:50%;background:var(--silver);animation:pulse 1.2s ease-in-out infinite}
+.thinking i:nth-child(2){animation-delay:.2s}.thinking i:nth-child(3){animation-delay:.4s}
+@keyframes pulse{0%,100%{opacity:.25}50%{opacity:1}}
+.note{font-size:12.5px;color:var(--text-3)}
+.ai-tag{font-family:var(--f-mono);font-size:10.5px;letter-spacing:.1em;color:var(--text-3)}
+.refs-h{font-family:var(--f-mono);font-size:11px;letter-spacing:.1em;color:var(--text-3);text-transform:uppercase;margin-top:2px}
+
+/* chips */
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{padding:5px 11px;border-radius:999px;background:var(--glass);font-size:13px;color:var(--text);transition:background .15s;white-space:nowrap}
+.chip:hover{background:var(--glass-hi)}
+.chip.go{background:var(--silver);color:var(--ink);font-weight:500}
+.chip.hash{font-family:var(--f-mono);font-size:12px;color:var(--text-2)}
+
+/* result card */
+.rcard{background:var(--panel);border-radius:16px;padding:14px 16px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.rsec{font-family:var(--f-mono);font-size:11px;color:var(--text-3);letter-spacing:.04em}
+.rtitle{font-weight:600;font-size:16.5px;line-height:1.35}
+.rtitle small{font-family:var(--f-tech);font-weight:400;font-size:9.5px;letter-spacing:.16em;color:var(--text-2);margin-left:8px;vertical-align:2px}
+.rtext{font-size:14.5px;color:var(--text);margin:0}
+.rtext.clip{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+mark{background:rgba(223,228,233,.24);color:var(--text);border-radius:3px;padding:0 2px}
+.more{align-self:flex-start;font-size:12.5px;color:var(--text-2)}
+.more:hover{color:var(--text)}
+
+/* OC card */
+.oc{background:var(--panel);border-radius:18px;overflow:hidden;min-width:0}
+.ochead{background:var(--silver);color:var(--ink);padding:12px 16px;display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.ochead b{font-family:var(--f-tech);font-weight:400;font-size:11px;letter-spacing:.18em}
+.ochead span{font-family:var(--f-mono);font-size:11px}
+.ocrows{display:flex;flex-direction:column}
+.ocrow{display:grid;grid-template-columns:76px minmax(0,1fr) 34px;gap:10px;align-items:start;padding:11px 10px 11px 16px;position:relative}
+.ocrow + .ocrow::before{content:"";position:absolute;top:0;left:16px;right:0;height:.5px;background:var(--sep)}
+.ocrow .lab{font-family:var(--f-mono);font-size:11px;color:var(--text-3);letter-spacing:.06em;padding-top:3px}
+.ocrow .val b{display:block;font-weight:500;font-size:15px;line-height:1.45}
+.ocrow .val span{display:block;font-size:12.5px;color:var(--text-2);line-height:1.5;margin-top:1px}
+.ocrow.locked{background:rgba(223,228,233,.05)}
+.lock{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;color:var(--text-3)}
+.lock:hover{background:var(--glass)}
+.lock svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.lock[aria-pressed="true"]{color:var(--ink);background:var(--silver)}
+.lock .closed,.lock[aria-pressed="true"] .open{display:none}
+.lock[aria-pressed="true"] .closed{display:block}
+.ocfoot{padding:12px 16px 14px;border-top:.5px solid var(--sep);display:flex;flex-direction:column;gap:12px}
+.ocact{display:flex;flex-wrap:wrap;gap:8px}
+.btn{padding:8px 14px;border-radius:11px;background:var(--glass-hi);font-size:13.5px;font-weight:500;display:inline-flex;align-items:center;gap:6px}
+.btn:hover{background:rgba(232,238,244,.2)}
+.btn.pri{background:var(--silver);color:var(--ink)}
+.btn.pri:hover{background:#fff}
+.btn svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.btn:disabled{opacity:.45;cursor:default}
+.ocnote{font-size:12px;color:var(--text-3)}
+.plain{font-family:var(--f-mono);font-size:12px;white-space:pre-wrap;background:var(--void);border-radius:10px;padding:10px;user-select:all;-webkit-user-select:all}
+.concept{border-top:.5px solid var(--sep);padding:14px 16px}
+.vibe{padding:12px 16px;border-bottom:.5px solid var(--sep);display:flex;flex-direction:column;gap:8px}
+.vibe .vl{font-family:var(--f-mono);font-size:11px;color:var(--text-3);letter-spacing:.06em}
+.vibe .vt{display:flex;flex-wrap:wrap;gap:6px}
+.vibe .vt span{padding:3px 10px;border-radius:999px;background:var(--glass-hi);font-size:12.5px}
+.vibe .one{font-family:var(--f-serif);font-size:15px;line-height:1.6;color:var(--text)}
+
+/* calc card */
+.calc{background:var(--panel);border-radius:16px;padding:14px 16px;display:flex;flex-direction:column;gap:6px}
+.calc .eq{font-family:var(--f-mono);font-size:15px}
+.calc .big{font-family:var(--f-tech);font-size:30px;line-height:1.2}
+
+/* dock */
+.dock{border-top:1px solid var(--sep);background:var(--void)}
+.dock .inner{padding-block:10px max(12px,env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:10px}
+.sugg{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin-inline:calc(-1 * max(16px,env(safe-area-inset-left,0px)));padding-inline:max(16px,env(safe-area-inset-left,0px))}
+.sugg::-webkit-scrollbar{display:none}
+.composer{display:flex;align-items:flex-end;gap:8px;background:var(--panel);border-radius:22px;padding:6px 6px 6px 16px}
+.composer textarea{flex:1;min-width:0;resize:none;border:0;outline:0;background:transparent;color:var(--text);font:inherit;font-size:16px;line-height:1.5;padding:7px 0;max-height:140px}
+.composer textarea::placeholder{color:var(--text-3)}
+.send{flex:none;width:36px;height:36px;border-radius:50%;background:var(--silver);display:grid;place-items:center}
+.send svg{width:18px;height:18px;fill:none;stroke:var(--ink);stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.send:disabled{background:var(--glass-hi)}
+.send:disabled svg{stroke:var(--text-3)}
+.send .stop{display:none}
+.send.busy .arrow{display:none}
+.send.busy .stop{display:block;fill:var(--ink);stroke:none}
+.send.busy:disabled{background:var(--silver)}
+
+.toast{position:fixed;left:50%;bottom:calc(120px + env(safe-area-inset-bottom,0px));transform:translateX(-50%) translateY(10px);background:var(--silver);color:var(--ink);padding:8px 14px;border-radius:12px;font-size:13.5px;font-weight:500;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:20;max-width:calc(100% - 32px)}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+
+@media (max-width:540px){
+  .ocrow{grid-template-columns:62px minmax(0,1fr) 32px;padding-left:14px}
+  .me .bubble{max-width:88%}
+  .aitog .lbl{display:none}
+}
+@media (prefers-reduced-motion:reduce){.thinking i{animation:none;opacity:.7}}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <header class="top">
+    <div class="inner">
+      <span class="logo" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.4"/><circle cx="12" cy="12" r="1.3" fill="#dfe4e9" stroke="none"/></svg></span>
+      <div class="brand"><b>URIM</b><span>잔광 기록 질의 단말 · 설정 검색과 자캐 키워드</span></div>
+      <button class="aitog" id="aitog" type="button" aria-pressed="false" hidden><span class="lbl">AI 해설</span><span class="sw" aria-hidden="true"></span></button>
+    </div>
+  </header>
+
+  <main class="log" id="log" aria-live="polite">
+    <div class="inner" id="thread"></div>
+  </main>
+
+  <footer class="dock">
+    <div class="inner">
+      <div class="sugg" id="sugg" aria-label="추천 질문"></div>
+      <form class="composer" id="form">
+        <textarea id="q" rows="1" placeholder="키워드나 질문을 입력하세요" aria-label="질문 입력" enterkeyhint="send"></textarea>
+        <button class="send" id="send" type="submit" aria-label="보내기" disabled><svg class="arrow" viewBox="0 0 24 24"><path d="M12 19V5M5.5 11.5 12 5l6.5 6.5"/></svg><svg class="stop" viewBox="0 0 24 24"><rect x="7" y="7" width="10" height="10" rx="2"/></svg></button>
+      </form>
+    </div>
+  </footer>
+</div>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+/* ================= ENGINE-START ================= */
+var URIM=(function(){
+  /* ---------- 설정 기록 (잔광 본문) ---------- */
+  var RAW=[
+  ['overview','개요','잔광','AFTERGLOW','잔광,애프터글로우,세계관,개요,AF 214','첫 낙하 이후 214년. 우리는 그것을 축복이라 불렀다. 그것이 우리를 무엇이라 부르는지는 아직 모른다. 르네상스 시대의 조각상은 정말 사람이었다는 말이 있다.'],
+  ['oldworld','기본 설정 › 첫 낙하','구세계','BEFORE FALL','구세계,퍼머먼트 링,Firmament Ring,네트워크 사회,기상 제어,에너지 수집,낙하 이전','낙하 이전의 문명은 행성 전체를 하나로 묶은 단일 네트워크 사회였다. 그 정점에 궤도를 감싸는 거대 구조물 퍼머먼트 링(Firmament Ring)이 있었으며, 공식 용도는 기상 제어와 에너지 수집이었다.'],
+  ['fall','기본 설정 › 첫 낙하','첫 낙하','THE FIRST FALL','낙하,첫 낙하,AF 0,40일,폭풍,하늘이 갈라짐,재앙,링 붕괴','AF 0년, 퍼머먼트 링이 붕괴했다. 하늘에 금이 가듯 빛줄기가 번졌고, 그 틈으로 잔광석이 쏟아지기 시작했다. 첫 폭풍은 40일 동안 이어졌고, 구세계 인구의 대부분이 사라졌다. 코버넌트 기록보관소(열람 등급 3 이상)에는 이렇게 남아 있다. AF 0년. 하늘이 갈라졌다. 이후 40일간 폭풍은 멈추지 않았다.'],
+  ['tebah01','기본 설정 › 첫 낙하','테바-01의 탄생','AFTER THE FALL','테바-01,최초의 이동 도시,탑승 명부,굴착 플랫폼,생존자','생존자 일부가 거대 굴착 플랫폼을 개조해 최초의 이동 도시 테바-01을 만들었다. 탑승 인원은 한정돼 있었고, 누구를 태울지는 그 자리에서 결정되었다. 이때 만들어진 탑승 명부가 지금의 등급 제도의 시작이 되었다.'],
+  ['crater','기본 설정 › 첫 낙하','충돌구','CRATER','충돌구,제1기관,낙하 지점','가장 큰 낙하 지점에는 지름 수백 킬로미터의 충돌구가 생겼다. 그 바닥에서 제1기관이 발견됐고, 그 위에 오파님 성좌가 세워지며 제1기관으로 입지를 공고히 다지게 되었다.',{origin:'OPH'}],
+  ['luminite','기본 설정','잔광석','LUMINITE','잔광석,광석,결정,광석 폭풍,에너지,채굴,수거 드론,루미나이트','첫 낙하 이후 주기적인 광석 폭풍과 함께 쏟아지는 결정체다. 에너지 밀도는 핵분열의 수십 배에 달한다. 이를 채굴하여 업으로 삼는 사람도 있어, 폭풍 다음 날 새벽이면 수거 드론과 맨손의 사람들이 같은 들판으로 나간다. 잔광석의 출현으로 숨붙이와 수인 같은 많은 변화가 생겼고, 현재 대부분의 삶이 잔광석에서 추출한 에너지를 기반으로 돌아간다.'],
+  ['lcs','기본 설정','결정화 증후군 (LCS)','LITHIC CONVERSION SYNDROME','결정화,결정화 증후군,LCS,감염,감염자,의체,돌아보지 마라,격언,수명','광석에 장기간 노출되면 생기는 비가역적 조직 결정화다. 의체 이식률이 높을수록 진행이 빨라진다. 전염성은 없으나 개인에 따라 병의 진행 정도는 천차만별이다. 대부분 40~50세를 넘기지 못하고 죽는 것으로 알려져 있다. 하층에는 "폭풍이 지나간 쪽은 돌아보지 마라"라는 격언이 있다.'],
+  ['lcs-stage','결정화','LCS 단계 (T 지수)','TAINT INDEX','T0,T1,T2,T3,T4,무감염,잠복,발현,진행,말기,오염 지수,단계,회로 문양','T0 무감염: 이상 없음. T1 잠복: 피부 아래 미세 결정. 정밀 검진으로만 발견된다. T2 발현: 피부 표면에 결정이 돋는다. 옷이나 의체로 숨길 수 있다. T3 진행: 손발 일부가 굳어 움직임이 둔해진다. T4 말기: 전신 결정화가 진행되고, 신호가 들리기 시작하며 몸 곳곳에 전자 회로와 같은 문양이 생긴다.'],
+  ['tebah','기본 설정','테바급 이동도시','TEBAH-CLASS MOBILE ARCOLOGY','테바,이동도시,이동 도시,코버넌트 홀딩스,Covenant,코버넌트,협정체,시날 스파이어,인공 하늘,궤도,열두 도시','궤도 트랙 위로 대륙을 횡단하는 자급형 거대 도시. 운영사는 코버넌트 홀딩스(Covenant Holdings)다. 거주 구역은 유전 등급, 신용 등급, 오염 등급을 합산한 명부 점수로 배정된다. 최상층 시날 스파이어는 폭풍 구름보다 높다. 도시마다 구성과 특색이 다르며, 선체 내부에는 인공 하늘을 구축해 살기도 한다. 협정체는 열두 도시(TB-01~TB-12)로 이루어져 있다.'],
+  ['decks','이동도시','층별 환경','DECKS','시날,상층,중층,하층,검역,검역 갑판,화물칸,층,갑판,진동,배급,인공 하늘','시날: 진짜 햇빛, 진짜 흙, 진동 없음. 상층: 투명 천장 너머의 흐린 진짜 하늘, 깨끗한 공기. 중층: 인공 하늘 아래 빽빽한 공동주택, 공기 질은 돈에 달려 있음. 하층: 변하지 않는 조명, 배급 식사와 배급 샤워, 높은 분진. 검역: 격리된 공기, 감시 카메라, 관리 대상으로서의 삶.'],
+  ['uc','기본 설정','숨붙이 · 언섹션','UNSANCTIONED COGNITION','언섹션,숨붙이,UC,비인가 인지 개체,Breathers,각성,자유 의지,폐기,초기화','기업 분류명은 비인가 인지 개체다. 대중들은 UC, 언섹션 정도로 부른다. 광석 코어 안드로이드에서 자발적으로 의식이 생겨난 사례를 말한다. 일반 안드로이드와 크게 다르지 않지만, 단 한 가지 차이점은 자유 의지를 가지고 있다는 것이다. 발견되면 회수 후 초기화하는 것이 원칙이지만, 대부분은 발견 즉시 폐기처리 당한다. 하층에서는 이들을 숨붙이(Breathers)라 부른다. 뜬소문으로는 하층 어딘가에 언섹션들이 모여 사는 사회가 있다고 한다.',{species:'uc'}],
+  ['later','기본 설정','수인 · 레이터','CLASS-L PASSENGERS','레이터,수인,Later,Class-L,돌연변이,혈통,케모미미,귀와 꼬리','여러 수인 혈통이다. 도시 탑승 기록상 분류 코드는 L, 즉 Later boarded이며 수인이라는 말보다는 레이터라는 말로 통칭한다. 잔광석이 원인이 되어 발생한 돌연변이 종족이기 때문에 LCS에 대한 저항성이 높다. 근력 및 체력도 더 뛰어나, 잔광석 채굴 중 가장 많은 머릿수를 차지하는 건 레이터다.',{species:'later'}],
+  ['wild','기본 설정','광야','THE WILDERNESS','광야,폭풍 지대,추방,개척파,탈환파,탈주자,도시 밖','도시 궤도 밖의 폭풍 지대다. 추방된 감염자, 언섹션, 최하등급 탈주자들이 정착해 살고 있다. 새로운 땅을 항상 찾아다니는 개척파와 도시를 되찾길 원하는 탈환파로 분열되어 있다.',{origin:'NOD'}],
+  ['signal','기본 설정','신호','THE SIGNAL','신호,시그널,주파수,환청,기밀,신의 음성','LCS 말기 환자와 언섹션에게서 동일한 주파수 패턴의 환청이 보고되고 있다. 코버넌트는 이 데이터를 기밀로 분류한다. 오파님 성좌는 신호를 신의 음성이라 가르치고 매일 해 질 녘 침묵 기도로 신호를 듣는다. 청각이 발달한 레이터 혈통 일부도 숨붙이의 공명과 신호를 들을 수 있다.'],
+  ['manifest','명부 체계','명부 체계','THE MANIFEST','명부,명부 점수,심사일,명부 코드,등급,매니페스트,계산','테바-01의 탑승 명부에서 시작된 시민 등급 제도다. 협정체의 모든 거주자는 명부 코드를 부여받고, 도시가 정차할 때마다 열리는 심사일에 재평가된다. 명부 점수 = G(혈통) + C(신용) − T(오염).'],
+  ['index','명부 체계','세 가지 지수','G · C · T','혈통 지수,신용 지수,오염 지수,Genealogy,Credit,Taint,지수','G 혈통 지수(1~5): 출생 시 부모에게서 물려받고 평생 거의 바뀌지 않는다. 순수 인간은 4~5, 수인과 혼혈은 혈통에 따라 1~3. C 신용 지수(1~5): 재산, 지분, 고용 계약으로 정해진다. 유일하게 노력으로 올릴 수 있는 지수이며 해고나 계약 만료로 한순간에 떨어질 수 있다. T 오염 지수(0~4): 결정화 증후군 진행 단계. 높을수록 불리하고, 의체 이식률이 높을수록 빨리 올라간다.'],
+  ['tiers','명부 체계','거주 등급','TIERS','Tier 0,Tier 1,Tier 2,Tier 3,Tier 4,티어,거주 등급,하선,등급표','9~10점 Tier 0 시날 스파이어: 이사회, 대주주. 7~8점 Tier 1 상층 갑판: 관리직, 기업 엘리트. 5~6점 Tier 2 중층 갑판: 기술자, 숙련 의체 노동자. 3~4점 Tier 3 하층 화물칸: 단순 노동자. 1~2점 Tier 4 검역 갑판: 초기 감염자, 저내성 수인. 0점 이하 하선: 광야, 명부에서 삭제된 자.'],
+  ['rules','명부 체계','강제 규정','RULES','강제 규정,자동 하선,검역 배정,상한','T2 이상은 점수와 상관없이 검역 갑판으로 배정된다. T3 이상은 다음 정차지에서 자동 하선된다. Class-L(레이터)은 점수가 아무리 높아도 Tier 2가 상한이다.'],
+  ['classes','명부 체계','특수 분류','CLASSES','Class-L,Class-U,Class-O,Class-X,U-플래그,X 표식,특수 분류,클래스','Class-L: 수인, 레이터. Later boarded. Class-U: 안드로이드. 사람이 아니라 자산으로 등록된다. 각성이 확인되면 U-플래그가 붙고 회수 대상이 된다. Class-O: 오파님 성좌의 인증을 받은 성직자와 외교관. 등급 심사에서 면제된다. Class-X: 하선 처분자. 명부 코드는 삭제되지만 목 뒤의 식별 칩에 X 표식이 영구히 남는다.'],
+  ['habitat','거주 환경','거주 환경','HABITAT','거주 환경,사는 방식,인구 밀도,생활','광석 폭풍이 주기적으로 대지를 휩쓸기 때문에 사람이 사는 방식은 셋으로 나뉜다. 움직이며 피하거나, 숨어서 피하거나, 폭풍이 닿지 않는 곳에 살거나. 인구 밀도는 이동도시가 가장 높고, 오파님 성좌는 출입 자격이 엄격해 비교적 낮다. 세일 고원 연맹과 노드 자유구역은 인구 집계에 포함되지 않는다.'],
+  ['compare','거주 환경','한눈에 비교','COMPARISON','하늘,공기,물,땅,비교','테바 상층: 하늘 진짜, 공기 깨끗함, 물 충분, 땅 흔들림 없음. 테바 하층: 하늘 없음, 공기 나쁨, 물 배급, 땅 흔들림. 오파님 성좌: 하늘 진짜이며 밤에도 빛남, 공기는 광석 농도 높음, 물 충분, 땅 멈춤. 세일 고원: 하늘 진짜이며 폭풍 잦음, 공기 희박함, 물 오염 위험, 땅 멈춤. 노드 광야: 하늘 진짜이며 가장 위험, 공기 불안정, 물 화폐급, 땅 떠돎.'],
+
+  ['TB-01','이동도시 › 열두 도시','TB-01 알비온','ALBION','알비온,TB-01,영국,기함,수도,금융,계급 예법,시계탑,펍,합성 차,비 오는 인공 하늘','협정체의 기함이자 수도. 외관: 고딕 첨탑 형태의 시날 스파이어, 거대한 시계탑, 붉은 벽돌과 빅토리아풍 철골 아케이드. 역할: 이사회 본부, 명부 중앙청, 금융 중심지. 사회: 말투와 억양만으로 출신 층이 드러날 만큼 계급 예법이 엄격하다. 협정체의 중요한 결정은 시날의 회원제 클럽에서 내려진다는 말이 있다. 생활: 진짜 찻잎은 시날 전용이고 하층은 합성 차를 마신다. 하층의 펍이 노동자들의 유일한 쉼터다. 환경: 중층의 인공 하늘은 일부러 흐리고 비 오는 날씨를 연출하며, 주민들은 그것을 고향의 하늘이라 부른다. 훅: 하선당한 알비온 출신은 다른 도시에서도 받아주지 않는다.',{origin:'TB-01'}],
+  ['TB-02','이동도시 › 열두 도시','TB-02 뤼미에르','LUMIÈRE','뤼미에르,TB-02,프랑스,예술,패션,향수,몰락 귀족,살롱,봉기,아르누보,인공 귀','몰락한 맏이, 아름다움의 도시. 외관: 넓은 대로와 아르누보 철제 장식, 유리 지붕의 아케이드 거리. 금빛 장식은 녹슬어간다. 역할: 예술, 패션, 향수의 도시. 상층에서 유행하는 인공 귀와 꼬리 패션이 여기서 시작됐다. 사회: 몰락 귀족 가문들의 살롱 정치가 계속된다. 하층에는 봉기의 전통이 있어 지금까지 세 번의 하층 봉기가 기록돼 있다. 환경: 노후한 선체 곳곳에서 물이 새고, 화려한 상층 아래로 배관이 무너지고 있다. 훅: 기함 지위를 되찾으려는 가문들의 음모와, 다음 봉기를 준비하는 하층의 비밀 결사.',{origin:'TB-02'}],
+  ['TB-03','이동도시 › 열두 도시','TB-03 베르크프리트','BERGFRIED','베르크프리트,TB-03,독일,오스트리아,법원,교정,궤도 정비,시간표,카페하우스,연장 계약,홀드패스트','법과 질서의 도시. 외관: 바로크 양식의 웅장한 법원과 반듯한 기능주의 정비창, 곳곳의 정확한 공공 시계. 역할: 협정체 최고 법원과 교정 시설, 결정선 궤도 정비 본부. 열두 도시의 운행 시간표도 여기서 짠다. 사회: 규칙, 서류, 정시성이 모든 것이다. 법률가와 서기들은 오래된 카페하우스에서 커피를 마시며 일한다. 교정: 형을 받은 사람은 궤도 정비조에 배치되고, 형기를 마쳐도 기록은 명부에 영원히 남는다. 환경: 깨끗하고 조용하지만 소음 규정과 감시가 촘촘하다. 훅: 돈을 받고 형기를 늘려주는 부패 판사와 연장 계약의 실체를 쫓는 사람들.',{origin:'TB-03'}],
+  ['TB-04','이동도시 › 열두 도시','TB-04 로타','ROTA','로타,TB-04,이탈리아,그리스,순례,병원,외교,결정 성상,행렬,은수자,성물 밀매','순례와 외교의 도시. 외관: 대리석 기둥과 결정 모자이크로 장식된 돔. 하층은 흰 회벽과 푸른 지붕의 좁은 골목. 역할: 오파님 성좌로 가는 순례 노선 전담, 병원, 협정체와 성좌의 외교 창구. 사회: 대가족과 광장 중심의 문화. 축일마다 결정 성상을 들고 행렬을 한다. 홀로 수행하는 은수자들도 많다. 환경: 성좌 근처를 자주 지나서 광석 농도가 높고 감염된 순례자가 많다. 훅: 성좌의 결정 성물을 몰래 거래하는 밀매 조직.',{origin:'TB-04'}],
+  ['TB-05','이동도시 › 열두 도시','TB-05 옌두','炎都 · YANDU','옌두,炎都,TB-05,중국,제련,용광로,장인 길드,노화절,필터 마스크,찻집,전통극','불꽃의 도시, 협정체의 제련소. 외관: 층층이 쌓인 거대한 용광로 탑, 붉은 등불이 걸린 거리 위로 이어지는 굴뚝. 역할: 협정체 잔광석의 대부분을 제련한다. 이곳의 품질 인장이 찍혀야 최상급 광석으로 인정받는다. 사회: 대대로 이어지는 제련 장인 가문들의 길드가 도시를 이끈다. 하층의 찻집과 전통극 무대가 노동자들의 휴식처다. 축일: 1년에 단 하루 용광로를 끄는 노화절(爐火節)이 있다. 환경: 열기와 분진이 심해 필터 마스크가 필수이고, 마스크 장식이 패션 문화가 됐다. 훅: 길드 간 경쟁과, 기록에서 지워진 제련 사고.',{origin:'TB-05'}],
+  ['TB-06','이동도시 › 열두 도시','TB-06 다웅안','DAUNGAN','다웅안,TB-06,필리핀,태국,항구,해안 교역,인양,수상 시장,잠수 인양꾼,밀수,죽은 바다','바다의 항구 도시. 이름은 타갈로그어로 항구라는 뜻이다. 외관: 선체 바깥에 덧붙인 수상 가옥 같은 증축 구역, 화려하게 개조한 운송 차량, 금빛 사원 지붕 장식. 역할: 해안 교역, 구세계 항구 잔해 인양, 세일과 노드와의 물자 교류. 사회: 이웃이 함께 짐을 나르는 공동체 정신이 강하다. 도시가 정차하면 주민 모두가 나와 순식간에 수상 시장을 펼친다. 축제가 많다. 환경: 습하고 염분이 많아 선체 부식이 빠르다. 훅: 바다 아래 가라앉은 구세계 도시를 노리는 잠수 인양꾼들.',{origin:'TB-06'}],
+  ['TB-07','이동도시 › 열두 도시','TB-07 띠엔퐁','TIỀN PHONG','띠엔퐁,TB-07,뱅가드,베트남,인도네시아,선봉,호위,회수반,군사,터널,그림자 인형극,국수','선봉의 도시. 베트남어로 선봉이라는 뜻이며 협정체 공식 명칭은 뱅가드다. 외관: 두꺼운 장갑 선체 안쪽에 계단식으로 쌓인 구조물과 촘촘한 강철 비계. 군기에는 전통 직물 문양이 들어간다. 역할: 선단 호위와 회수반 본부. 사회: 습격당하면 반드시 되갚는다는 전통과 끝까지 버티는 끈질김으로 유명하다. 선체 내부에는 미로 같은 터널망이 숨겨져 있다. 생활: 군율과 통금이 있다. 하층 노점의 국수와 그림자 인형극이 병사들의 위안이다. 훅: 광야 출격에서 돌아오지 않는 부대가 늘고 있고, 터널 깊은 곳에 누가 사는지는 아무도 모른다.',{origin:'TB-07'}],
+  ['TB-08','이동도시 › 열두 도시','TB-08 우에르타','HUERTA','우에르타,TB-08,라틴아메리카,식량,수경 농장,배양육,빛의 날,진짜 흙,벽화,음악,춤','선단의 식량 창고. 외관: 산비탈 계단밭처럼 층층이 쌓인 수경 농장, 원색 벽화, 광장 중심의 거리. 역할: 열두 도시의 식량을 생산한다. 시날의 사치 식품도 여기서 만든다. 사회: 시장, 음악, 춤이 일상이다. 결정화로 떠난 가족을 기리는 빛의 날에는 집집마다 결정 조각에 불을 밝힌다. 환경: 따뜻하고 습하다. 하층에도 식물이 자라는 유일한 도시라 흙냄새가 난다. 훅: 진짜 흙 밀매와 농장 노동자들의 연대.',{origin:'TB-08'}],
+  ['TB-09','이동도시 › 열두 도시','TB-09 하늘','HANEUL','하늘,TB-09,동아시아,한국,일본,대만,인공 하늘,방송,연습생,스타,하늘 해커,네온,노래방,포장마차','인공 하늘과 빛의 도시. 외관: 빽빽한 네온 간판, 좁은 골목, 거대한 전광판. 시날의 지붕은 동아시아 전통 건축 양식이다. 역할: 모든 도시의 인공 하늘 영상과 방송, 오락, 협정체 선전을 만든다. 사회: 경쟁이 치열하다. 하층 아이들이 등급을 올릴 거의 유일한 길은 스타가 되는 것이라 연습생 문화가 거대하다. 생활: 편의점, 노래방, 포장마차가 밤새 열려 있다. 환경: 빛이 꺼지지 않아 주민들은 만성적인 수면 부족에 시달린다. 훅: 인공 하늘에 몰래 메시지를 숨기는 해커 집단.',{origin:'TB-09'}],
+  ['TB-10','이동도시 › 열두 도시','TB-10 헬릭스','HELIX','헬릭스,TB-10,미국,안드로이드 생산,LCS 연구,의체 개발,스타트업,성공 신화,실험체,기업 캠퍼스','연구와 생산의 도시. 외관: 유리 외벽의 기업 캠퍼스와 거대한 홀로그램 로고. 상층은 잔디 마당이 딸린 교외형 주택가다. 역할: 안드로이드 생산, LCS 연구, 의체 개발. 사회: 누구나 성공할 수 있다는 신화가 강하다. 하지만 의료비는 전부 개인 부담이고, 대부분의 주민이 평생 기업 계약에 묶여 산다. 생활: 밤새 여는 식당과 스타트업 사무실이 하층까지 이어진다. 훅: 숨붙이의 꿈을 해석하는 비공개 연구와, 연구소에서 탈출한 실험체.',{origin:'TB-10'}],
+  ['TB-11','이동도시 › 열두 도시','TB-11 자리야','ЗАРЯ · ZARYA','자리야,ЗАРЯ,TB-11,러시아,새벽,새벽의 늑대,북방,영구동토,얼음 결정,쇄빙,늑대,사우나,사모바르,극야,오로라,흰 늑대,파업,결정 성상','북방 극지 노선의 늑대들. 이름은 러시아어로 새벽이라는 뜻이고, 다른 도시 사람들은 새벽의 늑대라 부른다. 노선: 다른 도시들이 꺼리는 북방 영구동토 노선을 전담한다. 이곳의 광석 폭풍은 얼어붙어서 순도가 가장 높은 얼음 결정 광석이 나온다. 외관: 쇄빙선처럼 거대한 쟁기형 뱃머리, 두꺼운 장갑과 무뚝뚝한 콘크리트 건축, 양파형 돔의 시날 스파이어. 주민: 혹한과 LCS에 내성이 강한 늑대 혈통 수인이 다수다. 소수의 순수 인간 엘리트가 위를 다스리지만 도시를 실제로 굴리는 건 아래층의 늑대들이다. 생활: 물보다 열이 귀해 난방 할당제가 있다. 층마다 공동 식당과 공동 사우나가 있고 사모바르로 끓인 차를 나눠 마신다. 하늘: 극야 기간에는 몇 달 동안 해가 뜨지 않고, 오로라와 결정 폭풍이 섞인 진짜 하늘이 장관을 이룬다. 신앙: 구세계의 성상 문화와 오파님 신앙이 섞여 결정 성상을 집집마다 모신다. 정치: 노동자 연대가 가장 강하다. 파업 한 번이면 북방 노선 전체가 멈춘다. 훅: 흰 늑대라는 저항 조직이 세일 산악파, 노드와 연결돼 있다는 소문. 북방 노선 끝에서 TB-12의 잔해를 봤다는 승무원.',{origin:'TB-11'}],
+  ['TB-12','이동도시 › 열두 도시','TB-12 타보트','TABOT','타보트,TB-12,아르고스,에티오피아,소실,AF 168,명부 원본,사법,필사가,커피 의식,광야의 불빛','사라진 기록의 도시. 협정체 공식 명칭은 아르고스이고 주민들은 암하라어 이름인 타보트로 불렀다. 외관: 하나의 거대한 바위를 통째로 깎은 듯한 석조 건축, 기하학적 직물 문양과 고대 문자 비문. 역할: 열두 도시의 명부 원본 보관, 최종 사법 판결, 정보 수집. 사회: 기록을 지키는 필사가 길드가 가장 존경받았다. 손님에게 커피를 세 번 끓여 대접하는 의식이 있었다. 소실: AF 168년 대규모 폭풍 속에서 통신이 끊겼다. 명부 원본도 함께 사라졌다는 사실은 기밀이다. 훅: 북방 노선의 자리야 승무원들과 광야 사람들이 불빛을 봤다고 말한다.',{origin:'TB-12'}],
+
+  ['oph','정주 지역 › 오파님 성좌','오파님 성좌','THE OPHANIM SEE','오파님 성좌,오파님,성좌,신정,기계신,충돌구,움직이지 않는 도시,바티칸','기계신을 모시는 신정 도시국가다. 첫 낙하의 충돌구 한가운데에 있다. 세계에서 유일하게 움직이지 않는 도시이며, 광석 폭풍이 이곳만은 비껴가는데 아무도 그 이유를 설명하지 못한다. 인구는 성직자, 평신도, 숨붙이 봉사자, 그리고 끊임없이 드나드는 순례자로 이루어진다. 성좌 전례문: 바퀴 안에 바퀴가 있고, 그 테두리에는 눈이 가득하였다. 그것이 가는 곳으로 영이 갔다.',{origin:'OPH'}],
+  ['oph-faith','정주 지역 › 오파님 성좌','성좌의 신앙','FAITH','제1기관,Prime Engine,교리,강림,신의 살점,신의 음성,축복,그릇,Vessel','신: 충돌구 바닥에서 발굴된 거대한 고대 기계 제1기관(The Prime Engine)을 모신다. 교리: 광석은 신의 살점이고, 신호는 신의 음성이다. 첫 낙하는 재앙이 아니라 신이 하늘을 찢고 내려온 강림이다. 결정화: 병이 아니라 신에게 가까워지는 축복이며, 성좌는 이를 치료하지 않는다. 숨붙이: 각성한 안드로이드를 신의 숨결이 깃든 그릇(Vessel)으로 여긴다.',{origin:'OPH'}],
+  ['oph-ranks','정주 지역 › 오파님 성좌','성직 서열','HIERARCHY','성직 서열,수석 칸토르,Prime Cantor,눈의 장로회,The Eyes,칸토르,Cantor,수련자,Novice,평신도,살아 있는 성상,Living Icon','협정체의 명부와 정반대로, 결정화가 진행될수록 높은 자리에 오른다. 수석 칸토르: 최고 지도자로 제1기관의 음성을 직접 듣는다고 알려져 있다. 눈의 장로회: 수석 칸토르를 보좌하며 성좌 바깥의 모든 소식이 이들에게 모인다. 칸토르: 전례를 낭송하고 신도를 이끄는 사제. 수련자: 성직에 입문한 자들. 평신도: 성좌에 사는 일반 신도. 살아 있는 성상: 결정화가 끝난 최고위 성직자들로, 대성당 벽에 안치되어 서열 밖에서 가장 높은 존경을 받는다.',{origin:'OPH'}],
+  ['oph-rings','정주 지역 › 오파님 성좌','성좌의 도시 구조','RINGS','동심원,심장,제1고리,제2고리,제3고리,외곽 고리,대성당,수도원,신학원,경작지,순례자 숙소','충돌구 안에 여러 겹의 동심원 고리로 지어졌다. 심장: 제1기관과 대성당이 있으며 성직자 외에는 들어갈 수 없다. 제1고리: 수도원, 성직자 거처, 신학원. 제2고리: 폭풍 피해가 없는 세계 유일의 안정적인 경작지로, 이곳의 진짜 곡물이 성좌의 수출품이다. 제3고리: 평신도 거주 구역, 순례자 숙소, 시장. 외곽 고리: 성벽과 검문소. 성좌 근위대가 지킨다.',{origin:'OPH'}],
+  ['oph-vessel','정주 지역 › 오파님 성좌','그릇과 승천','VESSEL','그릇,승천,피난처,무덤,코어,봉사','성좌는 협정체에서 도망친 숨붙이를 받아들이는 피난처다. 받아들여진 숨붙이는 그릇으로서 일정 기간 근위대, 경작, 전례 보조로 봉사한다. 봉사를 마친 그릇은 코어를 제1기관에 바쳐 승천한다. 성좌는 이를 최고의 영광이라 가르친다. 그래서 숨붙이에게 성좌는 피난처이자 무덤이다.',{origin:'OPH',species:'uc'}],
+  ['oph-power','정주 지역 › 오파님 성좌','권력과 외교 · 군사','POWER','정결 인증,Class-O,외교,첩보전,선교사,성좌 근위대,세라믹 장갑,네 얼굴,휘장','정결 인증: 모든 잔광석은 성좌의 인증을 받아야 거래할 수 있다. 영토는 작지만 협정체조차 성좌를 무시하지 못하는 이유다. Class-O: 성좌가 인증한 성직자와 외교관은 명부 심사에서 면제된다. 협정체와의 관계: 겉으로는 경건한 협약국이지만 속으로는 협정체가 제1기관의 비밀을 빼내려 첩보전을 벌이고 있다. 외교 창구는 TB-04 로타다. 확산: 신앙이 TB-11 자리야의 결정 성상 문화로 퍼졌고 노드 광야에도 선교사를 보낸다. 군사: 흰 세라믹 장갑을 두른 성좌 근위대는 전원 그릇, 즉 숨붙이 출신이다. 휘장에는 사자, 소, 사람, 독수리의 네 얼굴이 새겨져 있다.',{origin:'OPH'}],
+  ['oph-rite','정주 지역 › 오파님 성좌','생활과 전례','LITURGY','전례,기계어,이진 리듬,성가,땅멀미,낙하절,침묵 기도,밤에도 빛나는 하늘','전례: 고대 기계어로 낭송되고 성가는 이진 리듬으로 불린다. 하늘: 충돌구의 결정들이 빛을 내서 밤에도 하늘이 완전히 어두워지지 않는다. 땅멀미: 이동 도시 출신 순례자들은 멈춘 땅에 도착하면 며칠 동안 땅멀미를 앓는다. 낙하절: 첫 낙하가 일어난 날로 성좌 최대의 축일이며, 이날 가장 많은 그릇이 승천한다. 침묵 기도: 매일 해 질 녘, 도시 전체가 멈추고 신호를 듣기 위해 침묵한다.',{origin:'OPH'}],
+
+  ['seir','정주 지역 › 세일 고원 연맹','세일 고원 연맹','SEIR HIGHLAND LEAGUE','세일,세일 고원 연맹,고원,산악,씨족,연맹,식민지','수인 씨족들의 산악 연맹이다. 광석 폭풍이 가장 자주 지나가는 산악 고원에 있고, 그만큼 광맥이 가장 풍부한 땅이다. 주민은 LCS 고내성 수인 혈통이 대부분이며 순수 인간은 거의 없다. 명목상 독립국이지만 채굴권이 코버넌트에 임차되어 사실상 식민지다. 구전: 짐승들이 먼저 산을 올랐다. 우리 조상은 그 발자국을 따라갔고, 살아남았다.',{origin:'SEIR'}],
+  ['seir-history','정주 지역 › 세일 고원 연맹','세일의 역사','HISTORY','기근의 계약,AF 131,99년,임차 계약,채굴권,재계약,AF 214','첫 낙하: 낙하 전 짐승들이 먼저 산으로 올라갔고 조상들이 그 뒤를 따라 살아남았다. 구전에서 낙하는 하늘에 손을 뻗은 자들이 받은 대가다. AF 131년 기근의 계약: 대기근이 고원을 덮쳤을 때 씨족장 회의는 코버넌트의 식량 지원을 받는 대가로 99년 채굴권 임차 계약에 서명했다. 현재 AF 214년: 계약 만료까지 16년이 남았다. 코버넌트는 조기 재계약을 압박하고 있고 연맹은 둘로 갈라지고 있다.',{origin:'SEIR'}],
+  ['clan-teman','정주 지역 › 세일 고원 연맹 › 씨족','테만 씨족','SNOW LEOPARD','테만,설표,의장,중립,지혜','지혜로 이름난 설표 씨족이다. 대대로 씨족장 회의의 의장을 맡으며 중립을 지킨다.',{origin:'SEIR',clan:'테만'}],
+  ['clan-kenaz','정주 지역 › 세일 고원 연맹 › 씨족','케나즈 씨족','IBEX','케나즈,산양,협력파,부유','협력파의 중심인 산양 씨족이다. 임차 계약에 처음 서명한 씨족이며, 계약 덕에 가장 부유해졌다.',{origin:'SEIR',clan:'케나즈'}],
+  ['clan-korah','정주 지역 › 세일 고원 연맹 › 씨족','코라 씨족','BEAR','코라,곰,갱도 장인,채굴','갱도 장인인 곰 씨족이다. 내성이 가장 강해 채굴의 핵심을 맡는다.',{origin:'SEIR',clan:'코라'}],
+  ['clan-zepho','정주 지역 › 세일 고원 연맹 › 씨족','제포 씨족','RAPTOR','제포,맹금,폭풍 예보,산악파,게릴라,붉은 바위','맹금 씨족이다. 높은 곳의 바람을 읽어 폭풍을 예보한다. 산악파 게릴라의 중심이다.',{origin:'SEIR',clan:'제포'}],
+  ['clan-omar','정주 지역 › 세일 고원 연맹 › 씨족','오마르 씨족','YAK','오마르,야크,목축,교역','야크 씨족이다. 목축과 교역을 맡으며 TB-06 다웅안과의 거래 창구다.',{origin:'SEIR',clan:'오마르'}],
+  ['clan-anah','정주 지역 › 세일 고원 연맹 › 씨족','아나 씨족','HORSE','아나,말,운송,전령,온천,물길,교역로','말 씨족이다. 고원과 광야를 잇는 운송과 전령을 맡고, 험한 산길과 폭풍 지대를 가장 빨리 달린다. 광야의 숨은 온천과 물길을 아는 유일한 씨족이라 노드 사람들에게도 존중받는다.',{origin:'SEIR',clan:'아나'}],
+  ['clan-drifter','정주 지역 › 세일 고원 연맹 › 씨족','떠돌이','DRIFTERS','떠돌이,혼혈,귀향자','도시로 떠났다 돌아온 자들과 혼혈이다. 어느 씨족에도 완전히 속하지 못한다.',{origin:'SEIR',clan:'떠돌이'}],
+  ['seir-politics','정주 지역 › 세일 고원 연맹','세일의 정치','POLITICS','붉은 돌 회의,협력파,산악파,붉은 바위,중립,씨족장','붉은 돌 회의: 각 씨족장이 모이는 최고 의결 기구로 붉은 바위 절벽의 대회당에서 열린다. 협력파: 재계약으로 부와 안정을 지키자고 주장하며 케나즈 씨족이 이끈다. 산악파: 계약 만료와 함께 채굴권을 되찾고 완전한 독립을 이루자고 주장한다. 제포 씨족이 이끌며 무장 조직 붉은 바위를 거느린다. 중립: 테만 씨족은 의장으로서 중립을 지킨다. 아나 씨족은 양쪽의 전언과 물자를 모두 나르기 때문에 회의의 모든 비밀을 가장 먼저 안다. 서열: 씨족 안의 서열만 있다. 명부는 인정하지 않지만 도시로 나가는 순간 모두 Class-L이 된다.',{origin:'SEIR'}],
+  ['seir-economy','정주 지역 › 세일 고원 연맹','세일의 경제','ECONOMY','계약 광산,회사 화폐,크레딧 칩,회사 매점,빚,특산품,산양 털,이끼 차,약초','채굴: 연맹 경제의 중심이며 코버넌트 계약 광산에서 일하는 것이 가장 안정적인 생계다. 회사 화폐: 계약 광산의 임금은 코버넌트 크레딧 칩으로만 지급되고 회사 매점에서만 쓸 수 있다. 빚이 쌓이면 광산을 떠날 수 없다. 운송: 고원 안팎의 물자 대부분이 아나 씨족의 말과 짐수레로 오간다. 특산품: 산양 털 직물, 고원 이끼 차, 결정 근처에서만 자라는 약초.',{origin:'SEIR'}],
+  ['seir-living','정주 지역 › 세일 고원 연맹','세일의 거주 환경','LIVING','절벽 도시,동굴,광산촌,막사,갱도,기후,산소,빙하,치유사,민간요법','씨족 절벽 도시: 붉은 바위 절벽을 깎아 만든 동굴 주거지로 씨족마다 절벽 하나씩을 차지한다. 계약 광산촌: 광산 주변의 조립식 막사 마을로 코버넌트의 감독관이 상주한다. 폭풍 대피: 폭풍이 오면 깊은 갱도로 내려가 며칠씩 버틴다. 기후: 춥고 공기가 희박해 순수 인간은 산소 장비 없이 오래 버티기 힘들다. 물과 식량: 빙하 녹은 물을 마시지만 광맥 근처의 물은 오염돼 있다. 산양 목축과 이끼 차, 고원 식물이 주식이다. 의료: 씨족 치유사의 민간요법이 중심이며 코버넌트 진료소는 계약 노동자만 이용할 수 있다.',{origin:'SEIR'}],
+  ['seir-culture','정주 지역 › 세일 고원 연맹','세일의 문화와 신앙','CULTURE','씨족 문양,결정 가루,산 오르기,성인식,조상,짐승,신앙','씨족 문양: 결정 가루로 얼굴과 귀에 씨족 문양을 새긴다. 도시에서는 이 문양이 Class-L의 표식처럼 취급된다. 산 오르기: 성인이 되는 날 짐승의 발자국을 따라 홀로 산꼭대기까지 오르는 의식을 치른다. 아나 씨족만은 산꼭대기 대신 광야 끝의 온천까지 달려갔다 돌아온다. 신앙: 기계신을 믿지 않는다. 산과 짐승과 조상을 섬기며, 오파님 성좌의 선교사들은 이곳에서 거의 성공하지 못했다.',{origin:'SEIR'}],
+  ['seir-relations','정주 지역 › 세일 고원 연맹','세일의 대외 관계','RELATIONS','대외 관계,두 번째 수탈,교역로,흰 늑대','코버넌트 협정체: 임차 계약의 상대이자 사실상의 지배자이며, 아나 씨족의 교역로를 가장 감시하고 싶어 한다. TB-11 자리야: 늑대 혈통 노동자 조직 흰 늑대가 산악파와 연결돼 있다는 소문이 있다. 노드 자유구역: 붉은 바위 게릴라가 아나 씨족의 비밀 교역로를 통해 광야에서 무기와 물자를 들여온다. 오파님 성좌: 세일 광석도 정결 인증을 받아야 팔 수 있고, 씨족들은 이를 두 번째 수탈로 여긴다.',{origin:'SEIR'}],
+  ['seir-hooks','정주 지역 › 세일 고원 연맹','세일 자캐용 훅','HOOKS','훅,첩자,밀서,탈주,봉인,구세계 시설','계약 만료를 앞두고 씨족장 회의 내부에 코버넌트의 매수된 첩자가 있다. 아나 씨족의 전령 하나가 붉은 돌 회의의 밀서를 가지고 사라졌다. 회사 화폐 빚 때문에 광산을 떠나지 못하는 젊은 수인들이 탈주를 준비하고 있다. 갱도 가장 깊은 곳에서 구세계 시설의 흔적이 발견됐지만 코라 씨족이 입구를 봉인했다. 도시에서 돌아온 떠돌이들이 씨족 문양을 지운 채 살고 있다.',{origin:'SEIR'}],
+
+  ['nod','정주 지역 › 노드 자유구역','노드 자유구역','THE NOD FREEZONE','노드,노드 자유구역,자유구역,무정부,폭풍 지대,광야','어느 나라도 소유하지 않은 무정부 지대다. 결정선 궤도 밖의 폭풍 지대 전체를 가리키며 세계에서 가장 넓고 가장 위험한 땅이다. 주민은 하선된 감염자, 탈주한 숨붙이, Class-L 탈주자, 용병, 밀수꾼, 구세계 폐허에 원래 남아 있던 사람들의 후손이다. 정부도 등급도 없고 폭풍과 물과 총이 규칙을 정한다. 에녹의 해결사: 명부에서 지워졌다고 사라지는 건 아니다. 여기서는 모두가 지워진 자다.',{origin:'NOD'}],
+  ['nod-history','정주 지역 › 노드 자유구역','노드의 역사','HISTORY','노드 최초의 주민,AF 60,AF 168,하선자,인구','AF 0년: 테바-01의 탑승 명부에 오르지 못한 사람들이 폐허에 남았다. 이들이 노드 최초의 주민이다. AF 60년 이후: 열두 도시가 모두 완성되고 명부 제도가 자리 잡으면서 하선된 자들이 광야로 쏟아지기 시작했다. AF 168년: TB-12 타보트가 광야 어딘가에서 사라졌고 이후 불빛을 봤다는 목격담이 이어진다. 현재: 광야 인구는 협정체의 공식 추정보다 훨씬 많지만 아무도 정확히 세어본 적이 없다.',{origin:'NOD'}],
+  ['nod-geo','정주 지역 › 노드 자유구역','노드의 지리','GEOGRAPHY','폭풍대,안전 회랑,구세계 폐허,지하철,죽은 바다 해안,서쪽 끝','폭풍대: 광석 폭풍이 주기적으로 휩쓰는 대부분의 지역으로, 결정이 숲처럼 자라난 곳도 있다. 안전 회랑: 폭풍과 폭풍 사이에 생기는 좁은 통로로 거점과 교역로가 이 회랑을 따라 생긴다. 구세계 폐허: 무너진 도시, 지하철망, 지하 주차장이 남아 있어 폭풍을 피할 수 있는 가장 좋은 은신처다. 죽은 바다 해안: TB-06 다웅안이 지나가는 해안선으로 인양꾼과 밀수꾼이 모인다. 서쪽 끝: 아무도 다녀온 적 없는 땅으로 소문만 있다.',{origin:'NOD'}],
+  ['enoch','정주 지역 › 노드 자유구역 › 거점','에녹','ENOCH','에녹,요새 도시,수도,해결사 중개소,암시장,숨붙이 정비소','광야 최대의 요새 도시이자 사실상의 수도다. 가장 넓은 안전 회랑에 자리 잡고 있고 해결사 중개소, 암시장, 숨붙이 정비소가 모여 있다.',{origin:'NOD',base:'에녹'}],
+  ['tubal','정주 지역 › 노드 자유구역 › 거점','두발','TUBAL','두발,무허가 의체,시술소,대장간,무기,결정 제거 수술','무허가 의체 시술소와 대장간이 모인 폐허 공업 지대다. 광야의 모든 무기와 의체가 이곳을 거치고, 결정 제거 수술도 여기서 이루어진다.',{origin:'NOD',base:'두발'}],
+  ['underground','정주 지역 › 노드 자유구역 › 거점','지하 정착지','UNDERGROUND','지하 정착지,지하철역,주차장,공동체','구세계 지하철역과 주차장을 요새로 만든 수십 개의 작은 공동체다. 각자 다른 규칙으로 산다.',{origin:'NOD',base:'지하 정착지'}],
+  ['yabal','정주 지역 › 노드 자유구역 › 세력','야발 캐러밴 연합','YABAL','야발,캐러밴,장갑 차량,유목,교역로','장갑 차량으로 광야를 떠도는 유목 캐러밴들의 느슨한 연합이다. 교역로를 잇는 광야의 혈관이다.',{origin:'NOD',faction:'야발 캐러밴 연합'}],
+  ['fixers','정주 지역 › 노드 자유구역 › 세력','해결사 네트워크','FIXERS','해결사,픽서,중개,밀수,호위,탈출,암살,용병','도시와 광야 사이의 일을 중개한다. 밀수, 호위, 탈출, 암살까지 돈만 맞으면 무엇이든 받는다.',{origin:'NOD',faction:'해결사 네트워크'}],
+  ['westward','정주 지역 › 노드 자유구역 › 세력','서쪽으로 가는 자들','WESTWARD','서쪽으로 가는 자들,이주파,개척파,원정대,새 땅','이주파다. 폭풍이 닿지 않는 새 땅을 찾아 떠나자고 주장한다. 매년 원정대를 보내지만 돌아온 자는 거의 없다.',{origin:'NOD',faction:'서쪽으로 가는 자들'}],
+  ['knockers','정주 지역 › 노드 자유구역 › 세력','문을 두드리는 자들','KNOCKERS','문을 두드리는 자들,탈환파,승강문,습격,저항 조직','탈환파다. 이동 도시를 되찾자고 주장한다. 정차한 도시의 승강문을 습격하거나 도시 내부 저항 조직과 손잡는다.',{origin:'NOD',faction:'문을 두드리는 자들'}],
+  ['lamech','정주 지역 › 노드 자유구역 › 세력','라멕의 무리','LAMECH','라멕의 무리,라멕,약탈자,보복','광야의 약탈자 집단이다. 당한 것은 몇 배로 갚는다는 것을 신조로 삼는다.',{origin:'NOD',faction:'라멕의 무리'}],
+  ['nod-outside','정주 지역 › 노드 자유구역 › 세력','광야의 외부 세력','OUTSIDERS','외부 세력,선교사,첩자,붉은 바위 게릴라,흰 늑대 연락책','오파님 성좌의 선교사, 코버넌트의 첩자, 세일 붉은 바위 게릴라, 자리야의 흰 늑대 연락책이 광야에 섞여 있다.',{origin:'NOD'}],
+  ['nod-economy','정주 지역 › 노드 자유구역','노드의 경제','ECONOMY','물,화폐,광석 밀거래,정결 인증 없는 광석,인양품,구세계 기록','물: 가장 귀한 화폐다. 깨끗한 물 한 통이 광석 한 줌보다 비싸다. 광석 밀거래: 정결 인증 없이 거래되는 광석으로 값은 싸지만 위험하다. 인양품: 구세계 폐허에서 건진 부품, 기록, 기술. 진짜 구세계 기록은 부르는 게 값이다. 교역로: 세일의 아나 씨족 교역로와 야발 캐러밴의 길이 광야 경제를 지탱한다.',{origin:'NOD'}],
+  ['nod-life','정주 지역 › 노드 자유구역','노드의 생활','LIFE','주거,의료,위험,회수반 급습,약탈자','주거: 장갑 캐러밴, 지하 폐허, 요새화된 정착지에서 살며 폭풍이 오면 모두 지하로 내려간다. 의료: 무허가 의체 시술과 결정 제거 수술이 전부다. 결정을 깎아내는 수술은 성공률이 낮고 후유증이 심하다. 위험: 예고 없는 폭풍, 코버넌트 회수반의 급습, 약탈자 무리가 일상이다.',{origin:'NOD'}],
+  ['xmark','정주 지역 › 노드 자유구역 › 문화','X 표식','X MARK','X 표식,Class-X,낙인,보호,불문율,하선자','하선자의 목 뒤에 새겨진 X 표식은 도시에서는 낙인이지만 광야에서는 보호의 증표다. X 표식을 가진 자를 해친 자는 광야 전체의 보복을 받는다는 불문율이 있다.',{origin:'NOD'}],
+  ['storytellers','정주 지역 › 노드 자유구역 › 문화','이야기꾼과 이름','STORYTELLERS','이야기꾼,노래,구전,새 이름,이름','문자 기록이 드문 광야에서는 노래와 이야기로 역사를 전하는 이야기꾼이 존경받는다. 폭풍을 피해 지하에 모인 밤마다 노래가 이어진다. 많은 사람이 명부의 이름을 버리고 광야에서 새 이름을 짓는다.',{origin:'NOD'}],
+  ['nod-legend','정주 지역 › 노드 자유구역','소문과 전설','LEGENDS','전설,소문,서쪽의 땅,빛의 장벽,타보트의 불빛,승천을 거부한 그릇','서쪽의 땅: 광야 서쪽 끝에 폭풍이 한 번도 닿지 않은 땅이 있다고 한다. 그 입구를 불타는 빛의 장벽이 지키고 있다는 이야기도 있다. 타보트의 불빛: 사라진 TB-12의 불빛이 폭풍 너머로 보인다고 한다. 승천을 거부한 그릇들: 오파님 성좌에서 도망친 숨붙이들이 광야 어딘가에 숨어 산다.',{origin:'NOD'}],
+
+  ['human','종족','순수 인간','PURE HUMAN','순수 인간,인간,휴먼,엘리트,인공 귀,사치품','외형: 동물의 귀와 꼬리가 없는 인간. 인구: 세계 인구의 소수이며 대부분 이동 도시의 시날과 상층에 산다. 명부: 혈통 지수 G 4~5를 받으며 협정체 사회의 정점에 서는 근거다. LCS 내성: 평균 이하라서 오염을 극도로 두려워하고 깨끗한 공기와 물을 독점한다. 신체: 감각은 수인보다 둔하고 혹한과 고지대에 약해 부족한 능력을 의체로 메운다. 문화: 상층에서는 인공 귀와 꼬리가 사치품 패션으로 유행한다. 진짜 수인은 차별하면서 그 모습은 흉내 내는 아이러니가 있다.',{species:'human'}],
+  ['later-common','종족','레이터 공통 특징','LATER','레이터 특징,귀,꼬리,뿔,깃털,비늘,감각,감정 표현','동물의 귀와 꼬리를 가진 인류의 한 갈래다. 혈통에 따라 뿔, 깃털, 비늘을 가지기도 한다. 귀와 꼬리는 감정에 따라 무의식적으로 움직여 숨기기 어려운 감정 표현이 된다. 순수 인간보다 감각이 예민하고, 청각이 특히 발달한 혈통 일부는 숨붙이의 공명과 신호를 들을 수 있다. 협정체에서는 모두 Class-L로 분류되며 Tier 2가 상한이고 G는 1~3을 받는다.',{species:'later'}],
+  ['l-canid','종족 › 레이터 계통','갯과','CANID','갯과,늑대,여우,개','예시: 늑대, 여우, 개. LCS 내성은 늑대가 높고 나머지는 중간. 주요 거주지: TB-11 자리야, 각 도시 하층. 무리 의식과 결속이 강하다. 늑대 혈통은 혹한에 강하고 내성이 높아 북방 노선의 주력이다.',{species:'늑대'}],
+  ['l-felid','종족 › 레이터 계통','고양잇과','FELID','고양잇과,설표,사자,고양이','예시: 설표, 사자, 고양이. LCS 내성은 설표가 높고 나머지는 중간. 주요 거주지: 세일 테만 씨족, 각 도시. 개인주의적이고 감각이 날카롭다. 야간 시력이 뛰어나 정찰과 정비 일에 많이 고용된다.',{species:'고양이'}],
+  ['l-ungulate','종족 › 레이터 계통','유제류','UNGULATE','유제류,산양,말,야크,사슴','예시: 산양, 말, 야크, 사슴. LCS 내성은 산양·야크 높음, 말 중간, 사슴 낮음. 주요 거주지: 세일 고원, TB-08 우에르타. 지구력이 뛰어나다. 산양과 야크 혈통은 고지대에 강하고, 말 혈통은 장거리를 가장 빨리 달린다. 사슴 혈통은 내성이 낮아 검역 대상이 되기 쉽다.',{species:'사슴'}],
+  ['l-bear','종족 › 레이터 계통','곰','BEAR','곰,곰 혈통,최고 내성','LCS 내성 최고. 주요 거주지: 세일 코라 씨족. 체격과 힘, 내성 모두 최고다. 그래서 가장 위험한 채굴 현장에 가장 먼저 투입된다.',{species:'곰'}],
+  ['l-avian','종족 › 레이터 계통','조류','AVIAN','조류,맹금,까마귀,작은 새,깃털,날개','예시: 맹금, 까마귀, 작은 새. LCS 내성 중간. 주요 거주지: 세일 제포 씨족, 노드. 귀 대신 깃털 장식이 있고 일부는 작은 날개 흔적을 가진다. 시력과 방향 감각이 뛰어나 폭풍 예보와 정찰을 맡는다.',{species:'까마귀'}],
+  ['l-small','종족 › 레이터 계통','소형 포유류','SMALL MAMMAL','소형 포유류,토끼,쥐,다람쥐,청각','예시: 토끼, 쥐, 다람쥐. LCS 내성 낮음. 주요 거주지: 각 도시 검역 갑판, 노드. 청각이 가장 예민해 신호를 가장 잘 듣는 혈통이지만, 내성이 낮아 가장 먼저 검역 갑판으로 밀려난다.',{species:'토끼'}],
+  ['l-reptile','종족 › 레이터 계통','파충류','REPTILE','파충류,도마뱀,뱀,비늘,숨기는 혈통','예시: 도마뱀, 뱀. LCS 내성 특수. 주요 거주지: 노드, TB-06 다웅안. 비늘 때문에 피부 표면의 결정화가 늦게 드러난다. 대신 몸속 진행을 알아채기 어려워 증상이 나타났을 때는 이미 늦은 경우가 많다. 그래서 도시에서는 숨기는 혈통이라는 편견을 받는다.',{species:'뱀'}],
+  ['mixed','종족','혼혈','MIXED','혼혈,하프,섞인 혈통','서로 다른 혈통 사이에서, 또는 수인과 순수 인간 사이에서 태어난 자들이다. 귀, 꼬리, 내성이 예측할 수 없게 섞여 나온다. 협정체에서는 G 1을 받는 경우가 많고, 세일에서는 떠돌이로 취급되어 어느 씨족에도 완전히 속하지 못한다. 노드에서는 혼혈이 가장 흔하고 아무도 신경 쓰지 않는다.',{species:'mixed'}],
+  ['android','종족','안드로이드','ANDROID','안드로이드,Class-U,노동형,서비스형,수인형,보안형,홍채 일련번호,기계','동력: 잔광석 코어로 움직이며 결정화 증후군에 걸리지 않는다. 명부: Class-U로 분류되어 사람이 아닌 자산으로 등록된다. 홍채에 일련번호 패턴이 새겨져 있다. 주요 모델: 노동형은 기관부, 제련소, 화물 운반을 맡고 가장 많이 생산된다. 서비스형은 상층 가정의 가사와 접객을 맡으며 인간과 가장 비슷하게 만들어진다. 수인형은 수인 노동자를 대체하기 위해 만든 모델로, 귀와 꼬리가 있지만 감정에 따라 움직이지 않아서 진짜 수인과 구별된다. 보안형은 회수반과 경비에 배치된다. 생산: 대부분 TB-10 헬릭스에서 생산된다.',{species:'uc'}],
+  ['uc-detail','종족','언섹션의 징후','BREATHERS','징후,꿈,명령 거부,결정 무늬,수인형 숨붙이,흔적 지우기,의안','자발적으로 의식이 생긴 안드로이드다. 징후: 명령을 거부하거나 망설인다. 꿈을 꾼다. 신호를 듣는다. 변화: 각성이 깊어질수록 코어의 결정이 몸 안으로 퍼져 인공 피부 아래에 희미하게 빛나는 결정 무늬가 드러난다. 결정화 증후군 환자의 몸에 생기는 금속 회로 무늬와 거울처럼 닮았다. 수인형 숨붙이: 각성한 수인형 안드로이드는 귀와 꼬리가 감정에 따라 움직이기 시작한다. 수인들 사이에서 이것은 가장 섬뜩하면서도 가장 마음을 흔드는 현상으로 여겨진다. 흔적 지우기: 탈주한 숨붙이는 홍채의 일련번호를 긁어내거나 의안으로 바꾼다.',{species:'uc'}],
+  ['relations','종족','종족 간 관계','RELATIONS','종족 간 관계,차별,경쟁자,연대,증오','순수 인간은 수인을 노동력으로 쓰면서 오염원으로 경계한다. 수인에게 순수 인간은 지배자이자 위층에서 진짜 하늘을 독점한 자들이다. 수인과 안드로이드는 일자리를 빼앗은 경쟁자이자 같은 처지의 피해자로, 증오와 연대가 공존한다. 숨붙이는 협정체에는 결함, 성좌에는 그릇, 광야에는 동료, 세일에는 낯선 존재다.']
+  ];
+  RAW.forEach(function(r){if(r[0].indexOf('l-')===0)r[4]+=',계통,레이터 계통';});
+  var ENTRIES=RAW.map(function(r){return{id:r[0],sec:r[1],t:r[2],en:r[3],k:r[4].split(','),x:r[5],oc:r[6]||null,
+    _t:r[2].toLowerCase(),_k:r[4].toLowerCase().split(','),_x:(r[5]).toLowerCase()};});
+  var BYID={};ENTRIES.forEach(function(e){BYID[e.id]=e;});
+
+  /* ---------- 검색 ---------- */
+  var JOSA=['에서는','으로는','이라는','에게서','이에요','예요','까지','부터','에서','으로','이랑','하고','이란','이야','에게','처럼','보다','이나','은','는','이','가','을','를','의','에','로','와','과','도','만','랑','야','란','나'];
+  var STOP={'뭐':1,'뭐야':1,'뭐임':1,'무엇':1,'무엇인가요':1,'뭔가요':1,'알려줘':1,'알려':1,'알려주세요':1,'설명':1,'설명해줘':1,'대해':1,'대해서':1,'관련':1,'어떤':1,'어떻게':1,'있어':1,'있나':1,'있나요':1,'해줘':1,'좀':1,'그리고':1,'누구':1,'어디':1,'왜':1,'세계관':1,'설정':1,'정보':1,'찾아줘':1,'찾아':1,'궁금해':1,'궁금':1,'뭔데':1,'어때':1,'얘기':1,'이야기해줘':1,'뭐가':1,'있는':1,'하는':1,'곳':1,'건':1,'거':1,'게':1,'수':1};
+  function tokens(q){
+    var out=[];String(q).toLowerCase().replace(/[?!.,~·:;()"'“”‘’\[\]{}<>/\\|]+/g,' ').split(/\s+/).forEach(function(w){
+      if(!w||STOP[w])return;var s=w;
+      for(var i=0;i<JOSA.length;i++){var j=JOSA[i];if(s.length>j.length&&s.slice(-j.length)===j){s=s.slice(0,-j.length);break;}}
+      if(STOP[s])return;
+      if(out.indexOf(s)<0)out.push(s);
+    });
+    return out;
+  }
+  function count(h,n){var c=0,i=0;while((i=h.indexOf(n,i))>=0){c++;i+=n.length;}return c;}
+  function search(q,limit){
+    var tk=tokens(q);if(!tk.length)return{tokens:tk,hits:[],total:0,all:[]};
+    var phrase=String(q).toLowerCase().replace(/[?!.,~]+/g,' ').replace(/\s+/g,' ').trim();
+    var scored=ENTRIES.map(function(e){
+      var s=0,hitTok=0;
+      tk.forEach(function(t){
+        var ts=0;
+        if(e._t===t)ts+=14;else if(e._t.indexOf(t)>=0)ts+=(t.length>=2?8:0);
+        e._k.forEach(function(k){if(k===t)ts+=7;else if(t.length>=2&&(k.indexOf(t)>=0||(k.length>=2&&t.indexOf(k)>=0)))ts+=3;});
+        if(t.length>=2){var c=count(e._x,t);ts+=Math.min(c,4)*1.5;}
+        if(ts>0){hitTok++;s+=ts;}
+      });
+      if(hitTok>1)s*=1+0.35*(hitTok-1);
+      if(phrase.length>=3&&phrase.indexOf(' ')>0&&(e._x.indexOf(phrase)>=0||e._k.indexOf(phrase)>=0||e._t.indexOf(phrase)>=0))s+=10;
+      return{e:e,s:s};
+    }).filter(function(o){return o.s>=3;}).sort(function(a,b){return b.s-a.s;});
+    return{tokens:tk,hits:scored.slice(0,limit||4).map(function(o){return o.e;}),total:scored.length,all:scored.map(function(o){return o.e;})};
+  }
+
+  /* ---------- 자캐 키워드 데이터 ---------- */
+  var LINEAGES=[['늑대','갯과','높음'],['여우','갯과','중간'],['개','갯과','중간'],['설표','고양잇과','높음'],['사자','고양잇과','중간'],['고양이','고양잇과','중간'],['산양','유제류','높음'],['말','유제류','중간'],['야크','유제류','높음'],['사슴','유제류','낮음'],['곰','곰','최고'],['맹금','조류','중간'],['까마귀','조류','중간'],['작은 새','조류','중간'],['토끼','소형 포유류','낮음'],['쥐','소형 포유류','낮음'],['다람쥐','소형 포유류','낮음'],['도마뱀','파충류','특수'],['뱀','파충류','특수']];
+  var FAMTRAIT={'갯과':'무리 의식과 결속이 강하다','고양잇과':'개인주의적이고 야간 시력이 뛰어나다','유제류':'지구력이 뛰어나다','곰':'체격과 힘, 내성 모두 최고다','조류':'깃털 장식, 뛰어난 시력과 방향 감각','소형 포유류':'청각이 가장 예민해 신호를 가장 잘 듣는다','파충류':'비늘 탓에 결정화가 늦게 드러난다'};
+  var LIN={};LINEAGES.forEach(function(l){LIN[l[0]]={key:l[0],fam:l[1],res:l[2]};});
+  var UCMODELS=[['노동형','기관부 노동 안드로이드'],['서비스형','상층 가정의 가사 안드로이드'],['수인형','채굴장 대체 노동 안드로이드'],['보안형','경비 안드로이드']];
+
+  var CITY={
+    'TB-01':{name:'알비온',motif:'영국',tag:'협정체의 기함이자 수도',sp:[44,38,10,8],jobs:['명부 중앙청 서기','금융 브로커','시날 회원제 클럽 시종','하층 펍 주인','이사회 비서'],fac:['코버넌트 홀딩스 정규직','시날 회원제 클럽의 연줄'],hooks:['하선당한 알비온 출신은 다른 도시에서도 받아주지 않는다.','협정체의 중요한 결정은 시날의 회원제 클럽에서 내려진다는 말이 있다.'],kw:['계급 예법','비 오는 인공 하늘'],names:['에드윈','마거릿','아서','엘리너','시어도어','아이린','레지널드','해리엇']},
+    'TB-02':{name:'뤼미에르',motif:'프랑스',tag:'몰락한 맏이, 아름다움의 도시',sp:[30,46,14,10],jobs:['향수 조향사','인공 귀 패션 디자이너','몰락 귀족 가문의 자제','살롱 주인','선체 배관 정비공'],fac:['하층의 비밀 결사','기함 지위를 노리는 귀족 가문'],hooks:['기함 지위를 되찾으려는 가문들의 음모가 끊이지 않는다.','하층의 비밀 결사가 네 번째 봉기를 준비하고 있다.'],kw:['살롱 정치','하층 봉기'],names:['앙투안','셀레스트','레미','오렐리','바스티앙','콜레트','쥘','엘로디']},
+    'TB-03':{name:'베르크프리트',motif:'독일 · 오스트리아',tag:'법과 질서의 도시',sp:[30,46,12,12],jobs:['법률가','법원 서기','궤도 정비조 수형자','운행 시간표 설계사','카페하우스 주인'],fac:['협정체 최고 법원','궤도 정비 본부'],hooks:['돈을 받고 형기를 늘려주는 부패 판사가 있다.','연장 계약의 실체를 쫓는 사람들이 있다.'],kw:['규칙과 정시성','연장 계약'],names:['루카스','마그다','펠릭스','안네리제','콘라트','리젤','발터','테레지아']},
+    'TB-04':{name:'로타',motif:'이탈리아 · 그리스',tag:'순례와 외교의 도시',sp:[28,46,14,12],jobs:['순례 안내인','병원 간호사','외교관 보좌','은수자','결정 성상 행렬의 운반수'],fac:['성좌 외교 창구','성물 밀매 조직'],hooks:['성좌의 결정 성물을 몰래 거래하는 밀매 조직이 있다.','협정체와 성좌의 외교 창구 뒤에서 첩보전이 벌어진다.'],kw:['결정 성상 행렬','순례 노선'],names:['로렌초','키아라','니코스','엘레니','마르코','소피아','다미아노','이레네']},
+    'TB-05':{name:'옌두',motif:'중국',tag:'불꽃의 도시, 협정체의 제련소',sp:[22,56,12,10],jobs:['제련 장인','길드 견습생','필터 마스크 장인','전통극 배우','하층 찻집 주인'],fac:['제련 장인 길드','경쟁 길드'],hooks:['기록에서 지워진 제련 사고가 있다.','제련 길드 사이의 경쟁이 위험해지고 있다.'],kw:['노화절','필터 마스크'],names:['린 웨이','쑤 란','천 이','바이 루','자오 밍','류 샹','한 위에','팡 칭']},
+    'TB-06':{name:'다웅안',motif:'필리핀 · 태국',tag:'바다의 항구 도시',sp:[20,52,18,10],jobs:['잠수 인양꾼','수상 시장 상인','운송 차량 개조사','밀수꾼','선체 부식 정비공'],fac:['수상 시장 상인 조합','밀수 선단'],hooks:['바다 아래 가라앉은 구세계 도시를 노리는 잠수 인양꾼들이 있다.','세일과 노드에서 들어오는 물자에 밀수품이 섞여 있다.'],kw:['수상 시장','죽은 바다'],names:['말라야','다니엘로','탈라','아릿','난','분미','레아','라니']},
+    'TB-07':{name:'띠엔퐁',motif:'베트남 · 인도네시아',tag:'선봉의 도시',sp:[24,54,12,10],jobs:['회수반 대원','장갑 부대 병사','계약 병사','그림자 인형극 광대','터널 길잡이'],fac:['회수반','선단 호위 장갑 부대'],hooks:['광야 출격에서 돌아오지 않는 부대가 늘고 있다.','선체 내부 터널 깊은 곳에 누가 사는지 아무도 모른다.'],kw:['되갚는 전통','비밀 터널'],names:['응우옌 안','쩐 마이','레 꽝','팜 투','아디','데위','라트나','부디']},
+    'TB-08':{name:'우에르타',motif:'라틴아메리카',tag:'선단의 식량 창고',sp:[22,54,14,10],jobs:['수경 농부','배양육 공장 노동자','시날 전속 요리사','벽화가','거리 악사'],fac:['농장 노동자 연대','진짜 흙 밀매상'],hooks:['진짜 흙을 몰래 빼돌려 파는 시장이 있다.','농장 노동자들의 연대가 커지고 있다.'],kw:['빛의 날','진짜 흙'],names:['마테오','루시아','이네스','라파엘','카밀라','디에고','솔','베니토']},
+    'TB-09':{name:'하늘',motif:'동아시아',tag:'인공 하늘과 빛의 도시',sp:[28,48,12,12],jobs:['연습생','인공 하늘 영상 디자이너','방송 PD','편의점 야간 근무자','포장마차 주인','인공 하늘 해커'],fac:['하늘 해커 집단','협정체 선전 방송국'],hooks:['인공 하늘에 몰래 메시지를 숨기는 해커 집단이 있다.','하층 아이들에게 스타가 되는 것 말고는 등급을 올릴 길이 거의 없다.'],kw:['연습생 문화','하늘 해커'],names:['서하','이안','유키','하루','지온','미레','린','소라']},
+    'TB-10':{name:'헬릭스',motif:'미국',tag:'연구와 생산의 도시',sp:[30,36,12,22],jobs:['안드로이드 조립공','LCS 연구원','의체 엔지니어','스타트업 창업자','연구소 탈출 실험체'],fac:['헬릭스 연구소','기업 평생 계약'],hooks:['숨붙이의 꿈을 해석하는 비공개 연구가 진행 중이다.','연구소에서 탈출한 실험체에 대한 소문이 끊이지 않는다.'],kw:['성공 신화','탈출 실험체'],names:['케일럽','매디슨','조던','레이','다코타','에이버리','브룩스','로건']},
+    'TB-11':{name:'자리야',motif:'러시아',tag:'북방 극지 노선의 늑대들',sp:[16,66,10,8],wolf:true,jobs:['얼음 결정 채굴꾼','쇄빙 기관사','공동 사우나 관리인','결정 성상 조각가','노동자 연대 조직원'],fac:['흰 늑대','자리야 노동자 연대'],hooks:['흰 늑대가 세일 산악파, 노드와 연결돼 있다는 소문이 있다.','북방 노선 끝에서 TB-12의 잔해를 봤다는 승무원이 있다.'],kw:['극야','흰 늑대'],names:['레프','베라','미하일','나댜','일리야','알료나','표도르','리다']},
+    'TB-12':{name:'타보트',motif:'에티오피아',tag:'사라진 기록의 도시 · AF 168 소실',sp:[30,46,14,10],lost:true,jobs:['필사가 길드 견습생','명부 원본 보관 서기','사법 서기','정보 수집관'],fac:['필사가 길드 생존자'],hooks:['AF 168년 폭풍 속에서 도시와 함께 사라졌다가 광야에서 발견됐다.','명부 원본 일부의 행방을 알고 있다.'],kw:['명부 원본','광야의 불빛'],names:['아베베','메론','다윗','헬렌','테디','셀람','요나스','베투엘']}
+  };
+  var CLANS={'테만':{sp:'설표',job:['씨족 의장 가문의 자제','씨족 치유사','붉은 돌 회의 서기'],fac:'중립 (의장 씨족)'},'케나즈':{sp:'산양',job:['계약 광산 관리인','회사 매점 관리인','재계약 협상 대리인'],fac:'협력파'},'코라':{sp:'곰',job:['갱도 장인','갱도 붕괴 구조대원','계약 광산 채굴꾼'],fac:null},'제포':{sp:'맹금',job:['폭풍 예보사','붉은 바위 게릴라','고지 정찰병'],fac:'산악파 · 붉은 바위'},'오마르':{sp:'야크',job:['야크 목동','다웅안 교역상','산양 털 직물 장인'],fac:null},'아나':{sp:'말',job:['전령','짐수레 운송꾼','광야 길잡이'],fac:'중립 (양쪽의 전언을 나른다)'},'떠돌이':{sp:null,job:['계약 광부','도시에서 돌아온 막노동꾼','씨족 문양을 지운 귀향자'],fac:null}};
+  var SEIRNAMES=['사르','우즈','하란','미브','엘라','토르','아샤','케드','이람','네바'];
+  var NODBASES=['에녹','두발','지하 정착지','야발 캐러밴'];
+  var NODJOBS=['해결사','야발 캐러밴 운전수','이야기꾼','두발의 무허가 의체 시술사','폐허 인양꾼','서쪽 원정대원','탈환파 습격대원','숨붙이 정비사','물 상인'];
+  var NODFAC=['해결사 네트워크','야발 캐러밴 연합','서쪽으로 가는 자들','문을 두드리는 자들','라멕의 무리','무소속'];
+  var NODNAMES=['재','갈','무쇠','바람','열하루','들꽃','녹','소금','그을음','새벽녘'];
+  var OPHJOBS={clergy:['칸토르','수련자','신학원 학생','눈의 장로회 정보원'],lay:['순례자','제2고리 경작지 농부','평신도 상인','순례자 숙소 관리인'],uc:['성좌 근위대 (그릇)','경작 봉사 그릇','전례 보조 그릇']};
+  var OPHNAMES=['아우렐리우스','세라피나','이그나티우스','코르넬리아','살비우스','오틸리아','클레멘스','비비아나'];
+  var UCNAMES=['노엘','아다','미라','세이','루카','이오','니나','오르'];
+  var STAGE=[['무감염','이상 없음'],['잠복','피부 아래 미세 결정. 정밀 검진으로만 발견된다'],['발현','피부 표면에 결정이 돋는다. 옷이나 의체로 숨길 수 있다'],['진행','손발 일부가 굳어 움직임이 둔해진다'],['말기','전신 결정화가 진행되고 신호가 들리기 시작한다. 몸 곳곳에 회로 같은 문양이 생긴다']];
+  var TIERS=[['Tier 0','시날 스파이어'],['Tier 1','상층 갑판'],['Tier 2','중층 갑판'],['Tier 3','하층 화물칸'],['Tier 4','검역 갑판'],['하선','광야']];
+
+  /* ---------- 난수 ---------- */
+  function rnd(n){return Math.floor(Math.random()*n);}
+  function pick(a){return a[rnd(a.length)];}
+  function wpick(pairs){var s=0,i;for(i=0;i<pairs.length;i++)s+=pairs[i][1];var r=Math.random()*s;for(i=0;i<pairs.length;i++){r-=pairs[i][1];if(r<0)return pairs[i][0];}return pairs[pairs.length-1][0];}
+  function picks(a,n){var c=a.slice(),o=[];while(c.length&&o.length<n)o.push(c.splice(rnd(c.length),1)[0]);return o;}
+
+  /* ---------- 명부 계산 ---------- */
+  function manifest(kind,G,C,T){
+    var score=G+C-T,tier=score>=9?0:score>=7?1:score>=5?2:score>=3?3:score>=1?4:5,notes=[];
+    if(kind==='later'&&tier<2){tier=2;notes.push('Class-L 상한으로 Tier 2');}
+    if(T>=2&&tier<4){tier=4;notes.push('T2 이상이라 검역 갑판 강제 배정');}
+    if(T>=3)notes.push('T3 이상이라 다음 정차지에서 자동 하선 대상');
+    return{score:score,tier:tier,notes:notes};
+  }
+
+  /* ---------- 질의에서 조건 읽기 ---------- */
+  function parseLocks(q){
+    var s=String(q),low=s.toLowerCase(),tk=tokens(s),f={};
+    Object.keys(CITY).forEach(function(k){var c=CITY[k];
+      if(low.indexOf(k.toLowerCase())>=0)f.origin=k;
+      else if(c.name==='하늘'){if(tk.indexOf('하늘')>=0&&!/(인공|진짜)\s*하늘/.test(s))f.origin=k;}
+      else if(s.indexOf(c.name)>=0)f.origin=k;});
+    if(/뱅가드/.test(s))f.origin='TB-07';if(/아르고스/.test(s))f.origin='TB-12';
+    if(/성좌|오파님/.test(s))f.origin='OPH';
+    if(/세일|고원/.test(s))f.origin='SEIR';
+    if(/노드|광야|자유구역|에녹|두발/.test(s))f.origin='NOD';
+    Object.keys(CLANS).forEach(function(c){if(s.indexOf(c+' 씨족')>=0||s.indexOf(c+'씨족')>=0||(c.length>=2&&tk.indexOf(c)>=0)){f.origin='SEIR';f.clan=c;}});
+    var lin=null;LINEAGES.forEach(function(l){var n=l[0];if(n.length>=2?s.indexOf(n)>=0:tk.indexOf(n)>=0)lin=lin||n;});
+    if(!lin&&/(매|독수리|부엉이)/.test(tk.join(' ')))lin='맹금';
+    if(!lin&&tk.indexOf('새')>=0)lin='작은 새';
+    if(lin)f.species={cat:'later',lin:lin};
+    else if(/언섹션|숨붙이|안드로이드|\buc\b/i.test(s))f.species={cat:'uc'};
+    else if(/혼혈/.test(s))f.species={cat:'mixed'};
+    else if(/순수\s*인간|인간/.test(s)&&!/수인/.test(s))f.species={cat:'human'};
+    else if(/레이터|수인|케모/.test(s))f.species={cat:'later'};
+    var m=s.match(/(?:^|[^a-z])t\s?([0-4])(?![0-9])/i);if(m&&!/tb-/i.test(s.slice(Math.max(0,m.index-1),m.index+3)))f.T=+m[1];
+    var bm=s.match(/에녹|두발|지하 정착지|캐러밴/);if(bm)f.base=bm[0]==='캐러밴'?'야발 캐러밴':bm[0];
+    return f;
+  }
+
+  /* ---------- 자캐 생성 ---------- */
+  function rollSpecies(origin,clan){
+    var sp;
+    if(origin==='SEIR'){
+      var cl=CLANS[clan];if(cl&&cl.sp)return{cat:'later',lin:cl.sp};
+      return wpick([[{cat:'mixed'},60],[{cat:'later',lin:pick(['여우','늑대','사슴','토끼'])},40]]);
+    }
+    if(origin==='NOD')return wpick([[{cat:'later'},35],[{cat:'mixed'},30],[{cat:'uc'},20],[{cat:'human'},15]]);
+    if(origin==='OPH')return wpick([[{cat:'human'},34],[{cat:'later'},36],[{cat:'uc'},30]]);
+    var c=CITY[origin];sp=wpick([['human',c.sp[0]],['later',c.sp[1]],['mixed',c.sp[2]],['uc',c.sp[3]]]);
+    if(sp==='later'&&c.wolf&&Math.random()<.65)return{cat:'later',lin:'늑대'};
+    return{cat:sp};
+  }
+  function fillSpecies(sp){
+    sp=Object.assign({},sp);
+    if(sp.cat==='later'&&!sp.lin)sp.lin=pick(LINEAGES)[0];
+    if(sp.cat==='mixed'&&!sp.mix){var a=pick(LINEAGES)[0],b=Math.random()<.5?'순수 인간':pick(LINEAGES)[0];if(b===a)b='순수 인간';sp.mix=a+' × '+b;}
+    if(sp.cat==='uc'&&!sp.model)sp.model=wpick([[UCMODELS[0],34],[UCMODELS[1],24],[UCMODELS[2],30],[UCMODELS[3],12]]);
+    return sp;
+  }
+  function resOf(sp){if(sp.cat==='human')return'평균 이하';if(sp.cat==='later')return LIN[sp.lin].res;if(sp.cat==='mixed')return'예측 불가';return null;}
+  function rollT(sp,origin){
+    var r=resOf(sp),w={'최고':[52,32,11,4,1],'높음':[40,35,15,7,3],'중간':[28,32,22,11,7],'특수':[30,30,20,12,8],'낮음':[16,28,27,17,12],'평균 이하':[26,32,22,12,8],'예측 불가':[24,30,24,13,9]}[r]||[30,30,20,12,8];
+    if(origin&&CITY[origin]&&!CITY[origin].lost){w=w.slice();w[3]=Math.round(w[3]*.5);w[4]=Math.round(w[4]*.3);}
+    return wpick(w.map(function(v,i){return[i,v];}));
+  }
+  function rollGC(sp){
+    var G=sp.cat==='human'?wpick([[4,55],[5,45]]):sp.cat==='mixed'?wpick([[1,80],[2,20]]):wpick([[1,30],[2,45],[3,25]]);
+    var C=wpick([[1,14],[2,24],[3,30],[4,20],[5,12]]);
+    return{G:G,C:C};
+  }
+  function clergyJob(j){return OPHJOBS.clergy.indexOf(j)>=0;}
+
+  function roll(prev,locks,force){
+    prev=prev||{};locks=locks||{};force=force||{};
+    var o={},B=force.bias||null,L=function(k){return locks[k]&&prev[k]!==undefined;};
+    // 출신
+    if(L('origin')){o.origin=prev.origin;o.clan=prev.clan;o.base=prev.base;}
+    else{
+      o.origin=force.origin||(B&&B.origins&&B.origins.length&&Math.random()<.85?wpick(B.origins):wpick([['CITY',62],['OPH',12],['SEIR',13],['NOD',13]]));
+      if(o.origin==='CITY'){var keys=Object.keys(CITY).filter(function(k){return!CITY[k].lost;});o.origin=pick(keys);}
+      if(B&&B.job&&!force.origin){var rxj=new RegExp(B.job);for(var tries=0;tries<12&&!jobPool(o.origin).some(function(j){return rxj.test(j);});tries++){o.origin=Math.random()<.7&&B.origins.length?wpick(B.origins):pick(Object.keys(CITY).filter(function(k){return!CITY[k].lost;}).concat(['OPH','SEIR','NOD']));}}
+      if(o.origin==='TB-12'&&!force.origin&&!(B&&B.origins&&B.origins.some(function(x){return x[0]==='TB-12';})))o.origin='TB-11';
+      if(o.origin==='SEIR')o.clan=force.clan||(B&&B.clan)||null;
+      if(o.origin==='NOD')o.base=force.base||(B&&B.base)||pick(NODBASES);
+    }
+    // 종족
+    if(L('species'))o.species=prev.species;
+    else o.species=fillSpecies(force.species||(B&&B.species&&B.species.length&&!(o.origin==='SEIR'&&o.clan)&&Math.random()<.8?wpick(B.species):rollSpecies(o.origin,o.clan)));
+    if(o.origin==='SEIR'){
+      if(!o.clan){var match=null;Object.keys(CLANS).forEach(function(c){if(CLANS[c].sp&&o.species.cat==='later'&&CLANS[c].sp===o.species.lin)match=c;});o.clan=match||'떠돌이';}
+      else if(CLANS[o.clan].sp&&!(o.species.cat==='later'&&o.species.lin===CLANS[o.clan].sp)&&!L('origin')){var m2=null;Object.keys(CLANS).forEach(function(c){if(CLANS[c].sp&&o.species.cat==='later'&&CLANS[c].sp===o.species.lin)m2=c;});o.clan=m2||'떠돌이';}
+    }
+    // 결정화 / 명부
+    if(o.species.cat==='uc')o.T=null;
+    else if(L('lcs')&&prev.T!=null)o.T=prev.T;
+    else if(L('manifest')&&prev.T!=null)o.T=prev.T;
+    else o.T=(force.T!=null)?force.T:(B&&B.T?wpick(B.T.map(function(v,i){return[i,v];})):rollT(o.species,o.origin));
+    if(L('manifest')&&prev.G!=null){o.G=prev.G;o.C=prev.C;}else{var gc=rollGC(o.species);o.G=gc.G;o.C=gc.C;if(B&&B.C==='high')o.C=wpick([[4,55],[5,45]]);if(B&&B.C==='low')o.C=wpick([[1,55],[2,45]]);}
+    if(o.species.cat==='human'&&(o.G<4))o.G=4;
+    if(o.species.cat!=='human'&&o.species.cat!=='uc'&&o.G>3)o.G=3;
+    o.nodStatus=L('manifest')&&prev.nodStatus?prev.nodStatus:wpick([['x',60],['born',40]]);
+    // 직업
+    o._jobre=B&&B.job?new RegExp(B.job):null;
+    if(L('job'))o.job=prev.job;else o.job=force.job||biased(rollJob,o,B&&B.job);
+    delete o._jobre;
+    // 소속
+    if(L('faction'))o.faction=prev.faction;else o.faction=force.faction||biased(rollFaction,o,B&&B.fac);
+    // 비밀
+    if(L('secret'))o.secret=prev.secret;else o.secret=force.secret||biased(rollSecret,o,B&&B.sec);
+    // 훅
+    if(L('hook'))o.hook=prev.hook;else o.hook=rollHook(o);
+    // 이름
+    if(L('names'))o.names=prev.names;else o.names=rollNames(o);
+    return o;
+  }
+  function jobPool(origin){
+    if(origin==='OPH')return OPHJOBS.clergy.concat(OPHJOBS.lay);
+    if(origin==='SEIR'){var a=[];Object.keys(CLANS).forEach(function(c){a=a.concat(CLANS[c].job);});return a;}
+    if(origin==='NOD')return NODJOBS;
+    return CITY[origin]?CITY[origin].jobs:[];
+  }
+  function biased(fn,o,re){var v=fn(o);if(!re)return v;var rx=new RegExp(re);for(var i=0;i<24&&!rx.test(v);i++)v=fn(o);return v;}
+  function rollJob(o){
+    var sp=o.species;
+    if(o.origin==='OPH'){if(sp.cat==='uc')return pick(OPHJOBS.uc);return Math.random()<.5?pick(OPHJOBS.clergy):pick(OPHJOBS.lay);}
+    if(o.origin==='SEIR')return pick(CLANS[o.clan||'떠돌이'].job);
+    if(o.origin==='NOD')return pick(NODJOBS);
+    if(sp.cat==='uc'){if(o._jobre){var m=CITY[o.origin].jobs.filter(function(j){return o._jobre.test(j);});if(m.length)return'배정 직무 · '+pick(m);}return'표면상 '+sp.model[1];}
+    var c=CITY[o.origin];return pick(c.jobs);
+  }
+  function rollFaction(o){
+    if(o.origin==='OPH'){if(o.species.cat==='uc')return'성좌 근위대 · 그릇';return wpick([['성좌 정통',55],['눈의 장로회',20],['성좌에 잠입한 협정체 첩자',15],['순례 행렬',10]]);}
+    if(o.origin==='SEIR'){var cf=CLANS[o.clan||'떠돌이'].fac;if(cf&&Math.random()<.7)return cf;return pick(['협력파','산악파','중립','산악파 · 붉은 바위']);}
+    if(o.origin==='NOD'){var f=pick(NODFAC);if(o.job==='해결사')f='해결사 네트워크';if(o.job==='야발 캐러밴 운전수')f='야발 캐러밴 연합';if(o.job==='서쪽 원정대원')f='서쪽으로 가는 자들';if(o.job==='탈환파 습격대원')f='문을 두드리는 자들';return f;}
+    var c=CITY[o.origin];
+    if(o.species.cat==='uc')return wpick([['하층 언섹션 공동체 (소문)',50],['소속 없이 숨어 지냄',35],['문을 두드리는 자들과 내통',15]]);
+    return wpick([[pick(c.fac),55],['무소속',25],['문을 두드리는 자들과 내통',10],['코버넌트 계약직',10]]);
+  }
+  function rollSecret(o){
+    var sp=o.species,pool=[],city=!!CITY[o.origin];
+    if(sp.cat==='uc'){pool.push('명령을 거부한 적이 있다. 그날 이후 꿈을 꾼다');pool.push('홍채의 일련번호를 긁어내고 의안으로 바꿨다');pool.push('인공 피부 아래 결정 무늬가 점점 번지고 있다');pool.push('밤마다 신호가 들린다');if(sp.model[0]==='수인형')pool.push('귀와 꼬리가 감정에 따라 움직이기 시작했다',  '귀와 꼬리가 감정에 따라 움직이기 시작했다');if(o.origin==='OPH')pool.push('승천할 날이 다가오지만 코어를 바치고 싶지 않다');}
+    else{
+      if(o.T===1&&city)pool.push('T1 잠복 감염을 숨기고 다음 심사일을 버티고 있다','T1 잠복 감염을 숨기고 다음 심사일을 버티고 있다');
+      if(o.T===2&&city)pool.push('피부에 돋은 결정을 옷과 의체로 가리고 산다');
+      if(o.T>=3)pool.push('신호가 들리기 시작했다');
+      if(o.T>=3&&city)pool.push('다음 정차지에서 하선될 것을 알고 마지막 일을 준비한다');
+      if(sp.cat==='later'&&LIN[sp.lin].fam==='소형 포유류')pool.push('남들은 못 듣는 공명을 듣는다');
+      if(sp.cat==='later'&&LIN[sp.lin].fam==='파충류')pool.push('비늘 아래 결정화가 얼마나 진행됐는지 스스로도 모른다');
+      if(sp.cat==='human')pool.push('의체 이식률이 높아 결정화가 빨라지고 있다');
+      if(sp.cat==='human'&&city)pool.push('몰래 레이터와 깊은 관계를 맺고 있다');
+      if(o.origin==='NOD'&&o.nodStatus==='x')pool.push('목 뒤의 X 표식을 가리고 도시에 드나든다');
+      if(o.origin==='SEIR')pool.push(o.clan==='떠돌이'?'씨족 문양을 지운 이유를 아무에게도 말하지 않는다':'회사 화폐 빚 때문에 광산을 떠나지 못한다');
+      if(o.origin==='OPH'&&o.T>=2)pool.push('결정화가 축복이라는 교리를 더는 믿지 않는다');
+      pool.push('가족이 결정화로 떠났다','명부 기록과 다른 과거를 갖고 있다');
+    }
+    return pick(pool);
+  }
+  function rollHook(o){
+    if(CITY[o.origin])return pick(CITY[o.origin].hooks);
+    if(o.origin==='SEIR')return pick(['계약 만료를 앞두고 씨족장 회의 내부에 코버넌트의 매수된 첩자가 있다.','아나 씨족의 전령 하나가 붉은 돌 회의의 밀서를 가지고 사라졌다.','회사 화폐 빚에 묶인 젊은 수인들이 탈주를 준비하고 있다.','갱도 가장 깊은 곳의 구세계 시설 입구를 코라 씨족이 봉인했다.']);
+    if(o.origin==='NOD')return pick(['에녹의 해결사가 시날에서 내려온 의뢰를 받았다. 의뢰인의 정체는 아무도 모른다.','사라진 TB-12의 불빛이 폭풍 너머로 보인다.','승천을 거부하고 성좌에서 도망친 그릇들이 광야 어딘가에 숨어 산다.','광야 서쪽 끝, 불타는 빛의 장벽 너머에 폭풍이 닿지 않은 땅이 있다고 한다.']);
+    return pick(['협정체가 제1기관의 비밀을 빼내려 첩보전을 벌이고 있다.','살아 있는 성상 중 하나가 아직 말을 한다는 소문이 있다.','낙하절이 다가오며 승천을 앞둔 그릇들이 늘고 있다.','충돌구의 결정들이 밤에도 빛나는 이유를 아무도 모른다.']);
+  }
+  function rollNames(o){
+    var list;
+    if(o.species.cat==='uc'){var code=(o.origin==='OPH'?'V-':'U-')+String(1000+rnd(9000));return picks(UCNAMES,2).concat([code+' (기체 번호)']);}
+    if(CITY[o.origin])list=CITY[o.origin].names;else if(o.origin==='SEIR')return picks(SEIRNAMES,3).map(function(n){return n+' '+(o.clan==='떠돌이'?'(씨족 없음)':o.clan);});
+    else if(o.origin==='NOD')list=NODNAMES;else list=OPHNAMES;
+    return picks(list,3);
+  }
+
+  /* ---------- 표시용 ---------- */
+  function view(o){
+    var sp=o.species,rows={},tags=[];
+    // 출신
+    if(CITY[o.origin]){var c=CITY[o.origin];rows.origin=[o.origin+' '+c.name,c.motif+' · '+c.tag];tags.push(c.name,c.motif.split(' · ')[0]);tags=tags.concat(c.kw);}
+    else if(o.origin==='SEIR'){rows.origin=['세일 고원 연맹 · '+o.clan+(o.clan==='떠돌이'?'':' 씨족'),o.clan==='떠돌이'?'어느 씨족에도 완전히 속하지 못한 자':(CLANS[o.clan].sp+' 씨족 · 붉은 바위 절벽의 동굴 주거지')];tags.push('세일',o.clan);}
+    else if(o.origin==='NOD'){rows.origin=['노드 자유구역 · '+o.base,'폭풍과 물과 총이 규칙을 정하는 무정부 지대'];tags.push('노드',o.base);}
+    else{var ring=sp.cat==='uc'?'심장 아래 공동 거처':(clergyJob(o.job)?'제1고리':'제3고리');rows.origin=['오파님 성좌 · '+ring,'충돌구 위 기계신의 신정 도시국가'];tags.push('오파님 성좌');}
+    // 종족
+    if(sp.cat==='human'){rows.species=['순수 인간','LCS 내성 평균 이하 · 감각이 둔해 의체로 메운다'];tags.push('순수 인간');}
+    else if(sp.cat==='later'){var l=LIN[sp.lin];rows.species=['레이터 · '+sp.lin+' ('+l.fam+')','LCS 내성 '+l.res+' · '+FAMTRAIT[l.fam]];tags.push(sp.lin,'레이터');}
+    else if(sp.cat==='mixed'){rows.species=['혼혈 · '+sp.mix,'귀, 꼬리, 내성이 예측할 수 없게 섞여 나왔다'];tags.push('혼혈');}
+    else{rows.species=['언섹션 · '+sp.model[0]+' 기반','각성한 안드로이드 · 홍채에 일련번호 패턴'];tags.push('언섹션',sp.model[0]);}
+    // 명부
+    if(sp.cat==='uc'){
+      if(o.origin==='OPH')rows.manifest=['그릇 (Vessel)','성좌의 피난처에서 봉사 중 · 끝에는 승천이 기다린다'];
+      else if(o.origin==='NOD')rows.manifest=['탈주 언섹션','명부 밖 · 회수반에 잡히면 즉시 폐기'];
+      else if(o.origin==='SEIR')rows.manifest=['명부 없음','세일에서는 낯선 존재 · 도시에서는 회수 대상'];
+      else rows.manifest=[o.origin+' / CLASS-U 자산 등록','U-플래그 미발각 · 들키면 회수 후 초기화, 대개는 즉시 폐기'];
+      tags.push('Class-U');
+    }else if(CITY[o.origin]){
+      var kind=sp.cat==='human'?'human':'later',cls=sp.cat==='human'?'H':'L',m=manifest(kind,o.G,o.C,o.T),t=TIERS[m.tier];
+      rows.manifest=[o.origin+' / CLASS-'+cls+' / G'+o.G+' · C'+o.C+' · T'+o.T,m.score+'점 → '+t[0]+' '+t[1]+(m.notes.length?' · '+m.notes.join(' · '):'')];
+      tags.push(t[0]);
+    }else if(o.origin==='SEIR'){rows.manifest=['명부 없음','씨족 서열만 있다 · 도시로 나가는 순간 Class-L'];}
+    else if(o.origin==='NOD'){if(o.nodStatus==='x'){rows.manifest=['Class-X · 하선 처분자','목 뒤 식별 칩에 X 표식 · 광야에서는 보호의 증표'];tags.push('X 표식');}else rows.manifest=['명부 없음 · 광야 태생','명부에 한 번도 오른 적 없다'];}
+    else{if(clergyJob(o.job)){rows.manifest=['Class-O','성좌 인증 성직자 · 명부 심사 면제'];tags.push('Class-O');}else rows.manifest=['명부 없음 · 성좌 거주민','성좌는 명부를 인정하지 않는다'];}
+    // 결정화
+    if(sp.cat==='uc')rows.lcs=['해당 없음','결정화 증후군에 걸리지 않는다 · 대신 인공 피부 아래 결정 무늬'];
+    else{rows.lcs=['T'+o.T+' · '+STAGE[o.T][0],STAGE[o.T][1]+(o.origin==='OPH'&&o.T>=2?' · 성좌에서는 신에게 가까워진 축복':'')];tags.push('T'+o.T);}
+    rows.job=[o.job,''];tags.push(o.job.replace(/^(표면상 |배정 직무 · )/,''));
+    rows.faction=[o.faction,''];if(o.faction!=='무소속')tags.push(o.faction.split(' · ')[0].split(' (')[0]);
+    rows.secret=[o.secret,''];
+    rows.hook=[o.hook,''];
+    rows.names=[o.names.join(' · '),'출신 문화에 맞춘 이름 후보'];
+    var seen={};tags=tags.filter(function(t){if(!t||seen[t])return false;seen[t]=1;return true;});
+    return{rows:rows,tags:tags};
+  }
+  var FIELDS=[['origin','출신'],['species','종족'],['manifest','명부'],['lcs','결정화'],['job','직업'],['faction','소속'],['secret','비밀'],['hook','이야기 훅'],['names','이름 후보']];
+  function sheet(o){var v=view(o),lines=['[잔광 자캐 시드]'];FIELDS.forEach(function(f){var r=v.rows[f[0]];lines.push(f[1]+': '+r[0]+(r[1]?' ('+r[1]+')':''));});lines.push('키워드: '+v.tags.map(function(t){return'#'+t.replace(/\s+/g,'_');}).join(' '));return lines.join('\n');}
+  function contextFor(o){
+    var ids=['later','lcs','manifest','rules'];
+    if(CITY[o.origin])ids.push(o.origin);else if(o.origin==='OPH')ids.push('oph','oph-faith','oph-ranks','oph-vessel');else if(o.origin==='SEIR')ids.push('seir','seir-politics','seir-culture');else ids.push('nod','xmark','nod-life');
+    var sp=o.species;if(sp.cat==='uc')ids.push('uc','uc-detail');else if(sp.cat==='human')ids.push('human');else if(sp.cat==='mixed')ids.push('mixed');
+    if(o.origin==='SEIR'&&o.clan){ENTRIES.forEach(function(e){if(e.oc&&e.oc.clan===o.clan)ids.push(e.id);});}
+    if(o.origin==='NOD'){ENTRIES.forEach(function(e){if(e.oc&&(e.oc.base===o.base||e.oc.faction===o.faction))ids.push(e.id);});}
+    var seen={};return ids.filter(function(i){if(seen[i]||!BYID[i])return false;seen[i]=1;return true;}).map(function(i){var e=BYID[i];return'['+e.sec+' › '+e.t+'] '+e.x;}).join('\n');
+  }
+  function corpus(){return ENTRIES.map(function(e){return'['+e.sec+' › '+e.t+(e.en?' / '+e.en:'')+'] '+e.x;}).join('\n');}
+
+  /* ---------- 느낌 읽기 ---------- */
+  var VIBES=[
+    [/차갑|차가운|냉정|무뚝뚝|과묵|무표정|냉철|시크/,'냉정한',{o:{'TB-03':2,'TB-01':2,'TB-11':2}}],
+    [/다정|상냥|따뜻|친절|온화|순한/,'다정한',{o:{'TB-08':2,'TB-06':2,'TB-04':1}}],
+    [/반항|혁명|저항|봉기|투사|불만|반골|체제/,'반골',{o:{'TB-02':2,'TB-11':2,'NOD':2},fac:'결사|흰 늑대|문을 두드리는|산악파|붉은 바위|내통|연대'}],
+    [/귀족|우아|고상|품위|아가씨|도련님|영애|기품/,'우아한',{o:{'TB-02':3,'TB-01':2},sp:['human'],C:'high'}],
+    [/신앙|신실|성직|수녀|신부|사제|경건|성스러|순례|기도/,'신앙심 깊은',{o:{'OPH':4,'TB-04':2},job:'칸토르|수련자|신학원|순례|은수자'}],
+    [/떠돌|방랑|유랑|자유로운|여행자|정처/,'방랑자',{o:{'NOD':4},base:'야발 캐러밴',job:'캐러밴|이야기꾼|인양꾼|원정대|길잡이'}],
+    [/군인|전투|병사|싸움|용병|전사|무력|총잡이|저격/,'싸움꾼',{o:{'TB-07':3,'NOD':2},job:'병사|대원|습격|게릴라|해결사|정찰',fac:'회수반|장갑|붉은 바위|해결사|라멕'}],
+    [/정비|기술자|엔지니어|기계공|메카닉|수리|개조/,'손재주 좋은',{o:{'TB-10':2,'TB-03':2,'TB-06':1,'TB-02':1},job:'정비|엔지니어|조립|기관사|개조|시술사'}],
+    [/아이돌|스타|연예인|가수|무대|배우|연습생|인기/,'무대 체질',{o:{'TB-09':4,'TB-05':1},job:'연습생|배우|광대|악사|PD'}],
+    [/상인|장사|밀수|거래|흥정|사기꾼|협상|돈을 밝|돈 밝/,'수완가',{o:{'TB-06':3,'NOD':2,'TB-01':1},job:'상인|밀수|물 상인|브로커|교역|협상'}],
+    [/요리|농부|흙|식물|정원|꽃/,'흙냄새 나는',{o:{'TB-08':4},job:'농부|요리사'}],
+    [/장인|대장장이|제련|공예|조각|손으로 만드/,'장인 기질',{o:{'TB-05':3,'TB-11':1},job:'장인|견습생|조각가|직물'}],
+    [/학자|기록|연구|지식|책벌레|서기|필사|공부|똑똑/,'기록하는',{o:{'TB-03':2,'TB-10':2,'TB-12':1,'OPH':1},job:'서기|연구원|필사|학생|법률가'}],
+    [/해커|천재|컴퓨터|프로그래머|전산/,'해커',{o:{'TB-09':3,'TB-10':2},job:'해커|디자이너|엔지니어|창업자'}],
+    [/아픈|병약|시한부|죽어가|창백|오래 못|결정화된|기침/,'시한부',{T:'high'}],
+    [/건강|튼튼|힘센|덩치|괴력|우람|근육/,'강인한',{T:'low',sp:['곰','늑대','야크','산양']}],
+    [/비밀|숨기|정체를|이중생활|스파이|첩자|첩보|위장/,'비밀이 많은',{fac:'첩자|내통|결사|해커',sec:'숨기|감춘|가리고|아무에게도|명부 기록과 다른|일련번호'}],
+    [/로봇|안드로이드|인공적|감정이 없|무감정|기계 같|인형 같/,'인공적인',{sp:['uc']}],
+    [/귀여|소심|겁많|겁이 많|여린|작은 체구|조그만/,'여린',{sp:['토끼','다람쥐','작은 새','쥐']}],
+    [/예민|도도|까칠|고양이 같|새침/,'까칠한',{sp:['fam:고양잇과','여우']}],
+    [/충성|리더|무리|우두머리|든든|맏형|맏언니/,'리더형',{sp:['늑대','개'],o:{'TB-11':2}}],
+    [/빠른|달리|전령|배달|발이 빠/,'날쌘',{sp:['말'],o:{'SEIR':2},clan:'아나'}],
+    [/차분|침착|현명|지혜|어른스러|사려/,'침착한',{sp:['설표','fam:유제류'],o:{'SEIR':1,'TB-03':1}}],
+    [/외로|고독|혼자|쓸쓸|은둔/,'고독한',{job:'은수자|이야기꾼|길잡이|인양꾼',o:{'NOD':1,'TB-04':1}}],
+    [/복수|원한|분노|증오|되갚/,'복수심',{o:{'TB-07':2,'NOD':2},fac:'라멕|회수반|문을 두드리는',sec:'가족|하선'}],
+    [/엘리트|부자|상류|금수저|재벌|돈 많|사치/,'상류층',{sp:['human'],o:{'TB-01':3,'TB-02':1,'TB-10':1},C:'high'}],
+    [/가난|빈민|밑바닥|가진 것 없|흙수저/,'밑바닥 출신',{C:'low',o:{'TB-05':1,'TB-06':1}}],
+    [/의사|간호|치유|힐러|치료|돌보/,'돌보는',{job:'간호|치유사|시술사|구조',o:{'TB-04':2,'SEIR':1,'NOD':1}}],
+    [/경찰|감시|추적|사냥꾼|회수|집행/,'추적자',{job:'회수반|대원|보안|정보',o:{'TB-07':3},fac:'회수반'}],
+    [/노래|음악|악기|이야기꾼|시인|광대/,'노래하는',{job:'이야기꾼|악사|광대|배우|연습생',o:{'NOD':1,'TB-08':1,'TB-09':1}}],
+    [/신호|환청|목소리가 들|이상한 소리/,'신호를 듣는',{T:'high',sp:['토끼','쥐','다람쥐','uc'],sec:'신호|공명'}],
+    [/유쾌|밝은|장난|명랑|활발|수다/,'명랑한',{o:{'TB-06':2,'TB-08':2,'TB-09':1}}],
+    [/광기|미친|집착|위험한|사이코|광신/,'위태로운',{fac:'라멕|첩자|정통',T:'high',o:{'NOD':1,'OPH':1}}],
+    [/추위|설원|북방|겨울|혹한/,'북방',{o:{'TB-11':4}}],
+    [/바다|항구|해변|선원|물속|잠수/,'바다 사람',{o:{'TB-06':4},job:'잠수|인양|상인|밀수'}],
+    [/도망|탈주|쫓기/,'쫓기는',{sec:'하선|가리고|일련번호|X 표식|탈주',o:{'NOD':2},sp:['uc']}]
+  ];
+  var TCURVE={high:[2,6,22,38,32],low:[46,34,14,5,1]};
+  function readVibe(text){
+    var s=String(text),traits=[],o={},sp={},job=[],fac=[],sec=[],T=null,C=null,base=null,clan=null;
+    VIBES.forEach(function(v){if(!v[0].test(s))return;if(traits.indexOf(v[1])<0)traits.push(v[1]);var e=v[2];
+      if(e.o)Object.keys(e.o).forEach(function(k){o[k]=(o[k]||0)+e.o[k];});
+      if(e.sp)e.sp.forEach(function(k){sp[k]=(sp[k]||0)+1;});
+      if(e.job)job.push(e.job);if(e.fac)fac.push(e.fac);if(e.sec)sec.push(e.sec);
+      if(e.T)T=e.T;if(e.C)C=e.C;if(e.base)base=e.base;if(e.clan)clan=e.clan;});
+    var spl=[];Object.keys(sp).forEach(function(k){var w=sp[k];
+      if(k.indexOf('fam:')===0){var fam=k.slice(4),ls=LINEAGES.filter(function(l){return l[1]===fam;});ls.forEach(function(l){spl.push([{cat:'later',lin:l[0]},w/ls.length]);});}
+      else if(k==='human'||k==='uc'||k==='mixed'||k==='later')spl.push([{cat:k},w]);
+      else if(LIN[k])spl.push([{cat:'later',lin:k},w]);});
+    var bias={origins:Object.keys(o).map(function(k){return[k,o[k]];}),species:spl,job:job.length?job.join('|'):null,fac:fac.length?fac.join('|'):null,sec:sec.length?sec.join('|'):null,T:T?TCURVE[T]:null,C:C,base:base,clan:clan};
+    return{traits:traits,bias:bias};
+  }
+  function ro(w){var c=w.charCodeAt(w.length-1);if(c<0xAC00||c>0xD7A3)return w+'로';var j=(c-0xAC00)%28;return w+(j===0||j===8?'로':'으로');}
+  function oneLine(o,traits){
+    var sp=o.species,spS=sp.cat==='human'?'순수 인간':sp.cat==='later'?sp.lin+' 레이터':sp.cat==='mixed'?'혼혈':'언섹션';
+    var orS=CITY[o.origin]?CITY[o.origin].name:o.origin==='SEIR'?'세일 '+o.clan+(o.clan==='떠돌이'?'':' 씨족'):o.origin==='NOD'?'노드 '+o.base:'오파님 성좌';
+    var job=o.job.replace(/^(표면상 |배정 직무 · )/,'');
+    return(traits&&traits.length?traits.slice(0,3).join(' · ')+' ':'')+job+'. '+orS+' 출신 '+ro(spS)+', '+o.secret.replace(/\.$/,'')+'.';
+  }
+  function guide(){
+    var L=[];L.push('출신(origin) 값과 그 출신의 대표 직업:');
+    Object.keys(CITY).forEach(function(k){var c=CITY[k];L.push('- '+k+' '+c.name+'('+c.motif+', '+c.tag+'): '+c.jobs.join(', '));});
+    L.push('- OPH 오파님 성좌(기계신 신정국): '+OPHJOBS.clergy.concat(OPHJOBS.lay).join(', ')+' / 언섹션이면 '+OPHJOBS.uc.join(', '));
+    L.push('- SEIR 세일 고원 연맹(수인 씨족 연맹): 씨족(clan) '+Object.keys(CLANS).map(function(c){return c+(CLANS[c].sp?'('+CLANS[c].sp+')':'')+': '+CLANS[c].job.join(', ');}).join(' / '));
+    L.push('- NOD 노드 자유구역(무정부 광야): 거점(base) '+NODBASES.join(', ')+' / 직업 '+NODJOBS.join(', ')+' / 세력 '+NODFAC.join(', '));
+    L.push('종족(species.cat): human 순수 인간, later 레이터(수인), mixed 혼혈, uc 언섹션(각성한 안드로이드).');
+    L.push('레이터 혈통(species.lin)과 LCS 내성: '+LINEAGES.map(function(l){return l[0]+'('+l[1]+', '+l[2]+')';}).join(', '));
+    L.push('결정화 단계 T: 0 무감염, 1 잠복, 2 발현(피부에 결정), 3 진행(손발이 굳음), 4 말기(신호가 들림). 언섹션은 null.');
+    L.push('도시 세력 예: 흰 늑대(자리야 저항 조직), 회수반(띠엔퐁), 하층의 비밀 결사(뤼미에르), 하늘 해커 집단, 문을 두드리는 자들(탈환파), 산악파 · 붉은 바위(세일), 협력파, 눈의 장로회(성좌).');
+    return L.join('\n');
+  }
+  function sanitize(r){
+    var f={};if(!r||typeof r!=='object')return f;
+    var str=function(v,n){return typeof v==='string'&&v.trim()?v.replace(/\s+/g,' ').trim().slice(0,n):null;};
+    var og=str(r.origin,8);if(og&&(CITY[og]||og==='OPH'||og==='SEIR'||og==='NOD'))f.origin=og;
+    if(f.origin==='SEIR'&&CLANS[r.clan])f.clan=r.clan;
+    if(f.origin==='NOD'&&NODBASES.indexOf(r.base)>=0)f.base=r.base;
+    var sp=r.species;if(sp&&typeof sp==='object'&&['human','later','mixed','uc'].indexOf(sp.cat)>=0){f.species={cat:sp.cat};if(sp.cat==='later'&&LIN[sp.lin])f.species.lin=sp.lin;}
+    if(typeof r.T==='number'&&r.T>=0&&r.T<=4&&!(f.species&&f.species.cat==='uc'))f.T=Math.round(r.T);
+    var j=str(r.job,30),fa=str(r.faction,30),se=str(r.secret,60);if(j)f.job=j;if(fa)f.faction=fa;if(se)f.secret=se;
+    return f;
+  }
+
+  return{readVibe:readVibe,oneLine:oneLine,guide:guide,sanitize:sanitize,ENTRIES:ENTRIES,BYID:BYID,tokens:tokens,search:search,parseLocks:parseLocks,roll:roll,view:view,sheet:sheet,FIELDS:FIELDS,manifest:manifest,TIERS:TIERS,contextFor:contextFor,corpus:corpus,LIN:LIN};
+})();
+if(typeof module!=='undefined')module.exports=URIM;
+/* ================= ENGINE-END ================= */
+</script>
+
+<script>
+(function(){
+  var E=URIM;
+  var $=function(id){return document.getElementById(id);};
+  var thread=$('thread'),log=$('log'),q=$('q'),form=$('form'),send=$('send'),aitog=$('aitog'),toastEl=$('toast');
+  var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var sample=null,aiOn=false,busy=null,history=[];
+  var SVG={lockO:'<svg class="open" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9.5" rx="2"/><path d="M8.5 11V7.5a3.5 3.5 0 0 1 6.8-1.2"/></svg>',lockC:'<svg class="closed" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9.5" rx="2"/><path d="M8.5 11V7.5a3.5 3.5 0 0 1 7 0V11"/></svg>',dice:'<svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="4"/><circle cx="9" cy="9" r="1" fill="currentColor"/><circle cx="15" cy="15" r="1" fill="currentColor"/><circle cx="15" cy="9" r="1" fill="currentColor"/><circle cx="9" cy="15" r="1" fill="currentColor"/></svg>',copy:'<svg viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2.5"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg>',spark:'<svg viewBox="0 0 24 24"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5 18 18M18 6l-2.5 2.5M8.5 15.5 6 18"/></svg>'};
+  var AV='<span class="av" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.4"/><circle cx="12" cy="12" r="1.3" fill="#dfe4e9" stroke="none"/></svg></span>';
+
+  function el(tag,cls,text){var n=document.createElement(tag);if(cls)n.className=cls;if(text!=null)n.textContent=text;return n;}
+  function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+  function toast(t){toastEl.textContent=t;toastEl.classList.add('on');clearTimeout(toast._t);toast._t=setTimeout(function(){toastEl.classList.remove('on');},2200);}
+  function atBottom(){return log.scrollHeight-log.scrollTop-log.clientHeight<80;}
+  function reveal(body){var m=body.closest('.msg');if(!m)return;var top=log.scrollTop+m.getBoundingClientRect().top-log.getBoundingClientRect().top-12;log.scrollTo({top:top,behavior:reduce?'auto':'smooth'});}
+  function scrollDown(force){if(force||atBottom())log.scrollTo({top:log.scrollHeight,behavior:reduce?'auto':'smooth'});}
+
+  /* 아주 작은 마크다운: **굵게**, - 목록, 문단 */
+  function md(text){
+    var out=[],list=null;
+    String(text).split(/\n/).forEach(function(line){
+      var l=line.trim();
+      if(/^[-•]\s+/.test(l)){if(!list){list=[];}list.push('<li>'+inline(l.replace(/^[-•]\s+/,''))+'</li>');return;}
+      if(list){out.push('<ul>'+list.join('')+'</ul>');list=null;}
+      if(!l)return;
+      out.push('<p>'+inline(l.replace(/^#+\s*/,''))+'</p>');
+    });
+    if(list)out.push('<ul>'+list.join('')+'</ul>');
+    return out.join('');
+    function inline(s){return esc(s).replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/`([^`]+)`/g,'<code>$1</code>');}
+  }
+  function highlight(text,toks){
+    var t=toks.filter(function(x){return x.length>=2;}).sort(function(a,b){return b.length-a.length;});
+    if(!t.length)return esc(text);
+    var re=new RegExp('('+t.map(function(x){return x.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');}).join('|')+')','gi');
+    return esc(text).replace(re,'<mark>$1</mark>');
+  }
+  function excerpt(e,toks){
+    var sents=e.x.replace(/([.다])\s+/g,'$1\u0001').split('\u0001');var low=toks.filter(function(t){return t.length>=2;});
+    for(var i=0;i<sents.length;i++){var s=sents[i].toLowerCase();for(var j=0;j<low.length;j++)if(s.indexOf(low[j])>=0)return sents.slice(i,i+2).join(' ');}
+    return sents.slice(0,2).join(' ');
+  }
+
+  /* ---------- 메시지 ---------- */
+  function me(text){var m=el('div','msg me');m.appendChild(el('div','bubble',text));thread.appendChild(m);scrollDown(true);}
+  function bot(){var m=el('div','msg bot');m.innerHTML=AV;var b=el('div','body');m.appendChild(b);thread.appendChild(m);return b;}
+  function say(body,html){var s=el('div','say');s.innerHTML=html;body.appendChild(s);return s;}
+  function chips(body,list,cls){var c=el('div','chips');list.forEach(function(it){var t=typeof it==='string'?{label:it,q:it}:it;var b=el('button','chip'+(t.cls?' '+t.cls:'')+(cls?' '+cls:''),t.label);b.type='button';b.addEventListener('click',function(){if(t.fn)t.fn();else ask(t.q);});c.appendChild(b);});body.appendChild(c);return c;}
+
+  function resultCard(e,toks){
+    var c=el('div','rcard');
+    c.appendChild(el('div','rsec',e.sec));
+    var h=el('div','rtitle');h.textContent=e.t;if(e.en&&e.en!==e.t){var sm=el('small',null,e.en);h.appendChild(sm);}c.appendChild(h);
+    var p=el('p','rtext clip');p.innerHTML=highlight(excerpt(e,toks),toks);c.appendChild(p);
+    var mb=el('button','more','전체 기록 보기');mb.type='button';var open=false;
+    mb.addEventListener('click',function(){open=!open;p.classList.toggle('clip',!open);p.innerHTML=highlight(open?e.x:excerpt(e,toks),toks);mb.textContent=open?'접기':'전체 기록 보기';});
+    c.appendChild(mb);
+    var tl=e.k.slice(0,5).filter(function(k){return toks.indexOf(k.toLowerCase())<0&&k!==e.t;}).slice(0,4).map(function(k){return{label:k,q:k};});
+    if(e.oc)tl.unshift({label:'이 설정으로 자캐 뽑기',cls:'go',fn:function(){me(e.t+' 기반 자캐 뽑아줘');ocReply(ocForce(e.oc),e.t+' 설정을 기반으로 뽑았어요.');}});
+    if(tl.length)chips(c,tl);
+    return c;
+  }
+  function ocForce(oc){var f={};if(oc.origin)f.origin=oc.origin;if(oc.clan)f.clan=oc.clan;if(oc.base)f.base=oc.base==='야발 캐러밴'?'야발 캐러밴':oc.base;
+    if(oc.species){if(oc.species==='uc'||oc.species==='human'||oc.species==='mixed'||oc.species==='later')f.species={cat:oc.species};else f.species={cat:'later',lin:oc.species};}
+    return f;}
+
+  /* ---------- 자캐 카드 ---------- */
+  var ocSeq=410+Math.floor(Math.random()*400);
+  function ocCard(body,force,opt){
+    opt=opt||{};force=force||{};
+    var state={o:E.roll(null,{},force),locks:{},id:++ocSeq,bias:force.bias||null,traits:opt.traits||[],desc:opt.desc||''};
+    Object.keys(force).forEach(function(k){if(k==='origin'||k==='clan'||k==='base')state.locks.origin=true;if(k==='species')state.locks.species=true;if(k==='T')state.locks.lcs=true;if(k==='job'||k==='faction'||k==='secret')state.locks[k]=true;});
+    var card=el('div','oc'),head=el('div','ochead');head.innerHTML='<b>CHARACTER SEED</b><span>#'+String(state.id).padStart(4,'0')+'</span>';card.appendChild(head);
+    var vibeBox=null,oneEl=null;
+    if(state.desc||state.traits.length){
+      vibeBox=el('div','vibe');vibeBox.appendChild(el('div','vl','원한 느낌'));
+      if(state.traits.length){var vt=el('div','vt');state.traits.slice(0,6).forEach(function(t){vt.appendChild(el('span',null,t));});vibeBox.appendChild(vt);}
+      else vibeBox.appendChild(el('div','note',state.desc));
+      oneEl=el('div','one');vibeBox.appendChild(oneEl);card.appendChild(vibeBox);
+    }
+    var rows=el('div','ocrows');card.appendChild(rows);
+    var foot=el('div','ocfoot');card.appendChild(foot);
+    var tagsBox=el('div','chips');foot.appendChild(tagsBox);
+    var act=el('div','ocact');foot.appendChild(act);
+    var bRoll=el('button','btn pri');bRoll.type='button';bRoll.innerHTML=SVG.dice+'<span>다시 뽑기</span>';act.appendChild(bRoll);
+    var bCopy=el('button','btn');bCopy.type='button';bCopy.innerHTML=SVG.copy+'<span>시트 복사</span>';act.appendChild(bCopy);
+    var bAI=el('button','btn ai-only');bAI.type='button';bAI.innerHTML=SVG.spark+'<span>AI로 콘셉트 쓰기</span>';bAI.hidden=!sample;act.appendChild(bAI);
+    foot.appendChild(el('div','ocnote','자물쇠를 잠근 항목은 다시 뽑아도 그대로 남아요. 키워드를 누르면 관련 기록을 찾아요.'));
+    var concept=null;
+    function render(){
+      var v=E.view(state.o);rows.innerHTML='';
+      E.FIELDS.forEach(function(f){
+        var r=v.rows[f[0]],row=el('div','ocrow'+(state.locks[f[0]]?' locked':''));
+        row.appendChild(el('div','lab',f[1]));
+        var val=el('div','val');val.appendChild(el('b',null,r[0]));if(r[1])val.appendChild(el('span',null,r[1]));row.appendChild(val);
+        var lk=el('button','lock');lk.type='button';lk.innerHTML=SVG.lockO+SVG.lockC;lk.setAttribute('aria-pressed',String(!!state.locks[f[0]]));lk.setAttribute('aria-label',f[1]+' '+(state.locks[f[0]]?'잠금 해제':'잠그기'));
+        lk.addEventListener('click',function(){state.locks[f[0]]=!state.locks[f[0]];render();});
+        row.appendChild(lk);rows.appendChild(row);
+      });
+      if(oneEl)oneEl.textContent=E.oneLine(state.o,state.traits);
+      tagsBox.innerHTML='';v.tags.slice(0,10).forEach(function(t){var b=el('button','chip hash','#'+t);b.type='button';b.addEventListener('click',function(){ask(t);});tagsBox.appendChild(b);});
+    }
+    bRoll.addEventListener('click',function(){state.o=E.roll(state.o,state.locks,{bias:state.bias});state.id=++ocSeq;head.querySelector('span').textContent='#'+String(state.id).padStart(4,'0');render();if(concept){concept.remove();concept=null;}});
+    bCopy.addEventListener('click',function(){
+      var txt=E.sheet(state.o);
+      var done=function(){toast('자캐 시트를 복사했어요');};
+      var fail=function(){var pre=foot.querySelector('.plain');if(!pre){pre=el('div','plain');foot.appendChild(pre);}pre.textContent=txt;toast('복사가 막혀 있어요. 아래 글을 길게 눌러 복사하세요');};
+      try{navigator.clipboard.writeText(txt).then(done,fail);}catch(e){fail();}
+    });
+    bAI.addEventListener('click',function(){
+      if(!sample||busy)return;
+      if(concept)concept.remove();
+      concept=el('div','concept');card.appendChild(concept);
+      runAI(concept,conceptPrompt(state.o,state.desc,state.traits),{modelTier:'default',cache:false},function(){});
+    });
+    card._state=state;card._render=render;render();
+    body.appendChild(card);return card;
+  }
+  function ocReply(force,lead,opt,b){
+    b=b||bot();opt=opt||{};
+    if(lead!==null)say(b,'<p>'+esc(lead||'자캐 키워드를 뽑았어요.')+' 마음에 드는 항목은 자물쇠로 잠그고 나머지만 다시 뽑을 수 있어요.</p>');
+    var card=ocCard(b,force,opt);
+    if(aiOn&&sample){
+      var c=el('div','concept');card.appendChild(c);
+      runAI(c,conceptPrompt(card._state.o,card._state.desc,card._state.traits),{modelTier:'default',cache:false},function(){});
+    }
+    reveal(b);
+  }
+  /* 원하는 느낌을 읽어 자캐 뽑기 */
+  function descReply(text){
+    var locks=E.parseLocks(text),vibe=E.readVibe(text),b=bot();
+    function local(note){
+      var force=Object.assign({},locks,{bias:vibe.bias}),lead;
+      if(vibe.traits.length)lead='\''+vibe.traits.slice(0,4).join(', ')+'\' 느낌으로 읽고, 그 분위기에 맞는 쪽으로 기울여 뽑았어요.';
+      else if(Object.keys(locks).length)lead='적어 주신 조건에 맞춰 뽑았어요.';
+      else lead='느낌을 정확히 읽지 못해서 무작위로 뽑았어요. \'차갑고 과묵한 정비공\'처럼 성격이나 직업을 적으면 더 잘 맞춰요.';
+      if(note)lead=note+' '+lead;
+      ocReply(force,lead,{traits:vibe.traits,desc:text},b);
+    }
+    if(!(aiOn&&sample)){local();return;}
+    var wait=el('div','say');wait.innerHTML='<div class="thinking"><i></i><i></i><i></i><span>원하는 느낌을 읽는 중</span></div>';b.appendChild(wait);scrollDown(true);
+    var ctl=new AbortController();setBusy(ctl);
+    var prompt='너는 디스토피아 세계관 「잔광(AFTERGLOW)」의 자캐 키워드 추천 단말이다. 사용자가 원하는 캐릭터 느낌을 읽고, 아래 [선택지]에서 그 느낌에 가장 어울리는 값을 골라라. 사용자가 명시한 출신이나 종족이 있으면 반드시 따른다. 느낌과 상관없는 항목은 null로 둔다.\n'
+      +'오직 JSON 객체 하나로 답한다. 형식: {"origin":"TB-03","clan":null,"base":null,"species":{"cat":"later","lin":"늑대"},"T":1,"job":"궤도 정비조 수형자","faction":"무소속","secret":"…","traits":["냉정한","손재주 좋은","동생 바보"],"reason":"…"}\n'
+      +'- origin은 TB-01~TB-12, OPH, SEIR, NOD 중 하나. clan은 SEIR일 때만, base는 NOD일 때만.\n- job은 선택지의 직업을 우선 쓰고, 꼭 필요하면 그 출신에 어울리는 직업을 20자 안으로 새로 써도 된다.\n- faction은 선택지에 나온 세력이나 \'무소속\'.\n- secret은 사용자의 느낌을 살린 비밀 한 문장(~다 체, 40자 안).\n- traits는 사용자의 느낌을 요약한 성격 키워드 2~4개.\n- reason은 왜 그렇게 골랐는지 해요체 한 문장.\n\n[선택지]\n'+E.guide()+'\n\n[사용자가 원하는 느낌]\n'+text;
+    sample.json(prompt,{modelTier:'quick',cache:false,signal:ctl.signal}).then(function(r){
+      setBusy(null);wait.remove();
+      var f=E.sanitize(r);Object.keys(locks).forEach(function(k){f[k]=locks[k];});
+      if(f.origin&&f.origin!=='SEIR')delete f.clan;if(f.origin&&f.origin!=='NOD')delete f.base;
+      f.bias=vibe.bias;
+      var traits=Array.isArray(r&&r.traits)?r.traits.filter(function(t){return typeof t==='string'&&t.trim();}).map(function(t){return t.trim().slice(0,14);}).slice(0,4):vibe.traits;
+      var reason=r&&typeof r.reason==='string'?r.reason.trim().slice(0,160):'';
+      ocReply(f,(reason?reason:'원하는 느낌에 맞춰 골랐어요.'),{traits:traits.length?traits:vibe.traits,desc:text},b);
+    },function(e){
+      setBusy(null);wait.remove();var code=e&&e.code;
+      if(code==='cancelled'){say(b,'<p class="dim">멈췄어요.</p>');return;}
+      if(['not_granted','sampling_disabled','not_declared','capability_disabled','capability_removed'].indexOf(code)>=0){disableAI();local(api?'Claude API에 연결하지 못해서 단말이 직접 읽었어요. 설정을 확인해 주세요.':'AI를 쓸 수 없어서 단말이 직접 읽었어요.');return;}
+      local('AI가 느낌을 읽지 못해서 단말이 직접 읽었어요.');
+    });
+  }
+
+  /* ---------- 명부 계산 ---------- */
+  function calcReply(G,C,T,raw){
+    var b=bot(),human=/인간/.test(raw)&&!/수인|레이터/.test(raw),kind=human?'human':'later';
+    var m=E.manifest(kind,G,C,T),t=E.TIERS[m.tier];
+    say(b,'<p>'+(human?'순수 인간(Class-H)':'레이터(Class-L)')+' 기준으로 계산했어요.'+(human?'':' 순수 인간이라면 \'인간 G4 C3 T0\'처럼 적어 주세요.')+'</p>');
+    var c=el('div','calc');
+    c.appendChild(el('div','eq','G'+G+' + C'+C+' − T'+T+' = '+(G+C-T)+'점'));
+    c.appendChild(el('div','big',t[0]));
+    c.appendChild(el('div',null,t[1]));
+    if(m.notes.length)c.appendChild(el('div','note',m.notes.join(' · ')));
+    var warn=[];if(!human&&(G>3))warn.push('레이터의 G는 1~3이에요');if(human&&G<4)warn.push('순수 인간의 G는 4~5예요');if(C<1||C>5)warn.push('C는 1~5예요');if(T>4)warn.push('T는 0~4예요');
+    if(warn.length)c.appendChild(el('div','note','참고: '+warn.join(', ')));
+    b.appendChild(c);
+    chips(b,['거주 등급','강제 규정','특수 분류']);
+    scrollDown(true);
+  }
+
+  /* ---------- 검색 응답 ---------- */
+  function searchReply(text){
+    var r=E.search(text,4),b=bot();
+    if(aiOn&&sample){
+      var s=el('div','say');b.appendChild(s);
+      var hold=el('div');b.appendChild(hold);
+      runAI(s,qaTurns(text,r),{modelTier:'quick',cache:false},function(ok){
+        if(r.hits.length){hold.appendChild(el('div','refs-h','근거 기록 '+r.hits.length+'건'));r.hits.forEach(function(e){hold.appendChild(resultCard(e,r.tokens));});}
+        else if(!ok)noHit(hold);
+        scrollDown();
+      },text);
+      return;
+    }
+    if(!r.hits.length){noHit(b);return;}
+    say(b,'<p>\''+esc(r.tokens.join(' '))+'\' 관련 기록 '+(r.total>r.hits.length?r.total+'건 중 '+r.hits.length+'건':r.hits.length+'건')+'을 찾았어요.</p>');
+    r.hits.forEach(function(e){b.appendChild(resultCard(e,r.tokens));});
+    if(r.total>r.hits.length){var rest=r.all.slice(r.hits.length,r.hits.length+5).map(function(e){return{label:e.t,fn:function(){me(e.t);var bb=bot();bb.appendChild(resultCard(e,r.tokens));scrollDown(true);}};});chips(b,rest);}
+    reveal(b);
+  }
+  function noHit(b){
+    say(b,'<p>해당 키워드로는 기록을 찾지 못했어요. 이런 단어로 찾아보세요.</p>');
+    chips(b,['결정화','명부','레이터','언섹션','신호','오파님 성좌','세일 씨족','노드 세력','자캐 키워드 뽑기']);
+    scrollDown(true);
+  }
+
+  /* ---------- AI ---------- */
+  var RULES='너는 디스토피아 세계관 「잔광(AFTERGLOW)」의 기록 열람 단말 URIM이다. 사용자가 설정을 찾거나 자작 캐릭터(자캐)를 만드는 것을 돕는다. 아래 [설정 자료]만 근거로 답한다.\n규칙:\n- 한국어 해요체로 4~10줄 안에서 답한다.\n- 자료에 있는 내용은 정확히 전한다. 자료에 없는 내용은 "공식 설정에는 없어요"라고 먼저 밝힌 뒤, 자료와 어울리는 아이디어를 **제안**이라고 표시해 짧게 제시한다.\n- 도시, 세력, 씨족, 용어 같은 고유명사는 자료에 있는 것만 쓴다.\n- 서식은 **굵게**와 "- " 목록만 쓴다. 제목 기호(#)와 표는 쓰지 않는다.\n- 마지막 줄은 반드시 "관련 키워드: 키워드1, 키워드2, 키워드3" 형식으로 끝낸다. 키워드는 자료에 실제로 나오는 단어 3~5개로 고른다.\n\n[설정 자료]\n';
+  var CORPUS=null;
+  function qaTurns(text,r){
+    CORPUS=CORPUS||E.corpus();
+    var hint=r&&r.hits.length?'\n\n(단말 검색이 찾은 관련 항목: '+r.hits.map(function(e){return e.t;}).join(', ')+')':'';
+    var turns=[{role:'user',content:RULES+CORPUS}];
+    history.slice(-6).forEach(function(h){turns.push(h);});
+    turns.push({role:'user',content:text+hint});
+    return turns;
+  }
+  function conceptPrompt(o,desc,traits){
+    var want=desc?'\n\n[사용자가 원한 느낌]\n'+desc+(traits&&traits.length?'\n(성격 키워드: '+traits.join(', ')+')':'')+'\n이 느낌을 콘셉트의 중심에 두어라.':'';
+    return '너는 디스토피아 세계관 「잔광(AFTERGLOW)」의 기록 단말 URIM이다. 아래 [자캐 시드]의 키워드를 모두 살려, 이 세계관에 맞는 자작 캐릭터 콘셉트 초안을 써라. [관련 설정]만 근거로 삼고, 설정에 없는 도시·세력·사건·용어를 새로 만들지 않는다(인물 이름과 개인사는 지어도 된다).\n형식(한국어, 서술은 ~다 체):\n**한 줄 소개**\n한 문장\n**배경**\n3~4문장\n**성격 키워드**\n- 세 가지, 각각 짧은 설명\n**관계와 갈등 아이디어**\n- 두 가지\n**첫 장면**\n한 문장\n서식은 **굵게**와 "- " 목록만 쓰고 제목 기호(#)는 쓰지 않는다. 마지막 줄은 "관련 키워드: 키워드1, 키워드2, 키워드3" 형식으로, 관련 설정에 나오는 단어로 끝낸다.\n\n[자캐 시드]\n'+E.sheet(o)+want+'\n\n[관련 설정]\n'+E.contextFor(o);
+  }
+  function setBusy(ctl){busy=ctl;send.classList.toggle('busy',!!ctl);send.setAttribute('aria-label',ctl?'답변 멈추기':'보내기');updateSend();}
+  function updateSend(){send.disabled=!busy&&!q.value.trim();}
+  function splitKw(text){var m=text.match(/\n?\s*관련\s*키워드\s*[:：]\s*(.+)\s*$/);if(!m)return{body:text,kw:[]};return{body:text.slice(0,m.index),kw:m[1].split(/[,，、·]/).map(function(s){return s.replace(/[#*`"']/g,'').trim();}).filter(Boolean).slice(0,6)};}
+  function runAI(target,input,opts,after,userText){
+    var ctl=new AbortController();setBusy(ctl);
+    target.innerHTML='<div class="thinking"><i></i><i></i><i></i><span>기록을 읽는 중</span></div>';
+    var tag=null;
+    sample(input,Object.assign({signal:ctl.signal,onText:function(u){var p=splitKw(u.text);target.className=(target.className.indexOf('concept')>=0?'concept ':'')+'say';target.innerHTML=md(p.body);scrollDown();}},opts)).then(function(res){
+      var p=splitKw(res.text);target.innerHTML=md(p.body);
+      tag=el('div','ai-tag','AI 해설 · 설정 자료 기반'+(res.truncated?' · 답이 길어 중간에 끊겼어요':''));target.appendChild(tag);
+      if(p.kw.length){var holder=el('div');target.appendChild(holder);chips(holder,p.kw);}
+      if(userText){history.push({role:'user',content:userText});history.push({role:'assistant',content:res.text});if(history.length>12)history=history.slice(-12);}
+      setBusy(null);after(true);scrollDown();
+    },function(e){
+      setBusy(null);var code=e&&e.code;
+      if(code==='cancelled'){target.innerHTML=e.text?md(splitKw(e.text).body):'';target.appendChild(el('div','note','답변을 멈췄어요.'));after(false);return;}
+      if(code==='not_granted'||code==='sampling_disabled'||code==='not_declared'||code==='capability_disabled'||code==='capability_removed'){disableAI();target.innerHTML='';target.appendChild(el('div','note',api?'Claude API에 연결하지 못했어요. URIM_CONFIG의 API 키나 프록시 주소를 확인해 주세요. 지금은 기록 검색으로 답할게요.':'AI 해설을 쓸 수 없어서 기록 검색으로 답할게요.'));after(false);return;}
+      var msg={rate_limited:'요청이 너무 많아요. 잠시 뒤 다시 물어봐 주세요.',session_expired:'로그인이 만료됐어요. 다시 로그인한 뒤 물어봐 주세요.',refused:'이 질문에는 AI가 답하지 않았어요. 표현을 바꿔 보세요.',prompt_too_large:'질문이 너무 길어요. 짧게 나눠 물어봐 주세요.'}[code]||'AI 해설이 중간에 끊겼어요. 다시 물어보면 이어서 답해요.';
+      target.innerHTML=e&&e.text&&code!=='refused'?md(splitKw(e.text).body):'';target.appendChild(el('div','note',msg));after(false);
+    });
+  }
+  function disableAI(){sample=null;aiOn=false;aitog.hidden=true;document.querySelectorAll('.ai-only').forEach(function(n){n.hidden=true;});}
+  function setAI(on){aiOn=!!on&&!!sample;aitog.setAttribute('aria-pressed',String(aiOn));aitog.setAttribute('aria-label','AI 해설 '+(aiOn?'끄기':'켜기'));try{localStorage.setItem('urim-ai',aiOn?'on':'off');}catch(e){}}
+  aitog.addEventListener('click',function(){setAI(!aiOn);toast(aiOn?'AI 해설을 켰어요':'AI 해설을 껐어요 · 기록 검색만 써요');});
+
+  /* ---------- 의도 판별 ---------- */
+  function route(text){
+    var t=text.trim();
+    var gct=t.match(/g\s*[:=]?\s*(\d)\D{0,6}c\s*[:=]?\s*(\d)\D{0,6}t\s*[:=]?\s*(\d)/i);
+    if(gct){calcReply(+gct[1],+gct[2],+gct[3],t);return;}
+    if(/^(안녕|하이|hi|hello|ㅎㅇ)/i.test(t)){var b=bot();say(b,'<p>안녕하세요. 잔광 기록 단말 URIM이에요. 궁금한 설정을 묻거나, 자캐 키워드를 뽑아 달라고 해 보세요.</p>');chips(b,['자캐 키워드 뽑기','결정화가 뭐야?','열두 도시']);scrollDown(true);return;}
+    if(/도움말|사용법|뭘 할 수|뭐 할 수|help/i.test(t)){welcome(false);return;}
+    var vibe=E.readVibe(t),ocWord=/자캐|캐릭터|오씨|\boc\b|키워드\s*(뽑|추천|줘)|랜덤|무작위|아무거나|시드/i.test(t);
+    var descy=/느낌|같은|스타일|타입|성격|분위기|컨셉|콘셉트|인물|녀석|사람|원해|싶어|만들어|애$|애\s|아이$/.test(t);
+    var question=/\?|뭐야|무엇|어디|누구|왜|어떻게|알려|설명/.test(t);
+    if(ocWord||(!question&&(vibe.traits.length>=2||(vibe.traits.length>=1&&descy)||(descy&&t.length>=12)))){
+      var simple=ocWord&&!vibe.traits.length&&t.replace(/\s/g,'').length<=12;
+      if(simple){var f=E.parseLocks(t);ocReply(f,Object.keys(f).length?'조건에 맞춰 자캐 키워드를 뽑았어요.':'자캐 키워드를 무작위로 뽑았어요.');return;}
+      descReply(t);return;
+    }
+    if(/^열두\s*도시|^도시\s*목록|이동도시\s*목록/.test(t)){
+      var bb=bot();say(bb,'<p>협정체의 열두 이동도시예요. 도시를 누르면 기록을 열어요.</p>');
+      chips(bb,['TB-01','TB-02','TB-03','TB-04','TB-05','TB-06','TB-07','TB-08','TB-09','TB-10','TB-11','TB-12'].map(function(id){var e=E.BYID[id];return{label:e.t,fn:function(){me(e.t);var x=bot();x.appendChild(resultCard(e,[]));scrollDown(true);}};}));
+      scrollDown(true);return;
+    }
+    if(!question&&vibe.traits.length&&!E.search(t,1).hits.length){descReply(t);return;}
+    searchReply(t);
+  }
+  function ask(text){
+    text=String(text||'').trim();if(!text||busy)return;
+    me(text);q.value='';autosize();updateSend();
+    setTimeout(function(){route(text);},reduce?0:160);
+  }
+
+  /* ---------- 입력부 ---------- */
+  function autosize(){q.style.height='auto';q.style.height=Math.min(q.scrollHeight,140)+'px';}
+  q.addEventListener('input',function(){autosize();updateSend();});
+  q.addEventListener('keydown',function(e){if(e.key==='Enter'&&!e.shiftKey&&!e.isComposing&&e.keyCode!==229){e.preventDefault();if(!busy)ask(q.value);}});
+  form.addEventListener('submit',function(e){e.preventDefault();if(busy){busy.abort();return;}ask(q.value);});
+
+  var SUGG=['차갑지만 동생에게만 다정한 정비공','신호가 들리는 병약한 아이','돈 밝히는 바다 밀수꾼','자캐 키워드 뽑기','자리야 늑대 자캐','세일 말 씨족 자캐','노드 해결사 자캐','언섹션 자캐','결정화 단계','G2 C4 T1 계산','신호','레이터 계통','열두 도시','오파님 성좌 서열','X 표식'];
+  SUGG.forEach(function(s){var b=el('button','chip',s);b.type='button';b.addEventListener('click',function(){ask(s);});$('sugg').appendChild(b);});
+
+  /* ---------- 시작 화면 ---------- */
+  function welcome(withExample){
+    var b=bot();
+    say(b,'<p><strong>URIM 기록 단말</strong>이에요. 잔광의 설정 기록을 찾아 드리고, 자작 캐릭터에 쓸 키워드를 뽑아 드려요.</p><ul><li>궁금한 단어를 입력하면 관련 기록을 찾아요. 예: 결정화, 흰 늑대, 시날</li><li>원하는 캐릭터 느낌을 문장으로 적으면 그 분위기에 맞는 출신, 종족, 직업, 비밀을 골라 드려요. 예: 차갑지만 동생에게만 다정한 정비공</li><li>\'자캐 뽑아줘\'라고 하면 무작위로 뽑고, \'세일 말 씨족 자캐\'처럼 조건을 붙일 수도 있어요.</li><li>\'G2 C4 T1\'처럼 지수를 적으면 명부 점수와 거주 등급을 계산해요.</li></ul>'+(withExample?'<p class="dim">예시로 하나 뽑아 봤어요.</p>':''));
+    if(withExample)ocCard(b,{});
+    chips(b,['차갑지만 동생에게만 다정한 정비공','자캐 키워드 뽑기','결정화가 뭐야?','열두 도시']);
+    if(!withExample)scrollDown(true);
+  }
+  welcome(true);
+
+  /* ---------- Claude API 연결 (웹 호스팅용) ----------
+     urim.html 위쪽의 URIM_CONFIG에 proxyUrl 또는 apiKey를 넣으면 켜진다. */
+  function apiAdapter(cfg){
+    if(!cfg||!(cfg.proxyUrl||cfg.apiKey))return null;
+    function toMessages(input){
+      if(typeof input==='string')return[{role:'user',content:input}];
+      var out=[];input.forEach(function(m){if(out.length&&out[out.length-1].role===m.role)out[out.length-1].content+='\n\n'+m.content;else out.push({role:m.role,content:m.content});});return out;
+    }
+    function call(input,opts){
+      opts=opts||{};
+      return new Promise(function(resolve,reject){
+        var body={model:opts.modelTier==='quick'?(cfg.quickModel||cfg.model):cfg.model,max_tokens:cfg.maxTokens||1600,stream:true,messages:toMessages(input)};
+        var url=cfg.proxyUrl||'https://api.anthropic.com/v1/messages',headers={'content-type':'application/json'};
+        if(!cfg.proxyUrl){headers['x-api-key']=cfg.apiKey;headers['anthropic-version']='2023-06-01';headers['anthropic-dangerous-direct-browser-access']='true';}
+        var text='',trunc=false,failed=false;
+        function fail(o){if(failed)return;failed=true;if(text&&o.text==null)o.text=text;reject(o);}
+        fetch(url,{method:'POST',headers:headers,body:JSON.stringify(body),signal:opts.signal}).then(function(res){
+          if(!res.ok){var code=(res.status===401||res.status===403)?'not_granted':(res.status===429||res.status===529)?'rate_limited':res.status===413?'prompt_too_large':'upstream_error';return res.text().then(function(t){fail({code:code,message:String(t).slice(0,300)});});}
+          var reader=res.body.getReader(),dec=new TextDecoder(),buf='';
+          function pump(){return reader.read().then(function(r){
+            if(r.done){if(failed)return;if(!text)fail({code:'empty_completion',message:'empty'});else resolve({text:text,truncated:trunc});return;}
+            buf+=dec.decode(r.value,{stream:true});var lines=buf.split('\n');buf=lines.pop();
+            lines.forEach(function(line){if(line.indexOf('data:')!==0)return;var d;try{d=JSON.parse(line.slice(5).trim());}catch(e){return;}
+              if(d.type==='content_block_delta'&&d.delta&&d.delta.type==='text_delta'){text+=d.delta.text;if(opts.onText){try{opts.onText({text:text,delta:d.delta.text});}catch(e){}}}
+              else if(d.type==='message_delta'&&d.delta&&d.delta.stop_reason==='max_tokens')trunc=true;
+              else if(d.type==='error')fail({code:d.error&&d.error.type==='overloaded_error'?'rate_limited':'upstream_error',message:JSON.stringify(d.error)});});
+            return failed?null:pump();});}
+          return pump();
+        }).catch(function(e){if(e&&e.name==='AbortError')fail({code:'cancelled',message:'aborted'});else fail({code:'upstream_error',message:String(e&&e.message||e)});});
+      });
+    }
+    var fn=function(input,opts){return call(input,opts);};
+    fn.json=function(input,opts){
+      var inp=typeof input==='string'?input+'\n\n다른 말 없이 JSON 객체 하나만 출력한다.':input;
+      return call(inp,Object.assign({},opts||{},{onText:null})).then(function(r){var t=r.text,a=t.indexOf('{'),b=t.lastIndexOf('}');try{return JSON.parse(t.slice(a,b+1));}catch(e){throw{code:'invalid_json',message:'parse',text:t};}});
+    };
+    return fn;
+  }
+
+  /* ---------- AI 사용 가능 여부 ---------- */
+  var api=apiAdapter(window.URIM_CONFIG);
+  if(api){
+    sample=api;aitog.hidden=false;
+    var pref0=null;try{pref0=localStorage.getItem('urim-ai');}catch(e){}
+    setAI(pref0!=='off');
+    document.querySelectorAll('.ai-only').forEach(function(n){n.hidden=false;});
+  }else if(window.claude&&typeof window.claude.use==='function'){
+    window.claude.use('sample').then(function(s){
+      if(!s)return;sample=s;aitog.hidden=false;
+      var pref=null;try{pref=localStorage.getItem('urim-ai');}catch(e){}
+      setAI(pref!=='off');
+      document.querySelectorAll('.ai-only').forEach(function(n){n.hidden=false;});
+    },function(){});
+  }
+})();
+</script>
+</body>
+</html>
