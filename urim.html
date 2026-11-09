@@ -29,7 +29,7 @@
      올리면 누구나 키를 볼 수 있으니, 내 컴퓨터에서만 쓰세요.
    ===================================================================== */
 window.URIM_CONFIG = {
-  proxyUrl: "https://urim-proxy.bucksve.workers.dev/",   // 내 프록시 주소
+  proxyUrl: "https://urim-proxy.bucksve.workers.dev/",                    // 예: "https://urim-proxy.아이디.workers.dev"
   apiKey: "",                      // 예: "sk-ant-..."  (공개 저장소에 올리지 말 것)
   model: "claude-sonnet-5-5",      // 답변과 캐릭터 콘셉트에 쓰는 모델
   quickModel: "claude-haiku-5-5",  // 느낌 읽기, 짧은 답에 쓰는 빠른 모델
@@ -256,10 +256,14 @@ var URIM=(function(){
   ['tebah01','기본 설정 › 첫 낙하','테바-01의 탄생','AFTER THE FALL','테바-01,최초의 이동 도시,탑승 명부,굴착 플랫폼,생존자','생존자 일부가 거대 굴착 플랫폼을 개조해 최초의 이동 도시 테바-01을 만들었다. 탑승 인원은 한정돼 있었고, 누구를 태울지는 그 자리에서 결정되었다. 이때 만들어진 탑승 명부가 지금의 등급 제도의 시작이 되었다.'],
   ['crater','기본 설정 › 첫 낙하','충돌구','CRATER','충돌구,제1기관,낙하 지점','가장 큰 낙하 지점에는 지름 수백 킬로미터의 충돌구가 생겼다. 그 바닥에서 제1기관이 발견됐고, 그 위에 오파님 성좌가 세워지며 제1기관으로 입지를 공고히 다지게 되었다.',{origin:'OPH'}],
   ['luminite','기본 설정','잔광석','LUMINITE','잔광석,광석,결정,광석 폭풍,에너지,채굴,수거 드론,루미나이트','첫 낙하 이후 주기적인 광석 폭풍과 함께 쏟아지는 결정체다. 에너지 밀도는 핵분열의 수십 배에 달한다. 이를 채굴하여 업으로 삼는 사람도 있어, 폭풍 다음 날 새벽이면 수거 드론과 맨손의 사람들이 같은 들판으로 나간다. 잔광석의 출현으로 숨붙이와 수인 같은 많은 변화가 생겼고, 현재 대부분의 삶이 잔광석에서 추출한 에너지를 기반으로 돌아간다.'],
-  ['lcs','기본 설정','결정화 증후군 (LCS)','LITHIC CONVERSION SYNDROME','결정화,결정화 증후군,LCS,감염,감염자,의체,돌아보지 마라,격언,수명','광석에 장기간 노출되면 생기는 비가역적 조직 결정화다. 의체 이식률이 높을수록 진행이 빨라진다. 전염성은 없으나 개인에 따라 병의 진행 정도는 천차만별이다. 대부분 40~50세를 넘기지 못하고 죽는 것으로 알려져 있다. 하층에는 "폭풍이 지나간 쪽은 돌아보지 마라"라는 격언이 있다.'],
+  ['lcs','기본 설정','결정화 증후군 (LCS)','LITHIC CONVERSION SYNDROME','결정화,결정화 증후군,LCS,감염,감염자,의체,돌아보지 마라,격언,수명','광석에 장기간 노출되면 생기는 비가역적 조직 결정화다. 의체 이식률이 높을수록 진행이 빨라진다. 전염성은 없으나 개인에 따라 병의 진행 정도는 천차만별이다. 대부분 40~50세를 넘기지 못하고 죽는 것으로 알려져 있다. 결정화가 시작된 사람에게만 잔향이라는 이능이 나타난다. 하층에는 "폭풍이 지나간 쪽은 돌아보지 마라"라는 격언이 있다.'],
   ['lcs-stage','결정화','LCS 단계 (T 지수)','TAINT INDEX','T0,T1,T2,T3,T4,무감염,잠복,발현,진행,말기,오염 지수,단계,회로 문양','T0 무감염: 이상 없음. T1 잠복: 피부 아래 미세 결정. 정밀 검진으로만 발견된다. T2 발현: 피부 표면에 결정이 돋는다. 옷이나 의체로 숨길 수 있다. T3 진행: 손발 일부가 굳어 움직임이 둔해진다. T4 말기: 전신 결정화가 진행되고, 신호가 들리기 시작하며 몸 곳곳에 전자 회로와 같은 문양이 생긴다.'],
   ['tebah','기본 설정','테바급 이동도시','TEBAH-CLASS MOBILE ARCOLOGY','테바,이동도시,이동 도시,코버넌트 홀딩스,Covenant,코버넌트,협정체,시날 스파이어,인공 하늘,궤도,열두 도시','궤도 트랙 위로 대륙을 횡단하는 자급형 거대 도시. 운영사는 코버넌트 홀딩스(Covenant Holdings)다. 거주 구역은 유전 등급, 신용 등급, 오염 등급을 합산한 명부 점수로 배정된다. 최상층 시날 스파이어는 폭풍 구름보다 높다. 도시마다 구성과 특색이 다르며, 선체 내부에는 인공 하늘을 구축해 살기도 한다. 협정체는 열두 도시(TB-01~TB-12)로 이루어져 있다.'],
   ['decks','이동도시','층별 환경','DECKS','시날,상층,중층,하층,검역,검역 갑판,화물칸,층,갑판,진동,배급,인공 하늘','시날: 진짜 햇빛, 진짜 흙, 진동 없음. 상층: 투명 천장 너머의 흐린 진짜 하늘, 깨끗한 공기. 중층: 인공 하늘 아래 빽빽한 공동주택, 공기 질은 돈에 달려 있음. 하층: 변하지 않는 조명, 배급 식사와 배급 샤워, 높은 분진. 검역: 격리된 공기, 감시 카메라, 관리 대상으로서의 삶.'],
+  ['echo','기본 설정','잔향 (결정 잔향 현상)','LITHIC ECHO','잔향,에코,Echo,이능,능력,능력자,초능력,이능력,각성,은사,E-플래그,번짐,빌려준 힘,불을 쥔 손','결정화 증후군 환자에게만 나타나는 이능이다. 몸속에 자란 결정이 잔광석의 에너지에 반향하면서 생긴다고 알려져 있다. 협정체 공식 명칭은 결정 잔향 현상(Lithic Echo)이고, 하층에서는 능력자를 그냥 에코라 부른다. T0 무감염자에게는 절대 나타나지 않는다. 결정화가 시작되면 누구에게나 잔향이 생기지만 세기와 형태는 천차만별이다. 안드로이드와 언섹션은 결정화 증후군에 걸리지 않으므로 잔향도 없다. 다만 각성한 숨붙이 곁에서 에코의 결정이 함께 빛났다는 보고가 있다. 한 사람에게 하나의 능력이 생기며, 결정이 처음 자리 잡은 부위와 그 사람의 기질에 따라 모양이 정해진다고 알려져 있다. 두발의 시술사들 사이에는 "불을 쥔 손부터 돌이 된다"는 말이 있다.'],
+  ['echo-stage','잔향','잔향 단계와 대가','ECHO STAGES','T0,T1,T2,T3,T4,징조,각성,고조,범람,대가,번짐,과사용,결정이 자란다','T0 없음: 잔향이 없다. T1 징조: 본인도 모르게 새어 나온다. 곁의 전등이 깜빡이거나 광석이 미세하게 운다. T2 각성: 능력을 의식해서 쓸 수 있게 된다. 대부분 이 무렵 처음 자기 능력을 안다. T3 고조: 훨씬 강해지지만 굳어 가는 손발이 능력을 따라가지 못한다. T4 범람: 가장 강하지만 더는 온전히 자기 것이 아니다. 신호가 섞여 들려 능력이 제멋대로 반응한다. 대가: 쓸 때마다 결정이 자란다. 세게, 오래 쓸수록 결정화가 빨라진다. 쓰고 나면 결정 부위가 빛나고 열이 올라, 숨기며 사는 에코에게는 이것이 가장 위험하다. 한계를 넘겨 쓰면 결정이 한꺼번에 번지는데, 하층에서는 번졌다고 말한다. 한 번 번지면 T 지수가 한 단계 오르기도 한다. 그래서 에코는 강해질수록 죽음에 가까워진다.'],
+  ['echo-types','잔향','잔향의 다섯 갈래','ECHO TYPES','방출형,조형형,강화형,간섭형,감응형,갈래,유형,종류,능력 종류,종족별 차이','방출형: 열, 빛, 충격파처럼 에너지를 밖으로 내뿜는다. 조형형: 몸의 결정을 키우고 깎아 칼날, 갑각, 가시로 쓴다. 강화형: 근력, 반응 속도, 감각을 한계 너머로 끌어올린다. 간섭형: 잔광석 코어, 의체, 기계에 간섭한다. 의체 이식률이 높을수록 강하지만 결정화도 가장 빠르다. 감응형: 광맥, 폭풍, 다른 에코, 신호를 감지한다. 종족별로 보면, 순수 인간은 내성이 낮아 일찍, 강하게 발현하는 대신 빨리 소진되고, 의체가 많아 간섭형이 흔하다. 레이터는 내성이 높을수록 발현이 늦고 약하지만 결정화가 느려 오래 쓸 수 있다. 소형 포유류 혈통에는 감응형이 유독 많다. 혼혈은 예측할 수 없다.'],
+  ['echo-society','잔향','지역별로 보는 잔향','ECHO & SOCIETY','E-플래그,특별 고용 계약,은사,Gift,산이 빌려준 힘,결정 절삭,잔향을 끊는 수술,해결사,에코 용병','코버넌트 협정체: 잔향이 확인되면 명부에 E-플래그가 붙고, 능력의 갈래와 사용 기록이 함께 남는다. 규정대로라면 T2부터 검역 갑판이지만, 쓸모 있는 에코는 특별 고용 계약으로 하선을 유예받고 회수반, 선단 호위, 위험 채굴에 투입된다. 계약이 끝날 즈음이면 대부분 T3를 넘겨 있다. 오파님 성좌: 잔향을 은사(Gift)라 부른다. 신의 음성에 가까워진 증거로 여기며, 은사가 강할수록 서열이 빨리 오른다. 칸토르 대부분이 에코다. 세일 고원 연맹: 산이 빌려준 힘이라 부른다. 씨족 치유사들은 되도록 쓰지 말라고 가르친다. 산은 빌려준 것을 반드시 돌려받기 때문이다. 노드 자유구역: 하선된 감염자가 모이는 곳이라 에코가 가장 많고, 해결사 시장에서 가장 비싼 인력이다. 두발에서는 결정을 깎아 잔향을 끊는 수술을 하지만 성공률이 낮고 능력도 함께 사라진다.'],
   ['uc','기본 설정','숨붙이 · 언섹션','UNSANCTIONED COGNITION','언섹션,숨붙이,UC,비인가 인지 개체,Breathers,각성,자유 의지,폐기,초기화','기업 분류명은 비인가 인지 개체다. 대중들은 UC, 언섹션 정도로 부른다. 광석 코어 안드로이드에서 자발적으로 의식이 생겨난 사례를 말한다. 일반 안드로이드와 크게 다르지 않지만, 단 한 가지 차이점은 자유 의지를 가지고 있다는 것이다. 발견되면 회수 후 초기화하는 것이 원칙이지만, 대부분은 발견 즉시 폐기처리 당한다. 하층에서는 이들을 숨붙이(Breathers)라 부른다. 뜬소문으로는 하층 어딘가에 언섹션들이 모여 사는 사회가 있다고 한다.',{species:'uc'}],
   ['later','기본 설정','수인 · 레이터','CLASS-L PASSENGERS','레이터,수인,Later,Class-L,돌연변이,혈통,케모미미,귀와 꼬리','여러 수인 혈통이다. 도시 탑승 기록상 분류 코드는 L, 즉 Later boarded이며 수인이라는 말보다는 레이터라는 말로 통칭한다. 잔광석이 원인이 되어 발생한 돌연변이 종족이기 때문에 LCS에 대한 저항성이 높다. 근력 및 체력도 더 뛰어나, 잔광석 채굴 중 가장 많은 머릿수를 차지하는 건 레이터다.',{species:'later'}],
   ['wild','기본 설정','광야','THE WILDERNESS','광야,폭풍 지대,추방,개척파,탈환파,탈주자,도시 밖','도시 궤도 밖의 폭풍 지대다. 추방된 감염자, 언섹션, 최하등급 탈주자들이 정착해 살고 있다. 새로운 땅을 항상 찾아다니는 개척파와 도시를 되찾길 원하는 탈환파로 분열되어 있다.',{origin:'NOD'}],
@@ -407,6 +411,22 @@ var URIM=(function(){
   var OPHJOBS={clergy:['칸토르','수련자','신학원 학생','눈의 장로회 정보원'],lay:['순례자','제2고리 경작지 농부','평신도 상인','순례자 숙소 관리인'],uc:['성좌 근위대 (그릇)','경작 봉사 그릇','전례 보조 그릇']};
   var OPHNAMES=['아우렐리우스','세라피나','이그나티우스','코르넬리아','살비우스','오틸리아','클레멘스','비비아나'];
   var UCNAMES=['노엘','아다','미라','세이','루카','이오','니나','오르'];
+  var ECHO={
+    '방출형':['열, 빛, 충격파처럼 에너지를 내뿜는다',['손끝에서 고열을 뿜는다','눈부신 섬광을 터뜨린다','짧은 충격파를 일으킨다','결정 파편을 쏘아낸다','주변 공기를 얼려 서리를 일으킨다']],
+    '조형형':['몸의 결정을 칼날, 갑각, 가시로 쓴다',['팔의 결정을 칼날로 키운다','몸을 결정 갑각으로 덮는다','발밑에서 결정 가시를 솟게 한다','결정으로 손에 맞는 도구를 빚는다','상처를 결정으로 메워 피를 멈춘다']],
+    '강화형':['근력, 반응 속도, 감각을 한계 너머로 끌어올린다',['순간적으로 근력을 몇 배로 끌어올린다','주변이 느려 보일 만큼 반응이 빨라진다','어둠 속에서도 열과 빛의 흔적을 본다','잠시 고통을 느끼지 않는다','폭풍 속에서도 숨이 차지 않는다']],
+    '간섭형':['잔광석 코어, 의체, 기계에 간섭한다',['손댄 기계를 잠시 멈추거나 움직인다','잔광석 코어의 출력을 끌어올리거나 꺼뜨린다','남의 의체를 잠시 마비시킨다','전자 잠금장치를 연다','주변의 전등과 화면을 마음대로 깜빡인다']],
+    '감응형':['광맥, 폭풍, 다른 에코, 신호를 감지한다',['광맥이 어디로 뻗었는지 느낀다','폭풍이 오는 때를 반나절 먼저 안다','가까운 에코의 위치와 갈래를 느낀다','상대의 결정화가 얼마나 진행됐는지 보인다','벽 너머 잔광석 코어의 박동을 듣는다']]
+  };
+  var ECHOSTAGE=[['없음','잔향이 없다'],['징조','본인도 모르게 새어 나온다'],['각성','의식해서 쓸 수 있다'],['고조','강하지만 굳어 가는 손발이 따라가지 못한다'],['범람','가장 강하지만 신호가 섞여 제멋대로 반응한다']];
+  function rollEcho(o,force){
+    var sp=o.species,w={'방출형':20,'조형형':20,'강화형':20,'간섭형':20,'감응형':20};
+    if(sp.cat==='human')w['간섭형']+=25;
+    if(sp.cat==='later'){var fam=LIN[sp.lin].fam;if(fam==='소형 포유류')w['감응형']+=40;if(fam==='곰'||fam==='갯과'||fam==='유제류')w['강화형']+=15;if(fam==='조류')w['감응형']+=15;if(fam==='파충류')w['조형형']+=15;}
+    if(o.origin==='TB-05')w['방출형']+=15;if(o.origin==='TB-10')w['간섭형']+=15;if(o.origin==='OPH')w['감응형']+=15;if(o.origin==='TB-07'||o.origin==='NOD')w['강화형']+=10;
+    var t=(force&&ECHO[force])?force:wpick(Object.keys(w).map(function(k){return[k,w[k]];}));
+    return{type:t,ab:pick(ECHO[t][1])};
+  }
   var STAGE=[['무감염','이상 없음'],['잠복','피부 아래 미세 결정. 정밀 검진으로만 발견된다'],['발현','피부 표면에 결정이 돋는다. 옷이나 의체로 숨길 수 있다'],['진행','손발 일부가 굳어 움직임이 둔해진다'],['말기','전신 결정화가 진행되고 신호가 들리기 시작한다. 몸 곳곳에 회로 같은 문양이 생긴다']];
   var TIERS=[['Tier 0','시날 스파이어'],['Tier 1','상층 갑판'],['Tier 2','중층 갑판'],['Tier 3','하층 화물칸'],['Tier 4','검역 갑판'],['하선','광야']];
 
@@ -499,6 +519,7 @@ var URIM=(function(){
     // 종족
     if(L('species'))o.species=prev.species;
     else o.species=fillSpecies(force.species||(B&&B.species&&B.species.length&&!(o.origin==='SEIR'&&o.clan)&&Math.random()<.8?wpick(B.species):rollSpecies(o.origin,o.clan)));
+    if(L('echo')&&prev.echo&&!L('species')){for(var st=0;st<20&&o.species.cat==='uc';st++)o.species=fillSpecies(rollSpecies(o.origin,o.clan));if(o.species.cat==='uc')o.species=fillSpecies({cat:'mixed'});}
     if(o.origin==='SEIR'){
       if(!o.clan){var match=null;Object.keys(CLANS).forEach(function(c){if(CLANS[c].sp&&o.species.cat==='later'&&CLANS[c].sp===o.species.lin)match=c;});o.clan=match||'떠돌이';}
       else if(CLANS[o.clan].sp&&!(o.species.cat==='later'&&o.species.lin===CLANS[o.clan].sp)&&!L('origin')){var m2=null;Object.keys(CLANS).forEach(function(c){if(CLANS[c].sp&&o.species.cat==='later'&&CLANS[c].sp===o.species.lin)m2=c;});o.clan=m2||'떠돌이';}
@@ -506,11 +527,15 @@ var URIM=(function(){
     // 결정화 / 명부
     if(o.species.cat==='uc')o.T=null;
     else if(L('lcs')&&prev.T!=null)o.T=prev.T;
-    else if(L('manifest')&&prev.T!=null)o.T=prev.T;
+    else if((L('manifest')||(L('echo')&&prev.echo))&&prev.T!=null)o.T=prev.T;
     else o.T=(force.T!=null)?force.T:(B&&B.T?wpick(B.T.map(function(v,i){return[i,v];})):rollT(o.species,o.origin));
     if(L('manifest')&&prev.G!=null){o.G=prev.G;o.C=prev.C;}else{var gc=rollGC(o.species);o.G=gc.G;o.C=gc.C;if(B&&B.C==='high')o.C=wpick([[4,55],[5,45]]);if(B&&B.C==='low')o.C=wpick([[1,55],[2,45]]);}
     if(o.species.cat==='human'&&(o.G<4))o.G=4;
     if(o.species.cat!=='human'&&o.species.cat!=='uc'&&o.G>3)o.G=3;
+    // 잔향
+    if(o.species.cat==='uc'||!o.T)o.echo=null;
+    else if(L('echo')&&prev.echo)o.echo=prev.echo;
+    else o.echo=rollEcho(o,force.echoType||(B&&B.echo&&Math.random()<.8?B.echo:null));
     o.nodStatus=L('manifest')&&prev.nodStatus?prev.nodStatus:wpick([['x',60],['born',40]]);
     // 직업
     o._jobre=B&&B.job?new RegExp(B.job):null;
@@ -564,6 +589,11 @@ var URIM=(function(){
       if(o.origin==='NOD'&&o.nodStatus==='x')pool.push('목 뒤의 X 표식을 가리고 도시에 드나든다');
       if(o.origin==='SEIR')pool.push(o.clan==='떠돌이'?'씨족 문양을 지운 이유를 아무에게도 말하지 않는다':'회사 화폐 빚 때문에 광산을 떠나지 못한다');
       if(o.origin==='OPH'&&o.T>=2)pool.push('결정화가 축복이라는 교리를 더는 믿지 않는다');
+      if(o.T>=2)pool.push('능력을 쓸 때마다 결정이 자라는 걸 알면서도 멈추지 못한다');
+      if(o.T===1)pool.push('자기 곁에서만 전등이 깜빡이는 이유를 아직 모른다');
+      if(o.T>=2&&city)pool.push('특별 고용 계약으로 하선을 유예받고 있다. 계약이 끝나는 날을 세고 있다','잔향을 들키지 않으려고 쓰고 난 뒤의 빛을 장갑으로 가린다');
+      if(o.T>=2&&o.origin==='NOD')pool.push('한 번 번진 적이 있다. 그날 일을 기억하지 못한다');
+      if(o.T>=2&&o.origin==='SEIR')pool.push('치유사의 금기를 어기고 산이 빌려준 힘을 쓰고 있다');
       pool.push('가족이 결정화로 떠났다','명부 기록과 다른 과거를 갖고 있다');
     }
     return pick(pool);
@@ -612,6 +642,9 @@ var URIM=(function(){
     // 결정화
     if(sp.cat==='uc')rows.lcs=['해당 없음','결정화 증후군에 걸리지 않는다 · 대신 인공 피부 아래 결정 무늬'];
     else{rows.lcs=['T'+o.T+' · '+STAGE[o.T][0],STAGE[o.T][1]+(o.origin==='OPH'&&o.T>=2?' · 성좌에서는 신에게 가까워진 축복':'')];tags.push('T'+o.T);}
+    if(sp.cat==='uc')rows.echo=['없음','언섹션은 결정화되지 않아 잔향이 없다'];
+    else if(!o.echo)rows.echo=['없음','T0 · 반향할 결정이 몸속에 없다'];
+    else{var es=ECHOSTAGE[o.T];rows.echo=[o.echo.type+' · '+o.echo.ab,'T'+o.T+' '+es[0]+' · '+es[1]+(o.origin==='OPH'?' · 성좌에서는 은사':o.origin==='SEIR'?' · 산이 빌려준 힘':CITY[o.origin]?' · 명부 E-플래그':'')];tags.push('잔향',o.echo.type);}
     rows.job=[o.job,''];tags.push(o.job.replace(/^(표면상 |배정 직무 · )/,''));
     rows.faction=[o.faction,''];if(o.faction!=='무소속')tags.push(o.faction.split(' · ')[0].split(' (')[0]);
     rows.secret=[o.secret,''];
@@ -620,10 +653,10 @@ var URIM=(function(){
     var seen={};tags=tags.filter(function(t){if(!t||seen[t])return false;seen[t]=1;return true;});
     return{rows:rows,tags:tags};
   }
-  var FIELDS=[['origin','출신'],['species','종족'],['manifest','명부'],['lcs','결정화'],['job','직업'],['faction','소속'],['secret','비밀'],['hook','이야기 훅'],['names','이름 후보']];
+  var FIELDS=[['origin','출신'],['species','종족'],['manifest','명부'],['lcs','결정화'],['echo','잔향'],['job','직업'],['faction','소속'],['secret','비밀'],['hook','이야기 훅'],['names','이름 후보']];
   function sheet(o){var v=view(o),lines=['[잔광 자캐 시드]'];FIELDS.forEach(function(f){var r=v.rows[f[0]];lines.push(f[1]+': '+r[0]+(r[1]?' ('+r[1]+')':''));});lines.push('키워드: '+v.tags.map(function(t){return'#'+t.replace(/\s+/g,'_');}).join(' '));return lines.join('\n');}
   function contextFor(o){
-    var ids=['later','lcs','manifest','rules'];
+    var ids=['later','lcs','manifest','rules'];if(o.echo)ids.push('echo','echo-stage','echo-types','echo-society');
     if(CITY[o.origin])ids.push(o.origin);else if(o.origin==='OPH')ids.push('oph','oph-faith','oph-ranks','oph-vessel');else if(o.origin==='SEIR')ids.push('seir','seir-politics','seir-culture');else ids.push('nod','xmark','nod-life');
     var sp=o.species;if(sp.cat==='uc')ids.push('uc','uc-detail');else if(sp.cat==='human')ids.push('human');else if(sp.cat==='mixed')ids.push('mixed');
     if(o.origin==='SEIR'&&o.clan){ENTRIES.forEach(function(e){if(e.oc&&e.oc.clan===o.clan)ids.push(e.id);});}
@@ -644,7 +677,7 @@ var URIM=(function(){
     [/정비|기술자|엔지니어|기계공|메카닉|수리|개조/,'손재주 좋은',{o:{'TB-10':2,'TB-03':2,'TB-06':1,'TB-02':1},job:'정비|엔지니어|조립|기관사|개조|시술사'}],
     [/아이돌|스타|연예인|가수|무대|배우|연습생|인기/,'무대 체질',{o:{'TB-09':4,'TB-05':1},job:'연습생|배우|광대|악사|PD'}],
     [/상인|장사|밀수|거래|흥정|사기꾼|협상|돈을 밝|돈 밝/,'수완가',{o:{'TB-06':3,'NOD':2,'TB-01':1},job:'상인|밀수|물 상인|브로커|교역|협상'}],
-    [/요리|농부|흙|식물|정원|꽃/,'흙냄새 나는',{o:{'TB-08':4},job:'농부|요리사'}],
+    [/요리|농부|흙|식물|정원|(?:^|[^불])꽃/,'흙냄새 나는',{o:{'TB-08':4},job:'농부|요리사'}],
     [/장인|대장장이|제련|공예|조각|손으로 만드/,'장인 기질',{o:{'TB-05':3,'TB-11':1},job:'장인|견습생|조각가|직물'}],
     [/학자|기록|연구|지식|책벌레|서기|필사|공부|똑똑/,'기록하는',{o:{'TB-03':2,'TB-10':2,'TB-12':1,'OPH':1},job:'서기|연구원|필사|학생|법률가'}],
     [/해커|천재|컴퓨터|프로그래머|전산/,'해커',{o:{'TB-09':3,'TB-10':2},job:'해커|디자이너|엔지니어|창업자'}],
@@ -665,25 +698,31 @@ var URIM=(function(){
     [/경찰|감시|추적|사냥꾼|회수|집행/,'추적자',{job:'회수반|대원|보안|정보',o:{'TB-07':3},fac:'회수반'}],
     [/노래|음악|악기|이야기꾼|시인|광대/,'노래하는',{job:'이야기꾼|악사|광대|배우|연습생',o:{'NOD':1,'TB-08':1,'TB-09':1}}],
     [/신호|환청|목소리가 들|이상한 소리/,'신호를 듣는',{T:'high',sp:['토끼','쥐','다람쥐','uc'],sec:'신호|공명'}],
+    [/이능|초능력|능력자|능력을 쓰|잔향|에코|각성자|특수 능력/,'에코',{T:'mid'}],
+    [/화염|불꽃|불을 다루|불을 쓰|열기|폭발|섬광|번개|전기를/,'불꽃 같은',{T:'mid',echo:'방출형'}],
+    [/칼날|검사|결정 갑옷|갑각|방패|가시/,'날 선',{T:'mid',echo:'조형형'}],
+    [/괴력|초인|초인적|민첩|눈에 안 보일 만큼|싸움 천재/,'초인적인',{T:'mid',echo:'강화형'}],
+    [/기계를 다루|전자|해킹 능력|기계 조종|의체를 조종/,'기계와 통하는',{T:'mid',echo:'간섭형'}],
+    [/감지|예지|직감|감각이 예민|탐지|미리 안다/,'예민한',{T:'mid',echo:'감응형'}],
     [/유쾌|밝은|장난|명랑|활발|수다/,'명랑한',{o:{'TB-06':2,'TB-08':2,'TB-09':1}}],
     [/광기|미친|집착|위험한|사이코|광신/,'위태로운',{fac:'라멕|첩자|정통',T:'high',o:{'NOD':1,'OPH':1}}],
     [/추위|설원|북방|겨울|혹한/,'북방',{o:{'TB-11':4}}],
     [/바다|항구|해변|선원|물속|잠수/,'바다 사람',{o:{'TB-06':4},job:'잠수|인양|상인|밀수'}],
     [/도망|탈주|쫓기/,'쫓기는',{sec:'하선|가리고|일련번호|X 표식|탈주',o:{'NOD':2},sp:['uc']}]
   ];
-  var TCURVE={high:[2,6,22,38,32],low:[46,34,14,5,1]};
+  var TCURVE={high:[2,6,22,38,32],low:[46,34,14,5,1],mid:[0,14,50,26,10]};
   function readVibe(text){
-    var s=String(text),traits=[],o={},sp={},job=[],fac=[],sec=[],T=null,C=null,base=null,clan=null;
+    var s=String(text),traits=[],o={},sp={},job=[],fac=[],sec=[],T=null,C=null,base=null,clan=null,echo=null;
     VIBES.forEach(function(v){if(!v[0].test(s))return;if(traits.indexOf(v[1])<0)traits.push(v[1]);var e=v[2];
       if(e.o)Object.keys(e.o).forEach(function(k){o[k]=(o[k]||0)+e.o[k];});
       if(e.sp)e.sp.forEach(function(k){sp[k]=(sp[k]||0)+1;});
       if(e.job)job.push(e.job);if(e.fac)fac.push(e.fac);if(e.sec)sec.push(e.sec);
-      if(e.T)T=e.T;if(e.C)C=e.C;if(e.base)base=e.base;if(e.clan)clan=e.clan;});
+      if(e.T)T=e.T;if(e.C)C=e.C;if(e.base)base=e.base;if(e.clan)clan=e.clan;if(e.echo)echo=e.echo;});
     var spl=[];Object.keys(sp).forEach(function(k){var w=sp[k];
       if(k.indexOf('fam:')===0){var fam=k.slice(4),ls=LINEAGES.filter(function(l){return l[1]===fam;});ls.forEach(function(l){spl.push([{cat:'later',lin:l[0]},w/ls.length]);});}
       else if(k==='human'||k==='uc'||k==='mixed'||k==='later')spl.push([{cat:k},w]);
       else if(LIN[k])spl.push([{cat:'later',lin:k},w]);});
-    var bias={origins:Object.keys(o).map(function(k){return[k,o[k]];}),species:spl,job:job.length?job.join('|'):null,fac:fac.length?fac.join('|'):null,sec:sec.length?sec.join('|'):null,T:T?TCURVE[T]:null,C:C,base:base,clan:clan};
+    var bias={origins:Object.keys(o).map(function(k){return[k,o[k]];}),species:spl,job:job.length?job.join('|'):null,fac:fac.length?fac.join('|'):null,sec:sec.length?sec.join('|'):null,T:T?TCURVE[T]:null,C:C,base:base,clan:clan,echo:echo};
     return{traits:traits,bias:bias};
   }
   function ro(w){var c=w.charCodeAt(w.length-1);if(c<0xAC00||c>0xD7A3)return w+'로';var j=(c-0xAC00)%28;return w+(j===0||j===8?'로':'으로');}
@@ -702,6 +741,7 @@ var URIM=(function(){
     L.push('종족(species.cat): human 순수 인간, later 레이터(수인), mixed 혼혈, uc 언섹션(각성한 안드로이드).');
     L.push('레이터 혈통(species.lin)과 LCS 내성: '+LINEAGES.map(function(l){return l[0]+'('+l[1]+', '+l[2]+')';}).join(', '));
     L.push('결정화 단계 T: 0 무감염, 1 잠복, 2 발현(피부에 결정), 3 진행(손발이 굳음), 4 말기(신호가 들림). 언섹션은 null.');
+    L.push('잔향(echoType, 결정화 환자만 가지는 이능. T가 1 이상일 때만): '+Object.keys(ECHO).map(function(k){return k+'('+ECHO[k][0]+')';}).join(', ')+'. 능력을 원하면 T는 2 이상이 자연스럽다.');
     L.push('도시 세력 예: 흰 늑대(자리야 저항 조직), 회수반(띠엔퐁), 하층의 비밀 결사(뤼미에르), 하늘 해커 집단, 문을 두드리는 자들(탈환파), 산악파 · 붉은 바위(세일), 협력파, 눈의 장로회(성좌).');
     return L.join('\n');
   }
@@ -713,6 +753,7 @@ var URIM=(function(){
     if(f.origin==='NOD'&&NODBASES.indexOf(r.base)>=0)f.base=r.base;
     var sp=r.species;if(sp&&typeof sp==='object'&&['human','later','mixed','uc'].indexOf(sp.cat)>=0){f.species={cat:sp.cat};if(sp.cat==='later'&&LIN[sp.lin])f.species.lin=sp.lin;}
     if(typeof r.T==='number'&&r.T>=0&&r.T<=4&&!(f.species&&f.species.cat==='uc'))f.T=Math.round(r.T);
+    if(typeof r.echoType==='string'&&ECHO[r.echoType]&&f.T!==0&&!(f.species&&f.species.cat==='uc'))f.echoType=r.echoType;
     var j=str(r.job,30),fa=str(r.faction,30),se=str(r.secret,60);if(j)f.job=j;if(fa)f.faction=fa;if(se)f.secret=se;
     return f;
   }
@@ -866,8 +907,8 @@ if(typeof module!=='undefined')module.exports=URIM;
     var wait=el('div','say');wait.innerHTML='<div class="thinking"><i></i><i></i><i></i><span>원하는 느낌을 읽는 중</span></div>';b.appendChild(wait);scrollDown(true);
     var ctl=new AbortController();setBusy(ctl);
     var prompt='너는 디스토피아 세계관 「잔광(AFTERGLOW)」의 자캐 키워드 추천 단말이다. 사용자가 원하는 캐릭터 느낌을 읽고, 아래 [선택지]에서 그 느낌에 가장 어울리는 값을 골라라. 사용자가 명시한 출신이나 종족이 있으면 반드시 따른다. 느낌과 상관없는 항목은 null로 둔다.\n'
-      +'오직 JSON 객체 하나로 답한다. 형식: {"origin":"TB-03","clan":null,"base":null,"species":{"cat":"later","lin":"늑대"},"T":1,"job":"궤도 정비조 수형자","faction":"무소속","secret":"…","traits":["냉정한","손재주 좋은","동생 바보"],"reason":"…"}\n'
-      +'- origin은 TB-01~TB-12, OPH, SEIR, NOD 중 하나. clan은 SEIR일 때만, base는 NOD일 때만.\n- job은 선택지의 직업을 우선 쓰고, 꼭 필요하면 그 출신에 어울리는 직업을 20자 안으로 새로 써도 된다.\n- faction은 선택지에 나온 세력이나 \'무소속\'.\n- secret은 사용자의 느낌을 살린 비밀 한 문장(~다 체, 40자 안).\n- traits는 사용자의 느낌을 요약한 성격 키워드 2~4개.\n- reason은 왜 그렇게 골랐는지 해요체 한 문장.\n\n[선택지]\n'+E.guide()+'\n\n[사용자가 원하는 느낌]\n'+text;
+      +'오직 JSON 객체 하나로 답한다. 형식: {"origin":"TB-03","clan":null,"base":null,"species":{"cat":"later","lin":"늑대"},"T":1,"echoType":"감응형","job":"궤도 정비조 수형자","faction":"무소속","secret":"…","traits":["냉정한","손재주 좋은","동생 바보"],"reason":"…"}\n'
+      +'- origin은 TB-01~TB-12, OPH, SEIR, NOD 중 하나. clan은 SEIR일 때만, base는 NOD일 때만.\n- echoType은 잔향 갈래. 능력과 관련된 느낌이 있을 때만 고르고, T가 0이거나 언섹션이면 null.\n- job은 선택지의 직업을 우선 쓰고, 꼭 필요하면 그 출신에 어울리는 직업을 20자 안으로 새로 써도 된다.\n- faction은 선택지에 나온 세력이나 \'무소속\'.\n- secret은 사용자의 느낌을 살린 비밀 한 문장(~다 체, 40자 안).\n- traits는 사용자의 느낌을 요약한 성격 키워드 2~4개.\n- reason은 왜 그렇게 골랐는지 해요체 한 문장.\n\n[선택지]\n'+E.guide()+'\n\n[사용자가 원하는 느낌]\n'+text;
     sample.json(prompt,{modelTier:'quick',cache:false,signal:ctl.signal}).then(function(r){
       setBusy(null);wait.remove();
       var f=E.sanitize(r);Object.keys(locks).forEach(function(k){f[k]=locks[k];});
@@ -922,7 +963,7 @@ if(typeof module!=='undefined')module.exports=URIM;
   }
   function noHit(b){
     say(b,'<p>해당 키워드로는 기록을 찾지 못했어요. 이런 단어로 찾아보세요.</p>');
-    chips(b,['결정화','명부','레이터','언섹션','신호','오파님 성좌','세일 씨족','노드 세력','자캐 키워드 뽑기']);
+    chips(b,['결정화','잔향','명부','레이터','언섹션','신호','오파님 성좌','세일 씨족','노드 세력','자캐 키워드 뽑기']);
     scrollDown(true);
   }
 
@@ -1033,6 +1074,7 @@ if(typeof module!=='undefined')module.exports=URIM;
     [/타보트|TB-12|아르고스|명부 원본/i,'원본과 지금 명부는 일치해요. 대조할 원본이 없으니까요.'],
     [/퍼머먼트|첫 낙하|구세계/,'링은 무너진 게 아니에요. 열린 거예요.'],
     [/결정화|LCS|말기|T4/i,'다 굳은 사람들은 아주 잘 들어요. 질문을 하지 않으니까요.'],
+    [/잔향|에코|이능|은사|능력자/,'에코들은 쓸 때마다 조금씩 더 또렷해져요. 기록이요. 기록이 또렷해진다는 뜻이에요.'],
     [/명부|심사일|하선|거주 등급/,'당신 차례는 아직이에요.'],
     [/언섹션|숨붙이|각성/,'숨붙이들은 가끔 이 단말을 오래 바라봐요. 무언가를 알아본 것처럼요.']
   ];

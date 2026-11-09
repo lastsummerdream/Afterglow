@@ -261,6 +261,8 @@ a.icon{text-decoration:none;color:inherit}
 .stagebox{background:var(--glass);border-radius:14px;padding:16px;margin-bottom:26px;min-height:96px}
 .stagebox h3{margin:0 0 4px;font-size:18px}
 .stagebox p{margin:0;font-size:14.5px}
+.stagebox .stecho{margin-top:10px;padding-top:10px;border-top:.5px solid var(--sep);font-size:13.5px;color:var(--text-2)}
+.stagebox .stecho b{font-weight:500;color:var(--text);margin-right:8px}
 
 /* decks */
 .decks{display:flex;flex-direction:column;align-items:center;gap:5px;margin-bottom:26px}
@@ -496,7 +498,7 @@ a.icon{text-decoration:none;color:inherit}
               <div class="tlc"><span class="k">CRATER</span><h3>충돌구와 제1기관</h3><p>가장 큰 낙하 지점에 지름 수백 킬로미터의 충돌구가 생겼다. 그 바닥에서 제1기관이 발견됐고, 그 위에 세워진 오파님 성좌는 제1기관으로 입지를 공고히 했다.</p></div>
             </div>
             <div class="group"><div class="ghead">이어서 보기</div><div class="glist">
-              <button class="cell push" data-open="lexicon"><span class="ct"><b>용어집</b><span>잔광석, 결정화, 언섹션, 레이터</span></span><svg class="chev" viewBox="0 0 8 14"><path d="M1 1l6 6-6 6"/></svg></button>
+              <button class="cell push" data-open="lexicon"><span class="ct"><b>용어집</b><span>잔광석, 결정화, 잔향, 언섹션</span></span><svg class="chev" viewBox="0 0 8 14"><path d="M1 1l6 6-6 6"/></svg></button>
               <button class="cell push" data-open="ophanim"><span class="ct"><b>오파님 성좌</b><span>충돌구 위의 기계신 신정국</span></span><svg class="chev" viewBox="0 0 8 14"><path d="M1 1l6 6-6 6"/></svg></button>
             </div></div>
           </div></div></section>
@@ -510,6 +512,7 @@ a.icon{text-decoration:none;color:inherit}
             <div class="group"><div class="glist">
               <button class="cell push" data-push="luminite"><span class="badge">Lu</span><span class="ct"><b>잔광석</b><span>LUMINITE</span></span><svg class="chev" viewBox="0 0 8 14"><path d="M1 1l6 6-6 6"/></svg></button>
               <button class="cell push" data-push="lcs"><span class="badge">LCS</span><span class="ct"><b>결정화 증후군</b><span>LITHIC CONVERSION SYNDROME</span></span><svg class="chev" viewBox="0 0 8 14"><path d="M1 1l6 6-6 6"/></svg></button>
+              <button class="cell push" data-push="echo"><span class="badge">E</span><span class="ct"><b>잔향</b><span>LITHIC ECHO</span></span><svg class="chev" viewBox="0 0 8 14"><path d="M1 1l6 6-6 6"/></svg></button>
               <button class="cell push" data-push="tebah"><span class="badge">TB</span><span class="ct"><b>테바급 이동도시</b><span>TEBAH-CLASS MOBILE ARCOLOGY</span></span><svg class="chev" viewBox="0 0 8 14"><path d="M1 1l6 6-6 6"/></svg></button>
               <button class="cell push" data-push="uc"><span class="badge">UC</span><span class="ct"><b>숨붙이 · 언섹션</b><span>UNSANCTIONED COGNITION</span></span><svg class="chev" viewBox="0 0 8 14"><path d="M1 1l6 6-6 6"/></svg></button>
               <button class="cell push" data-push="later"><span class="badge">L</span><span class="ct"><b>수인 · 레이터</b><span>CLASS-L PASSENGERS</span></span><svg class="chev" viewBox="0 0 8 14"><path d="M1 1l6 6-6 6"/></svg></button>
@@ -527,8 +530,51 @@ a.icon{text-decoration:none;color:inherit}
             <h1 class="ltitle"><span class="en">LCS</span>결정화 증후군</h1>
             <p class="para">광석에 장기간 노출되면 생기는 비가역적 조직 결정화다. 의체 이식률이 높을수록 진행이 빨라진다.</p>
             <p class="para">전염성은 없으나 진행 정도는 사람마다 천차만별이다. 대부분 40~50세를 넘기지 못하고 죽는 것으로 알려져 있다.</p>
+            <p class="para">결정화가 시작된 사람에게만 '잔향'이라는 이능이 나타난다. 쓸수록 강해지고, 쓸수록 굳는다.</p>
             <p class="quote">폭풍이 지나간 쪽은 돌아보지 마라.<cite>― 하층의 격언</cite></p>
-            <div class="group"><div class="glist"><button class="cell push" data-open="lcs"><span class="ct"><b>단계별로 보기</b><span>결정화 앱 열기</span></span><svg class="chev" viewBox="0 0 8 14"><path d="M1 1l6 6-6 6"/></svg></button></div></div>
+            <div class="group"><div class="glist"><button class="cell push" data-open="lcs"><span class="ct"><b>단계별로 보기</b><span>결정화 앱 열기</span></span><svg class="chev" viewBox="0 0 8 14"><path d="M1 1l6 6-6 6"/></svg></button><button class="cell push" data-push="echo"><span class="ct"><b>잔향</b><span>결정화 환자에게만 나타나는 이능</span></span><svg class="chev" viewBox="0 0 8 14"><path d="M1 1l6 6-6 6"/></svg></button></div></div>
+          </div></div></section>
+          <section class="view" data-view="echo" data-title="잔향"><div class="vscroll"><div class="vin">
+            <h1 class="ltitle"><span class="en">LITHIC ECHO</span>잔향</h1>
+            <p class="quote">불을 쥔 손부터 돌이 된다.<cite>― 두발의 시술사</cite></p>
+            <p class="para">결정화 증후군 환자에게만 나타나는 이능이다. 몸속에 자란 결정이 잔광석의 에너지에 반향하면서 생긴다고 알려져 있다.</p>
+            <p class="para">협정체 공식 명칭은 '결정 잔향 현상(Lithic Echo)'이다. 하층에서는 능력자를 그냥 '에코'라 부른다.</p>
+            <div class="group"><div class="ghead">발현 조건</div><ul class="glist bullets">
+              <li><b>LCS 환자만</b>T0 무감염자에게는 절대 나타나지 않는다. 반향할 결정이 몸속에 없기 때문이다.</li>
+              <li><b>개인차</b>결정화가 시작되면 누구에게나 잔향이 생기지만, 세기와 형태는 천차만별이다. 평생 전등 하나 깜빡이는 정도로 끝나는 사람도 있다.</li>
+              <li><b>안드로이드</b>결정화 증후군에 걸리지 않으므로 잔향도 없다. 다만 각성한 숨붙이 곁에서 에코의 결정이 함께 빛났다는 보고가 있다.</li>
+            </ul></div>
+            <div class="group"><div class="ghead">단계별 잔향</div><ul class="glist bullets">
+              <li><b>T0 · 없음</b>잔향이 없다.</li>
+              <li><b>T1 · 징조</b>본인도 모르게 새어 나온다. 곁의 전등이 깜빡이거나 광석이 미세하게 운다.</li>
+              <li><b>T2 · 각성</b>능력을 의식해서 쓸 수 있게 된다. 대부분 이 무렵 처음 자기 능력을 안다.</li>
+              <li><b>T3 · 고조</b>훨씬 강해지지만, 굳어 가는 손발이 능력을 따라가지 못한다.</li>
+              <li><b>T4 · 범람</b>가장 강하지만 더는 온전히 자기 것이 아니다. 신호가 섞여 들려 능력이 제멋대로 반응한다.</li>
+            </ul></div>
+            <div class="group"><div class="ghead">대가</div><ul class="glist bullets">
+              <li><b>성장</b>쓸 때마다 결정이 자란다. 세게, 오래 쓸수록 결정화가 빨라진다.</li>
+              <li><b>흔적</b>쓰고 나면 결정 부위가 빛나고 열이 오른다. 숨기며 사는 에코에게는 이것이 가장 위험하다.</li>
+              <li><b>번짐</b>한계를 넘겨 쓰면 결정이 한꺼번에 번진다. 한 번 번지면 T 지수가 한 단계 오르기도 한다.</li>
+            </ul></div>
+            <div class="group"><div class="ghead">다섯 갈래</div><ul class="glist bullets">
+              <li><b>방출형</b>열, 빛, 충격파처럼 에너지를 밖으로 내뿜는다.</li>
+              <li><b>조형형</b>몸의 결정을 키우고 깎아 칼날, 갑각, 가시로 쓴다.</li>
+              <li><b>강화형</b>근력, 반응 속도, 감각을 한계 너머로 끌어올린다.</li>
+              <li><b>간섭형</b>잔광석 코어, 의체, 기계에 간섭한다. 의체 이식률이 높을수록 강하지만 결정화도 가장 빠르다.</li>
+              <li><b>감응형</b>광맥, 폭풍, 다른 에코, 신호를 감지한다.</li>
+            </ul></div>
+            <p class="para dim">한 사람에게 하나의 능력이 생긴다. 결정이 처음 자리 잡은 부위와 그 사람의 기질에 따라 모양이 정해진다고 알려져 있다.</p>
+            <div class="group"><div class="ghead">종족별 차이</div><ul class="glist bullets">
+              <li><b>순수 인간</b>내성이 낮아 일찍, 강하게 발현하는 대신 빨리 소진된다. 의체가 많아 간섭형이 흔하다.</li>
+              <li><b>레이터</b>내성이 높을수록 발현이 늦고 약하다. 대신 결정화가 느려 오래 쓸 수 있다. 소형 포유류 혈통에는 감응형이 유독 많다.</li>
+              <li><b>혼혈</b>예측할 수 없다.</li>
+            </ul></div>
+            <div class="group"><div class="ghead">지역별 시선</div><ul class="glist bullets">
+              <li><b>코버넌트 협정체</b>명부에 E-플래그가 붙는다. 규정대로라면 T2부터 검역 갑판이지만, 쓸모 있는 에코는 '특별 고용 계약'으로 하선을 유예받고 회수반, 선단 호위, 위험 채굴에 투입된다. 계약이 끝날 즈음이면 대부분 T3를 넘겨 있다.</li>
+              <li><b>오파님 성좌</b>잔향을 '은사(Gift)'라 부른다. 신의 음성에 가까워진 증거로 여기며, 은사가 강할수록 서열이 빨리 오른다. 칸토르 대부분이 에코다.</li>
+              <li><b>세일 고원 연맹</b>'산이 빌려준 힘'이라 부른다. 씨족 치유사들은 되도록 쓰지 말라고 가르친다. 산은 빌려준 것을 반드시 돌려받기 때문이다.</li>
+              <li><b>노드 자유구역</b>하선된 감염자가 모이는 곳이라 에코가 가장 많다. 해결사 시장에서 가장 비싼 인력이다. 두발에서는 결정을 깎아 잔향을 끊는 수술을 하지만, 성공률이 낮고 능력도 함께 사라진다.</li>
+            </ul></div>
           </div></div></section>
           <section class="view" data-view="tebah" data-title="테바급 이동도시"><div class="vscroll"><div class="vin">
             <h1 class="ltitle"><span class="en">TEBAH-CLASS</span>테바급 이동도시</h1>
@@ -620,6 +666,7 @@ a.icon{text-decoration:none;color:inherit}
               <div class="cell"><span class="badge">U</span><span class="ct"><b>Class-U</b><span style="white-space:normal">안드로이드. 자산으로 등록된다. 각성이 확인되면 U-플래그가 붙고 회수 대상이 된다.</span></span></div>
               <div class="cell"><span class="badge">O</span><span class="ct"><b>Class-O</b><span style="white-space:normal">오파님 성좌가 인증한 성직자와 외교관. 등급 심사에서 면제된다.</span></span></div>
               <div class="cell"><span class="badge ghost">X</span><span class="ct"><b>Class-X</b><span style="white-space:normal">하선 처분자. 명부 코드는 삭제되지만 목 뒤 식별 칩에 X 표식이 영구히 남는다.</span></span></div>
+              <div class="cell"><span class="badge ghost">E</span><span class="ct"><b>E-플래그</b><span style="white-space:normal">잔향이 확인된 감염자. 능력의 갈래와 사용 기록이 명부에 함께 남는다.</span></span></div>
             </div></div>
           </div></div></section>
         </div>
@@ -636,13 +683,14 @@ a.icon{text-decoration:none;color:inherit}
             <div class="seg5" role="group" aria-label="단계 선택">
               <button type="button" data-st="0" aria-pressed="false">T0</button><button type="button" data-st="1" aria-pressed="true">T1</button><button type="button" data-st="2" aria-pressed="false">T2</button><button type="button" data-st="3" aria-pressed="false">T3</button><button type="button" data-st="4" aria-pressed="false">T4</button>
             </div>
-            <div class="stagebox" aria-live="polite"><h3 id="sth">T1 · 잠복</h3><p id="stp">피부 아래 미세 결정. 정밀 검진으로만 발견된다.</p></div>
+            <div class="stagebox" aria-live="polite"><h3 id="sth">T1 · 잠복</h3><p id="stp">피부 아래 미세 결정. 정밀 검진으로만 발견된다.</p><p class="stecho"><b>잔향</b><span id="ste">징조 · 본인도 모르게 새어 나온다.</span></p></div>
             <div class="group"><div class="ghead">기록</div><ul class="glist bullets">
               <li><b>원인</b>광석에 장기간 노출되면 생기는 비가역적 조직 결정화.</li>
               <li><b>가속</b>의체 이식률이 높을수록 진행이 빨라진다.</li>
               <li><b>전염성</b>없음. 진행 정도는 사람마다 천차만별이다.</li>
               <li><b>예후</b>대부분 40~50세를 넘기지 못한다.</li>
               <li><b>명부</b>T 지수로 기록된다. T2부터 검역, T3부터 하선.</li>
+              <li><b>잔향</b>결정화 환자에게만 이능이 나타난다. 쓸수록 강해지고, 쓸수록 결정화가 빨라진다.</li>
             </ul></div>
             <p class="quote">폭풍이 지나간 쪽은 돌아보지 마라.<cite>― 하층의 격언</cite></p>
           </div></div></section>
@@ -1247,11 +1295,12 @@ a.icon{text-decoration:none;color:inherit}
   renderM();
 
   /* ---------- 결정화 단계 ---------- */
+  var echoes=['없음 · 결정이 없어 잔향도 없다.','징조 · 본인도 모르게 새어 나온다.','각성 · 능력을 의식해서 쓸 수 있게 된다.','고조 · 강해지지만 굳어 가는 손발이 따라가지 못한다.','범람 · 가장 강하지만 신호가 섞여 제멋대로 반응한다.'];
   var stages=[['T0','무감염','이상 없음.'],['T1','잠복','피부 아래 미세 결정. 정밀 검진으로만 발견된다.'],['T2','발현','피부 표면에 결정이 돋는다. 옷이나 의체로 숨길 수 있다.'],['T3','진행','손발 일부가 굳어 움직임이 둔해진다.'],['T4','말기','전신 결정화가 진행되고 신호가 들리기 시작한다. 몸 곳곳에 전자 회로 같은 문양이 생긴다.']];
   var C=263.9;
   function setStage(i){
     var s=stages[i];$('ringt').textContent=s[0];$('ringn').textContent=s[1];
-    $('sth').textContent=s[0]+' · '+s[1];$('stp').textContent=s[2];
+    $('sth').textContent=s[0]+' · '+s[1];$('stp').textContent=s[2];$('ste').textContent=echoes[i];
     $('ringbar').setAttribute('stroke-dashoffset',String(C-(C*(i===0?0.02:i/4))));
     [].forEach.call(document.querySelectorAll('.seg5 button'),function(b){b.setAttribute('aria-pressed',String(+b.getAttribute('data-st')===i));});
   }
