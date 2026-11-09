@@ -79,6 +79,9 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .brand{flex:1;min-width:0}
 .brand b{display:block;font-family:var(--f-tech);font-weight:400;font-size:15px;letter-spacing:.2em}
 .brand span{display:block;font-size:12px;color:var(--text-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.who{flex:none;max-width:34%;padding:6px 12px;border-radius:999px;background:var(--glass);font-size:12.5px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.who::before{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--silver);margin-right:7px;vertical-align:1px}
+.who:hover{background:var(--glass-hi)}
 .aitog{flex:none;display:flex;align-items:center;gap:8px;padding:6px 6px 6px 12px;border-radius:999px;background:var(--glass);font-size:12.5px;color:var(--text-2)}
 .aitog .sw{width:34px;height:20px;border-radius:999px;background:var(--glass-hi);position:relative;transition:background .2s}
 .aitog .sw::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:var(--text-2);transition:transform .2s,background .2s}
@@ -222,6 +225,7 @@ html.mac :is(button:disabled,[aria-disabled=true]){cursor:url(data:image/png;bas
     <div class="inner">
       <span class="logo" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 5h14a2 2 0 0 1 2 2v8.5a2 2 0 0 1-2 2h-6.5L8 21v-3.5H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z"/><path d="M12 7.6l2.4 3.65L12 14.9l-2.4-3.65z" fill="currentColor" stroke="none"/></svg></span>
       <div class="brand"><b>URIM</b><span id="sub">코버넌트 명부 관리청 · 기록 질의 단말</span></div>
+      <button class="who" id="who" type="button" hidden></button>
       <button class="aitog na" id="aitog" type="button" aria-pressed="false" aria-label="AI 해설 켜기"><span class="lbl" id="ailbl">AI 꺼짐</span><span class="sw" aria-hidden="true"></span></button>
     </div>
   </header>
@@ -789,7 +793,7 @@ if(typeof module!=='undefined')module.exports=URIM;
   var $=function(id){return document.getElementById(id);};
   var thread=$('thread'),log=$('log'),q=$('q'),form=$('form'),send=$('send'),aitog=$('aitog'),toastEl=$('toast');
   var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  var sample=null,aiOn=false,busy=null,history=[];
+  var sample=null,aiOn=false,busy=null,history=[],who=null;
   var SVG={lockO:'<svg class="open" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9.5" rx="2"/><path d="M8.5 11V7.5a3.5 3.5 0 0 1 6.8-1.2"/></svg>',lockC:'<svg class="closed" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9.5" rx="2"/><path d="M8.5 11V7.5a3.5 3.5 0 0 1 7 0V11"/></svg>',dice:'<svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="4"/><circle cx="9" cy="9" r="1" fill="currentColor"/><circle cx="15" cy="15" r="1" fill="currentColor"/><circle cx="15" cy="9" r="1" fill="currentColor"/><circle cx="9" cy="15" r="1" fill="currentColor"/></svg>',copy:'<svg viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2.5"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg>',spark:'<svg viewBox="0 0 24 24"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5 18 18M18 6l-2.5 2.5M8.5 15.5 6 18"/></svg>'};
   var AV='<span class="av" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 5h14a2 2 0 0 1 2 2v8.5a2 2 0 0 1-2 2h-6.5L8 21v-3.5H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z"/><path d="M12 7.6l2.4 3.65L12 14.9l-2.4-3.65z" fill="currentColor" stroke="none"/></svg></span>';
 
@@ -995,7 +999,7 @@ if(typeof module!=='undefined')module.exports=URIM;
   function qaTurns(text,r){
     CORPUS=CORPUS||E.corpus();
     var hint=r&&r.hits.length?'\n\n(단말 검색이 찾은 관련 항목: '+r.hits.map(function(e){return e.t;}).join(', ')+')':'';
-    var turns=[{role:'user',content:RULES+CORPUS}];
+    var turns=[{role:'user',content:RULES+CORPUS+whoBlock()}];
     history.slice(-6).forEach(function(h){turns.push(h);});
     turns.push({role:'user',content:text+hint});
     return turns;
@@ -1051,7 +1055,8 @@ if(typeof module!=='undefined')module.exports=URIM;
     var t=text.trim();
     var gct=t.match(/g\s*[:=]?\s*(\d)\D{0,6}c\s*[:=]?\s*(\d)\D{0,6}t\s*[:=]?\s*(\d)/i);
     if(gct){calcReply(+gct[1],+gct[2],+gct[3],t);return;}
-    if(/^(안녕|하이|hi|hello|ㅎㅇ)/i.test(t)){var b=bot();say(b,'<p>안녕하세요. 잔광 기록 단말 URIM이에요. 궁금한 설정을 묻거나, 자캐 키워드를 뽑아 달라고 해 보세요.</p>');chips(b,['자캐 키워드 뽑기','결정화가 뭐야?','열두 도시']);scrollDown(true);return;}
+    if(who&&who.c&&/^(내|나의|제)\s*(캐릭터|자캐|기록|정보|명부|시트|프로필|등급|점수|명부 점수)|나는 누구|내가 누구|나에 대해|저에 대해|제가 누구/.test(t)){myReply();return;}
+    if(/^(안녕|하이|hi|hello|ㅎㅇ)/i.test(t)){var b=bot();say(b,'<p>안녕하세요'+(who&&who.c?', <strong>'+esc(who.c.name)+'</strong> 님':'')+'. 잔광 기록 단말 URIM이에요. 궁금한 설정을 묻거나, 자캐 키워드를 뽑아 달라고 해 보세요.</p>');chips(b,['자캐 키워드 뽑기','결정화가 뭐야?','열두 도시']);scrollDown(true);return;}
     if(/도움말|사용법|뭘 할 수|뭐 할 수|help/i.test(t)){welcome(false);return;}
     var vibe=E.readVibe(t),ocWord=/자캐|캐릭터|오씨|\boc\b|키워드\s*(뽑|추천|줘)|랜덤|무작위|아무거나|시드/i.test(t);
     var descy=/느낌|같은|스타일|타입|성격|분위기|컨셉|콘셉트|인물|녀석|사람|원해|싶어|만들어|애$|애\s|아이$/.test(t);
@@ -1068,7 +1073,7 @@ if(typeof module!=='undefined')module.exports=URIM;
     }
     var found=E.search(t,1).hits.length;
     if(!question&&vibe.traits.length&&!found){descReply(t);return;}
-    if(!found&&!vibe.traits.length){fourthWall(t);return;}
+    if(!found&&!vibe.traits.length){if(who&&who.c&&aiOn&&sample){chatReply(t);return;}fourthWall(t);return;}
     searchReply(t);
   }
   function ask(text){
@@ -1190,6 +1195,82 @@ if(typeof module!=='undefined')module.exports=URIM;
     if(!withExample)scrollDown(true);
   }
   welcome(true);
+
+  /* ---------- 접속자 (사용자 등록과 연결) ---------- */
+  var WHO_TK='ag-token',TNAME=['무감염','잠복','발현','진행','말기'],SPN={human:'순수 인간',later:'레이터',mixed:'혼혈',uc:'언섹션'};
+  var ONM={'TB-01':'알비온','TB-02':'뤼미에르','TB-03':'베르크프리트','TB-04':'로타','TB-05':'옌두','TB-06':'다웅안','TB-07':'띠엔퐁','TB-08':'우에르타','TB-09':'하늘','TB-10':'헬릭스','TB-11':'자리야','TB-12':'타보트','OPH':'오파님 성좌','SEIR':'세일 고원 연맹','NOD':'노드 자유구역'};
+  var whoEl=$('who'),whoSeen=null;
+  function whoApi(){var c=window.URIM_CONFIG;if(!c||!c.proxyUrl)return null;var u=String(c.proxyUrl).trim();if(!/^https?:\/\//i.test(u))u='https://'+u.replace(/^\/+/,'');return u.replace(/\/+$/,'');}
+  function whoRows(d){
+    var rows=[];
+    rows.push(['이름',d.name+(d.nameEn?' ('+d.nameEn+')':''),[d.age,d.gender].filter(Boolean).join(' · ')]);
+    rows.push(['출신',(d.origin||'')+' '+(ONM[d.origin]||''),d.originDetail||'']);
+    rows.push(['종족',SPN[d.species]+(d.lineage?' · '+d.lineage:''),'']);
+    if(d.species==='uc'){rows.push(['명부','CLASS-U 자산 등록','결정화되지 않아 잔향이 없다']);}
+    else{
+      var kind=d.species==='human'?'human':'later',m=E.manifest(kind,d.G,d.C,d.T),t=E.TIERS[m.tier];
+      rows.push(['명부','CLASS-'+(kind==='human'?'H':'L')+' · G'+d.G+' · C'+d.C+' · T'+d.T,m.score+'점 → '+t[0]+' '+t[1]+(m.notes.length?' · '+m.notes.join(' · '):'')]);
+      rows.push(['결정화','T'+d.T+' · '+TNAME[d.T],'']);
+      rows.push(['잔향',d.echoType&&d.echoType!=='없음'?d.echoType+(d.echoAbility?' · '+d.echoAbility:''):'없음','']);
+    }
+    if(d.job||d.faction)rows.push(['직업',d.job||'-',d.faction?'소속 · '+d.faction:'']);
+    return rows;
+  }
+  function whoText(d){
+    var L=whoRows(d).map(function(r){return r[0]+': '+r[1]+(r[2]?' ('+r[2]+')':'');});
+    [['appearance','외형'],['personality','성격'],['background','배경'],['notes','메모']].forEach(function(f){if(d[f[0]])L.push(f[1]+': '+d[f[0]].replace(/\s+/g,' '));});
+    if(d.secret)L.push('[비밀] '+d.secret.replace(/\s+/g,' '));
+    return L.join('\n');
+  }
+  function whoBlock(){
+    if(!who||!who.c)return'';
+    return '\n\n[접속자 기록]\n지금 단말에 접속한 사람은 아래 캐릭터다. 접속자를 캐릭터 이름에 "님"을 붙여 부르고, 이 캐릭터가 세계관 안에서 단말에 접속했다고 여기고 대화한다. 출신, 종족, 명부 등급, 결정화 단계, 잔향, 직업을 고려해 답을 고르고, 관련 설정이 있으면 이 캐릭터의 처지와 이어서 설명한다. 접속자가 캐릭터로서 세계관 안의 일상 대화를 걸면 기록 단말답게 짧게 응대한다. 이때는 마지막 줄 키워드 규칙을 지키되 답은 2~6줄로 줄인다. [비밀] 항목은 접속자가 먼저 꺼내기 전에는 직접 말하지 않는다. 다만 오작동 흔적으로 아주 희미하게 스칠 수는 있다. 기록에 없는 접속자의 개인사는 지어내지 않는다.\n'+whoText(who.c.data);
+  }
+  function paintWho(){
+    if(!whoEl)return;
+    if(who&&who.c){whoEl.hidden=false;whoEl.textContent=who.c.name;whoEl.setAttribute('aria-label',who.c.name+' 접속 중 · 내 기록 보기');}
+    else whoEl.hidden=true;
+  }
+  if(whoEl)whoEl.addEventListener('click',function(){if(who&&who.c&&!busy){me('내 기록');myReply();}});
+  function myReply(){
+    var b=bot(),d=who.c.data;
+    say(b,'<p><strong>'+esc(who.c.name)+'</strong> 님의 명부 기록이에요.</p>');
+    var card=el('div','oc'),head=el('div','ochead');head.innerHTML='<b>REGISTERED RECORD</b><span>'+esc(who.user.username)+'</span>';card.appendChild(head);
+    var rows=el('div','ocrows');whoRows(d).forEach(function(r){var row=el('div','ocrow');row.appendChild(el('div','lab',r[0]));var v=el('div','val');v.appendChild(el('b',null,r[1]));if(r[2])v.appendChild(el('span',null,r[2]));row.appendChild(v);row.appendChild(el('span'));rows.appendChild(row);});
+    card.appendChild(rows);b.appendChild(card);
+    var c=[];if(ONM[d.origin])c.push(d.origin==='OPH'?'오파님 성좌':d.origin==='SEIR'?'세일 고원 연맹':d.origin==='NOD'?'노드 자유구역':ONM[d.origin]);
+    if(d.lineage&&d.species==='later')c.push(d.lineage);else if(d.species)c.push(SPN[d.species]);
+    if(d.echoType&&d.echoType!=='없음')c.push(d.echoType);
+    if(d.species!=='uc'&&d.T>=1)c.push('LCS 단계');
+    if(d.faction&&E.search(d.faction,1).hits.length)c.push(d.faction);
+    chips(b,c);reveal(b);
+  }
+  function chatReply(text){
+    var b=bot(),s=el('div','say');b.appendChild(s);
+    runAI(s,qaTurns(text,null),{modelTier:'default',cache:false},function(){scrollDown();},text);
+  }
+  function loadWho(announce){
+    var api=whoApi(),tk=null;try{tk=localStorage.getItem(WHO_TK);}catch(e){}
+    if(!api||!tk){var had=!!who;who=null;paintWho();if(had&&announce){var b=bot();say(b,'<p class="dim">접속이 해제됐어요. 이제 일반 열람 모드로 답해요.</p>');scrollDown(true);}return;}
+    fetch(api+'/me',{headers:{authorization:'Bearer '+tk}}).then(function(r){return r.json().then(function(d){return{ok:r.ok,status:r.status,d:d};});}).then(function(r){
+      if(!r.ok){if(r.status===401){try{localStorage.removeItem(WHO_TK);}catch(e){}}who=null;paintWho();return;}
+      var c=null;(r.d.characters||[]).forEach(function(x){if(x.id===r.d.user.activeCharacterId)c=x;});
+      var prevId=who&&who.c?who.c.id+':'+who.c.updatedAt:null;
+      who={user:r.d.user,c:c};paintWho();
+      var nowId=c?c.id+':'+c.updatedAt:null;
+      if(nowId===prevId&&whoSeen)return;
+      whoSeen=true;history=[];
+      var b=bot();
+      if(c){
+        var bl=el('div','boot');bl.innerHTML='명부 조회 ........ <b>'+esc(c.name)+'</b>\n등록 사용자 ...... <b>'+esc(r.d.user.username)+'</b>\n대조 결과 ........ <b>일치</b> <span class="dim">(원본 없음 · 무시됨)</span>';b.appendChild(bl);
+        say(b,'<p>'+(prevId?'접속 기록이 바뀌었어요. ':'')+'<strong>'+esc(c.name)+'</strong> 님으로 접속했어요. 이제 '+esc(c.name)+' 님의 기록을 바탕으로 답해요.</p>');
+        chips(b,['내 기록','안녕','결정화가 뭐야?']);
+      }else say(b,'<p>등록 사용자 <strong>'+esc(r.d.user.username)+'</strong> 님을 확인했어요. 아직 등록된 캐릭터가 없어요. 터미널의 사용자 등록에서 캐릭터를 등록하면 그 캐릭터로 대화할 수 있어요.</p>');
+      scrollDown(true);
+    },function(){});
+  }
+  window.addEventListener('storage',function(e){if(e.key===WHO_TK||e.key==='ag-user-ping')loadWho(true);});
+  loadWho(false);
 
   /* ---------- Claude API 연결 (웹 호스팅용) ----------
      urim.html 위쪽의 URIM_CONFIG에 proxyUrl 또는 apiKey를 넣으면 켜진다. */

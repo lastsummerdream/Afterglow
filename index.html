@@ -270,6 +270,43 @@ a.icon{text-decoration:none;color:inherit}
 .stagebox .stecho{margin-top:10px;padding-top:10px;border-top:.5px solid var(--sep);font-size:13.5px;color:var(--text-2)}
 .stagebox .stecho b{font-weight:500;color:var(--text);margin-right:8px}
 
+/* 사용자 등록 */
+.rgform [hidden],.rgbox [hidden],#rg-root [hidden]{display:none!important}
+.rgform .glist,.rgbox .glist{overflow:visible}
+.fld{display:block;padding:10px 16px 11px;position:relative}
+.fld + .fld::before{content:"";position:absolute;top:0;left:16px;right:0;height:.5px;background:var(--sep)}
+.fld > span{display:block;font-size:12.5px;color:var(--text-2);margin-bottom:3px}
+.fld > span em{font-style:normal;color:var(--text-3);margin-left:6px}
+.fld input,.fld select,.fld textarea{display:block;width:100%;background:transparent;border:0;outline:0;color:var(--text);font:inherit;font-size:16px;line-height:1.5;padding:2px 0;border-radius:6px;-webkit-appearance:none;appearance:none}
+.fld select{background-image:linear-gradient(45deg,transparent 50%,var(--text-2) 50%),linear-gradient(135deg,var(--text-2) 50%,transparent 50%);background-position:calc(100% - 9px) 52%,calc(100% - 4px) 52%;background-size:5px 5px;background-repeat:no-repeat;padding-right:20px}
+.fld select option{background:#15181b;color:var(--text)}
+.fld textarea{resize:vertical;min-height:72px}
+.fld input::placeholder,.fld textarea::placeholder{color:var(--text-3)}
+.fld input:disabled,.fld select:disabled,.fld textarea:disabled{color:var(--text-3)}
+.fld:focus-within{background:rgba(232,238,244,.04)}
+.fld.bad > span{color:#ffb4a8}
+.fld .cnt{position:absolute;right:16px;top:10px;font-family:var(--f-mono);font-size:10.5px;color:var(--text-3)}
+.fld3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}
+.fld3.two{grid-template-columns:repeat(2,minmax(0,1fr))}
+.fld3 .fld + .fld::before{top:10px;bottom:10px;left:0;right:auto;width:.5px;height:auto}
+.rgnote{font-size:12.5px;color:var(--text-2);margin:8px 16px 0;line-height:1.55}
+.rgsum{font-family:var(--f-mono);font-size:12.5px;color:var(--text-2);padding:10px 16px 12px;border-top:.5px solid var(--sep);line-height:1.6}
+.rgsum b{color:var(--text);font-weight:500}
+.rgbtns{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 26px}
+.abtn{padding:11px 18px;border-radius:12px;background:var(--glass-hi);font-size:15px;font-weight:500;text-align:center}
+.abtn.pri{background:var(--silver);color:#0b0c0e}
+.abtn.wide{flex:1;min-width:140px}
+.abtn.warn{color:#ffb4a8}
+.abtn:disabled{opacity:.45;cursor:default}
+.rgmsg{min-height:20px;font-size:13.5px;color:#ffb4a8;margin:-14px 4px 18px}
+.rgmsg.ok{color:var(--text-2)}
+.rgid{display:flex;align-items:center;gap:14px;padding:16px;background:var(--glass);border-radius:14px;margin:0 0 26px}
+.rgid .av{flex:none;width:46px;height:46px;border-radius:50%;display:grid;place-items:center;background:var(--chrome);color:#0b0c0e;font-family:var(--f-tech);font-size:15px}
+.rgid b{display:block;font-size:17px;font-weight:600}
+.rgid span{display:block;font-size:12.5px;color:var(--text-2);font-family:var(--f-mono)}
+.cell .tag{flex:none;font-family:var(--f-mono);font-size:10.5px;letter-spacing:.06em;padding:3px 7px;border-radius:6px;background:var(--chrome);color:#0b0c0e}
+.cell.add .ct b{color:var(--silver)}
+
 /* decks */
 .decks{display:flex;flex-direction:column;align-items:center;gap:5px;margin-bottom:26px}
 .deck{border-radius:12px;padding:10px 12px;background:var(--glass);display:flex;flex-direction:column;gap:1px;min-width:0}
@@ -469,6 +506,7 @@ a.icon{text-decoration:none;color:inherit}
             <button class="icon" data-open="habitat"><span class="squircle"><svg viewBox="0 0 24 24"><path d="M7 17.5h10a3.5 3.5 0 0 0 .4-7A5 5 0 0 0 7.8 9.6 4 4 0 0 0 7 17.5z"/><path d="M9 20.5l.5-1M12.5 20.5l.5-1M16 20.5l.5-1"/></svg></span><span class="ilabel">환경</span></button>
             <button class="icon" data-open="peoples"><span class="squircle"><svg viewBox="0 0 24 24"><path d="M7.5 9.5 6 3.5l4 3M16.5 9.5 18 3.5l-4 3"/><circle cx="12" cy="11" r="4.5"/><path d="M4.5 21c1-3.5 4-5 7.5-5s6.5 1.5 7.5 5"/></svg></span><span class="ilabel">종족</span></button>
             <button class="icon" data-open="signal"><span class="squircle"><svg viewBox="0 0 24 24"><path d="M2.5 12h3l2-5 3 10 3-14 3 13 2-4h3"/></svg></span><span class="ilabel">신호</span></button>
+            <button class="icon" data-open="register"><span class="squircle"><svg viewBox="0 0 24 24"><circle cx="10" cy="8" r="3.6"/><path d="M3.5 20c.8-3.6 3.3-5.6 6.5-5.6 1.5 0 2.8.4 3.9 1.2"/><path d="M18 13.5v7M14.5 17h7"/></svg></span><span class="ilabel">사용자 등록</span></button>
           </div>
           </div>
         </div>
@@ -488,6 +526,20 @@ a.icon{text-decoration:none;color:inherit}
         <!-- URIM (웹 호스팅본에서는 같은 폴더의 urim.html을 앱처럼 연다) -->
         <div class="app" id="app-urim" hidden>
           <section class="view frame" data-view="root" data-title="URIM"><iframe title="URIM 기록 단말" data-src="urim.html?mac"></iframe></section>
+        </div>
+
+        <!-- 사용자 등록 -->
+        <div class="app" id="app-register" hidden>
+          <section class="view" data-view="root" data-title="사용자 등록"><div class="vscroll"><div class="vin">
+            <p class="eyebrow">Covenant Registry</p>
+            <h1 class="ltitle"><span class="en">USER REGISTRY</span>사용자 등록</h1>
+            <div id="rg-root"></div>
+          </div></div></section>
+          <section class="view" data-view="char" data-title="캐릭터 정보"><div class="vscroll"><div class="vin">
+            <p class="eyebrow" id="rg-ceb">New Record</p>
+            <h1 class="ltitle"><span class="en">CHARACTER SHEET</span><span id="rg-ct">새 캐릭터</span></h1>
+            <form id="rg-form" class="rgform" novalidate autocomplete="off"></form>
+          </div></div></section>
         </div>
 
         <!-- 기록 -->
@@ -1165,6 +1217,7 @@ a.icon{text-decoration:none;color:inherit}
     void app.offsetWidth;app.classList.add('shown');
     screen.classList.add('in-app');
     cur={app:app,stack:[root],id:id};
+    try{document.dispatchEvent(new CustomEvent('ag-open',{detail:id}));}catch(e){}
     try{if(location.hash!=='#'+id)history.replaceState(null,'','#'+id);}catch(e){}
     setTimeout(function(){var b=root.querySelector('.back');if(b)b.focus({preventScroll:true});},reduce?0:300);
   }
@@ -1245,6 +1298,7 @@ a.icon{text-decoration:none;color:inherit}
     prev.classList.remove('active');prev.classList.add('behind');
     v.classList.add('active');cur.stack.push(v);
   }
+  window.AG_NAV={push:function(n){push(n);},pop:function(){pop();},open:function(id){openApp(id,null);},current:function(){return cur&&cur.id;}};
   function pop(){
     if(!cur)return;
     if(cur.stack.length<=1){closeApp();return;}
@@ -1426,6 +1480,252 @@ a.icon{text-decoration:none;color:inherit}
     document.addEventListener('visibilitychange',function(){var was=running;running=!document.hidden;if(running&&!was&&!reduce)draw();});
     var rt;window.addEventListener('resize',function(){clearTimeout(rt);rt=setTimeout(function(){init();if(reduce)draw();},150);});
   }
+})();
+</script>
+<script>
+/* ================= 사용자 등록 ================= */
+(function(){
+  var API='https://urim-proxy.bucksve.workers.dev';
+  var SITE='https://lastsummerdream.github.io/Afterglow/';
+  var TK='ag-token';
+  var $=function(id){return document.getElementById(id);};
+  var root=$('rg-root'),form=$('rg-form');if(!root||!form)return;
+  var me=null,editing=null,busy=false,netDown=false;
+
+  var ORIGINS=[['TB-01','알비온'],['TB-02','뤼미에르'],['TB-03','베르크프리트'],['TB-04','로타'],['TB-05','옌두'],['TB-06','다웅안'],['TB-07','띠엔퐁'],['TB-08','우에르타'],['TB-09','하늘'],['TB-10','헬릭스'],['TB-11','자리야'],['TB-12','타보트'],['OPH','오파님 성좌'],['SEIR','세일 고원 연맹'],['NOD','노드 자유구역']];
+  var ONAME={};ORIGINS.forEach(function(o){ONAME[o[0]]=o[1];});
+  var DETAIL={CITY:['구역','예: 하층 화물칸, 중층 공동주택'],OPH:['고리','예: 제3고리, 심장'],SEIR:['씨족','예: 테만, 아나, 떠돌이'],NOD:['거점','예: 에녹, 두발, 야발 캐러밴']};
+  var SPECIES=[['human','순수 인간'],['later','레이터 (수인)'],['mixed','혼혈'],['uc','언섹션 (각성한 안드로이드)']];
+  var SNAME={human:'순수 인간',later:'레이터',mixed:'혼혈',uc:'언섹션'};
+  var LINEAGES=['늑대','여우','개','설표','사자','고양이','산양','말','야크','사슴','곰','맹금','까마귀','작은 새','토끼','쥐','다람쥐','도마뱀','뱀'];
+  var TS=['T0 · 무감염','T1 · 잠복','T2 · 발현','T3 · 진행','T4 · 말기'];
+  var ECHO=[['없음','없음'],['방출형','방출형 · 열, 빛, 충격파'],['조형형','조형형 · 결정 칼날, 갑각, 가시'],['강화형','강화형 · 근력, 반응, 감각'],['간섭형','간섭형 · 코어, 의체, 기계'],['감응형','감응형 · 광맥, 폭풍, 신호']];
+  var TIERS=[['Tier 0','시날 스파이어'],['Tier 1','상층 갑판'],['Tier 2','중층 갑판'],['Tier 3','하층 화물칸'],['Tier 4','검역 갑판'],['하선','광야']];
+  var LABEL={name:'이름',nameEn:'영문 이름',age:'나이',gender:'성별',origin:'출신',originDetail:'출신 세부',species:'종족',lineage:'혈통',G:'혈통 지수 G',C:'신용 지수 C',T:'결정화 단계 T',echoType:'잔향 갈래',echoAbility:'잔향 능력',job:'직업',faction:'소속',appearance:'외형',personality:'성격',background:'배경',secret:'비밀',notes:'메모'};
+  var ERR={bad_username:'아이디는 영문, 숫자, 밑줄(_)로 4~20자예요.',short_password:'비밀번호는 8자 이상이어야 해요.',long_password:'비밀번호는 72자 이하로 정해 주세요.',username_taken:'이미 쓰이는 아이디예요.',wrong_login:'아이디나 비밀번호가 맞지 않아요.',wrong_password:'비밀번호가 맞지 않아요.',rate_limited:'시도가 너무 많아요. 잠시 뒤 다시 해 주세요.',too_many_characters:'캐릭터는 5명까지 등록할 수 있어요.',not_found:'기록을 찾지 못했어요. 새로고침해 주세요.',server_error:'서버에서 문제가 생겼어요. 잠시 뒤 다시 해 주세요.',server_not_ready:'등록 서버가 아직 준비되지 않았어요.'};
+  function jo(w,a,b){w=String(w);var c=w.charCodeAt(w.length-1);if(c<0xAC00||c>0xD7A3)return w+b;return w+((c-0xAC00)%28?a:b);}
+  var REASON={required:function(l){return jo(l,'을','를')+' 입력해 주세요.';},range:function(l){return l+'의 값이 범위를 벗어났어요.';},too_long:function(l){return jo(l,'이','가')+' 너무 길어요.';},type:function(l){return l+'의 형식이 맞지 않아요.';},enum:function(l){return jo(l,'을','를')+' 목록에서 골라 주세요.';}};
+
+  function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+  function ro(w){w=String(w);var c=w.charCodeAt(w.length-1);if(c<0xAC00||c>0xD7A3)return w+'(으)로';var j=(c-0xAC00)%28;return w+(j===0||j===8?'로':'으로');}
+  function token(){try{return localStorage.getItem(TK);}catch(e){return null;}}
+  function setToken(t){try{if(t)localStorage.setItem(TK,t);else localStorage.removeItem(TK);}catch(e){}}
+  function req(method,path,body){
+    var h={};var t=token();if(t)h.authorization='Bearer '+t;if(body)h['content-type']='application/json';
+    return fetch(API+path,{method:method,headers:h,body:body?JSON.stringify(body):undefined}).then(function(r){
+      return r.json().catch(function(){return{};}).then(function(d){netDown=false;if(r.status===401&&t){setToken(null);me=null;}return{ok:r.ok,status:r.status,data:d};});
+    },function(){netDown=true;return{ok:false,net:true,data:{}};});
+  }
+  function errText(r){
+    if(r.net)return'등록 서버에 연결하지 못했어요. 이 미리보기에서는 서버에 닿지 않을 수 있어요. 공개 사이트에서 이용해 주세요.';
+    var d=r.data||{};
+    if(d.error==='invalid_character'){var l=LABEL[d.field]||d.field;return REASON[d.reason]?REASON[d.reason](l):l+' 값을 확인해 주세요.';}
+    if(r.status===401)return'로그인이 만료됐어요. 다시 로그인해 주세요.';
+    return ERR[d.error]||'처리하지 못했어요. 다시 시도해 주세요.';
+  }
+  function setMsg(el,t,ok){if(!el)return;el.textContent=t||'';el.classList.toggle('ok',!!ok);}
+
+  /* ---------- 시작 화면 ---------- */
+  var mode='login';
+  function renderAuth(){
+    root.innerHTML=
+      '<p class="para">명부 관리청에 사용자로 등록하면 자작 캐릭터의 기록을 남길 수 있어요. 등록한 캐릭터로 URIM과 대화할 수 있고, 이 기록은 앞으로 열릴 롤플레잉 사이트에서도 그대로 쓰여요.</p>'+
+      '<div class="seg" role="group" aria-label="로그인 또는 가입"><button type="button" data-m="login" aria-pressed="'+(mode==='login')+'">로그인</button><button type="button" data-m="signup" aria-pressed="'+(mode==='signup')+'">새로 등록</button></div>'+
+      '<form class="rgbox" id="rg-auth" novalidate><div class="group"><div class="glist">'+
+        '<label class="fld"><span>아이디'+(mode==='signup'?'<em>영문, 숫자, 밑줄 4~20자</em>':'')+'</span><input name="username" autocomplete="username" autocapitalize="off" spellcheck="false" maxlength="20" required></label>'+
+        '<label class="fld"><span>비밀번호'+(mode==='signup'?'<em>8자 이상</em>':'')+'</span><input name="password" type="password" autocomplete="'+(mode==='signup'?'new-password':'current-password')+'" maxlength="72" required></label>'+
+        (mode==='signup'?'<label class="fld"><span>비밀번호 확인</span><input name="password2" type="password" autocomplete="new-password" maxlength="72" required></label>':'')+
+      '</div>'+(mode==='signup'?'<p class="rgnote">비밀번호는 찾을 수 없어요. 잊지 않도록 따로 적어 두세요.</p>':'')+'</div>'+
+      '<div class="rgbtns"><button class="abtn pri wide" type="submit">'+(mode==='signup'?'등록하기':'로그인')+'</button></div><p class="rgmsg" id="rg-amsg" role="status"></p></form>'+
+      (netDown?'<p class="rgnote" style="margin:0">미리보기에서는 등록 서버에 닿지 않을 수 있어요. <a href="'+SITE+'" target="_blank" rel="noopener" style="color:var(--silver)">공개 사이트</a>에서 이용해 주세요.</p>':'');
+    [].forEach.call(root.querySelectorAll('[data-m]'),function(b){b.onclick=function(){mode=b.getAttribute('data-m');renderAuth();};});
+    var f=$('rg-auth'),msg=$('rg-amsg');
+    f.onsubmit=function(e){
+      e.preventDefault();if(busy)return;
+      var u=f.username.value.trim(),p=f.password.value;
+      if(mode==='signup'){
+        if(!/^[A-Za-z0-9_]{4,20}$/.test(u)){setMsg(msg,ERR.bad_username);f.username.focus();return;}
+        if(p.length<8){setMsg(msg,ERR.short_password);f.password.focus();return;}
+        if(p!==f.password2.value){setMsg(msg,'비밀번호가 서로 달라요.');f.password2.focus();return;}
+      }else if(!u||!p){setMsg(msg,'아이디와 비밀번호를 입력해 주세요.');return;}
+      busy=true;setMsg(msg,mode==='signup'?'등록하는 중…':'확인하는 중…',true);
+      req('POST',mode==='signup'?'/auth/signup':'/auth/login',{username:u,password:p}).then(function(r){
+        busy=false;
+        if(!r.ok){setMsg(msg,errText(r));if(r.net)renderAuth();return;}
+        setToken(r.data.token);me=r.data;render();announce();
+      });
+    };
+  }
+
+  /* ---------- 등록된 사용자 ---------- */
+  var delArm=null;
+  function summaryOf(d){
+    var a=[ONAME[d.origin]||d.origin];
+    a.push(d.species==='later'&&d.lineage?d.lineage+' 레이터':SNAME[d.species]||'');
+    if(d.species!=='uc'&&d.T!=null)a.push('T'+d.T);
+    if(d.echoType&&d.echoType!=='없음')a.push(d.echoType);
+    return a.filter(Boolean).join(' · ');
+  }
+  function renderMe(){
+    var u=me.user,cs=me.characters||[],max=(me.limits&&me.limits.maxCharacters)||5;
+    var active=null;cs.forEach(function(c){if(c.id===u.activeCharacterId)active=c;});
+    var h='<div class="rgid"><span class="av" aria-hidden="true">'+esc(u.username.slice(0,1).toUpperCase())+'</span><div><b>'+esc(u.username)+'</b><span>REGISTERED OPERATOR</span></div></div>';
+    h+='<div class="group"><div class="ghead">내 캐릭터 · '+cs.length+' / '+max+'</div><div class="glist">';
+    cs.forEach(function(c){
+      h+='<button class="cell push" type="button" data-edit="'+esc(c.id)+'"><span class="ct"><b>'+esc(c.name)+'</b><span>'+esc(summaryOf(c.data||{}))+'</span></span>'+(c.id===u.activeCharacterId?'<span class="tag">URIM</span>':'')+'<svg class="chev" viewBox="0 0 8 14"><path d="M1 1l6 6-6 6"/></svg></button>';
+    });
+    if(cs.length<max)h+='<button class="cell push add" type="button" data-edit="new"><span class="ct"><b>+ 새 캐릭터 등록</b><span>정보를 직접 입력해요</span></span><svg class="chev" viewBox="0 0 8 14"><path d="M1 1l6 6-6 6"/></svg></button>';
+    h+='</div>'+(cs.length?'<p class="rgnote">URIM 표시가 붙은 캐릭터로 URIM과 대화해요. 캐릭터를 열어 바꿀 수 있어요.</p>':'<p class="rgnote">캐릭터를 등록하면 URIM이 그 캐릭터로 접속한 당신을 알아봐요.</p>')+'</div>';
+    if(active)h+='<div class="rgbtns"><button class="abtn pri wide" type="button" id="rg-urim">'+esc(ro(active.name))+' URIM 접속</button></div>';
+    h+='<div class="group"><div class="ghead">계정</div><div class="glist">'+
+       '<button class="cell push" type="button" id="rg-out"><span class="ct"><b>로그아웃</b></span></button>'+
+       '<button class="cell push" type="button" id="rg-del"><span class="ct"><b class="warn" style="color:#ffb4a8">계정 삭제</b><span>등록한 캐릭터도 모두 지워져요</span></span></button>'+
+       '</div><div id="rg-delbox"></div></div><p class="rgmsg ok" id="rg-mmsg" role="status"></p>';
+    root.innerHTML=h;
+    [].forEach.call(root.querySelectorAll('[data-edit]'),function(b){b.onclick=function(){openSheet(b.getAttribute('data-edit'));};});
+    var go=$('rg-urim');if(go)go.onclick=function(){if(window.AG_NAV)window.AG_NAV.open('urim');};
+    $('rg-out').onclick=function(){if(busy)return;busy=true;req('POST','/auth/logout').then(function(){busy=false;setToken(null);me=null;mode='login';render();announce();});};
+    $('rg-del').onclick=function(){
+      var box=$('rg-delbox');if(box.innerHTML){box.innerHTML='';return;}
+      box.innerHTML='<form class="rgbox" id="rg-delf" novalidate style="margin-top:12px"><div class="glist"><label class="fld"><span>비밀번호를 입력하면 계정이 삭제돼요</span><input name="password" type="password" autocomplete="current-password"></label></div><div class="rgbtns" style="margin:12px 0 0"><button class="abtn warn wide" type="submit">계정과 캐릭터 모두 삭제</button></div></form>';
+      var f=$('rg-delf');f.password.focus();
+      f.onsubmit=function(e){e.preventDefault();if(busy)return;busy=true;
+        req('DELETE','/me',{password:f.password.value}).then(function(r){busy=false;
+          if(!r.ok){setMsg($('rg-mmsg'),errText(r));$('rg-mmsg').classList.remove('ok');return;}
+          setToken(null);me=null;mode='login';render();announce();});};
+    };
+  }
+
+  function render(){
+    if(!token()){me=null;renderAuth();return;}
+    if(!me){root.innerHTML='<p class="para dim">기록을 불러오는 중…</p>';refresh();return;}
+    renderMe();
+  }
+  function refresh(){
+    if(!token()){render();return;}
+    req('GET','/me').then(function(r){
+      if(r.ok){me=r.data;}
+      else if(r.status===401){setToken(null);me=null;}
+      else if(r.net){root.innerHTML='<p class="para dim">등록 서버에 연결하지 못했어요. 잠시 뒤 다시 열어 주세요.</p>';return;}
+      render();
+    });
+  }
+  function announce(){try{localStorage.setItem('ag-user-ping',String(Date.now()));}catch(e){}}
+
+  /* ---------- 캐릭터 기록지 ---------- */
+  function opt(list,val){return list.map(function(o){return'<option value="'+esc(o[0])+'"'+(String(o[0])===String(val)?' selected':'')+'>'+esc(o[1])+'</option>';}).join('');}
+  function inp(name,label,val,max,ph,hint){return'<label class="fld" data-f="'+name+'"><span>'+label+(hint?'<em>'+hint+'</em>':'')+'</span><input name="'+name+'" value="'+esc(val)+'" maxlength="'+max+'"'+(ph?' placeholder="'+esc(ph)+'"':'')+'></label>';}
+  function area(name,label,val,max,ph){return'<label class="fld" data-f="'+name+'"><span>'+label+'</span><textarea name="'+name+'" maxlength="'+max+'" rows="3"'+(ph?' placeholder="'+esc(ph)+'"':'')+'>'+esc(val)+'</textarea><i class="cnt"></i></label>';}
+  function openSheet(id){
+    var c=null;(me.characters||[]).forEach(function(x){if(x.id===id)c=x;});
+    editing=c?c.id:null;delArm=null;
+    var d=c?c.data:{origin:'',species:'',G:'',C:'',T:'',echoType:'없음'};
+    $('rg-ceb').textContent=c?'Record · '+c.id.slice(0,6).toUpperCase():'New Record';
+    $('rg-ct').textContent=c?c.name:'새 캐릭터';
+    var h='';
+    h+='<div class="group"><div class="ghead">기본</div><div class="glist">'+
+       inp('name','이름',d.name,30,'명부에 오를 이름','필수')+inp('nameEn','영문 이름',d.nameEn,40,'예: Rhea Volk')+
+       '<div class="fld3 two">'+inp('age','나이',d.age,20,'예: 27')+inp('gender','성별',d.gender,20,'')+'</div></div></div>';
+    h+='<div class="group"><div class="ghead">출신과 종족</div><div class="glist">'+
+       '<label class="fld" data-f="origin"><span>출신<em>필수</em></span><select name="origin"><option value="">고르기</option>'+opt(ORIGINS.map(function(o){return[o[0],o[0]+' · '+o[1]];}),d.origin)+'</select></label>'+
+       inp('originDetail','출신 세부',d.originDetail,40,'')+
+       '<label class="fld" data-f="species"><span>종족<em>필수</em></span><select name="species"><option value="">고르기</option>'+opt(SPECIES,d.species)+'</select></label>'+
+       '<label class="fld" data-f="lineage"><span>혈통</span><input name="lineage" list="rg-lin" value="'+esc(d.lineage)+'" maxlength="30"><datalist id="rg-lin">'+LINEAGES.map(function(l){return'<option value="'+l+'">';}).join('')+'</datalist></label>'+
+       '</div></div>';
+    h+='<div class="group" id="rg-man"><div class="ghead">명부</div><div class="glist">'+
+       '<div class="fld3">'+
+       '<label class="fld" data-f="G"><span>G 혈통</span><select name="G"></select></label>'+
+       '<label class="fld" data-f="C"><span>C 신용</span><select name="C"><option value="">-</option>'+opt([[1,'1'],[2,'2'],[3,'3'],[4,'4'],[5,'5']],d.C)+'</select></label>'+
+       '<label class="fld" data-f="T"><span>T 결정화</span><select name="T"><option value="">-</option>'+opt(TS.map(function(t,i){return[i,t];}),d.T)+'</select></label>'+
+       '</div><div class="rgsum" id="rg-sum"></div></div></div>';
+    h+='<div class="group" id="rg-ucnote" hidden><div class="glist"><div class="rgsum" style="border:0">언섹션은 Class-U 자산으로 등록돼요. 명부 점수가 없고, 결정화되지 않아 잔향도 없어요.</div></div></div>';
+    h+='<div class="group" id="rg-echo"><div class="ghead">잔향</div><div class="glist">'+
+       '<label class="fld" data-f="echoType"><span>갈래</span><select name="echoType">'+opt(ECHO,d.echoType||'없음')+'</select></label>'+
+       inp('echoAbility','능력',d.echoAbility,120,'예: 팔의 결정을 칼날로 키운다')+
+       '</div><p class="rgnote" id="rg-enote"></p></div>';
+    h+='<div class="group"><div class="ghead">일과 소속</div><div class="glist">'+
+       inp('job','직업',d.job,40,'예: 궤도 정비공')+inp('faction','소속',d.faction,40,'예: 흰 늑대, 무소속')+'</div></div>';
+    h+='<div class="group"><div class="ghead">서술</div><div class="glist">'+
+       area('appearance','외형',d.appearance,1200,'키, 머리색, 결정이 돋은 자리, 의체 같은 것')+
+       area('personality','성격',d.personality,1200,'')+
+       area('background','배경',d.background,2400,'어디서 태어나 어떻게 지금에 이르렀는지')+
+       area('secret','비밀',d.secret,600,'URIM은 당신이 먼저 말하기 전에는 이 내용을 꺼내지 않아요')+
+       area('notes','메모',d.notes,1200,'관계, 말투, 그 밖의 것')+'</div></div>';
+    h+='<p class="rgmsg" id="rg-cmsg" role="status"></p><div class="rgbtns"><button class="abtn pri wide" type="submit">'+(c?'저장':'등록')+'</button></div>';
+    if(c){
+      var isActive=me.user.activeCharacterId===c.id;
+      h+='<div class="rgbtns">'+(isActive?'':'<button class="abtn wide" type="button" id="rg-act">URIM 대화 캐릭터로 지정</button>')+'<button class="abtn warn wide" type="button" id="rg-cdel">이 캐릭터 삭제</button></div>';
+    }
+    form.innerHTML=h;
+    fillG(d.species,d.G);syncSheet();
+    [].forEach.call(form.querySelectorAll('textarea'),function(t){var n=t.parentNode.querySelector('.cnt');var u=function(){n.textContent=t.value.length+' / '+t.maxLength;};t.addEventListener('input',u);u();});
+    form.species.addEventListener('change',function(){fillG(form.species.value,form.G.value);syncSheet();});
+    ['origin','G','C','T','echoType'].forEach(function(n){form[n].addEventListener('change',syncSheet);});
+    var act=$('rg-act');if(act)act.onclick=function(){if(busy)return;busy=true;req('PUT','/me/active',{id:editing}).then(function(r){busy=false;if(!r.ok){setMsg($('rg-cmsg'),errText(r));return;}me=r.data;act.remove();setMsg($('rg-cmsg'),'URIM 대화 캐릭터로 지정했어요.',true);renderMe();announce();});};
+    var del=$('rg-cdel');if(del)del.onclick=function(){
+      if(busy)return;
+      if(!delArm){delArm=setTimeout(function(){delArm=null;del.textContent='이 캐릭터 삭제';},4000);del.textContent='한 번 더 누르면 삭제돼요';return;}
+      clearTimeout(delArm);delArm=null;busy=true;
+      req('DELETE','/characters/'+editing).then(function(r){busy=false;if(!r.ok){setMsg($('rg-cmsg'),errText(r));return;}me=r.data;renderMe();announce();if(window.AG_NAV)window.AG_NAV.pop();});
+    };
+    if(window.AG_NAV)window.AG_NAV.push('char');
+  }
+  function fillG(sp,val){
+    var g=form.G,r=sp==='human'?[4,5]:[1,2,3];
+    g.innerHTML='<option value="">-</option>'+r.map(function(v){return'<option value="'+v+'"'+(String(v)===String(val)?' selected':'')+'>'+v+'</option>';}).join('');
+  }
+  function syncSheet(){
+    var sp=form.species.value,o=form.origin.value,uc=sp==='uc';
+    $('rg-man').hidden=uc;$('rg-ucnote').hidden=!uc;$('rg-echo').hidden=uc;
+    var lf=form.querySelector('[data-f="lineage"]');lf.hidden=!(sp==='later'||sp==='mixed');
+    lf.querySelector('span').innerHTML=sp==='later'?'혈통<em>필수</em>':'섞인 혈통';
+    form.lineage.placeholder=sp==='later'?'예: 늑대, 설표, 토끼':'예: 설표 × 순수 인간';
+    var key=o==='OPH'||o==='SEIR'||o==='NOD'?o:'CITY',dd=DETAIL[key];
+    form.querySelector('[data-f="originDetail"] span').textContent=dd[0];form.originDetail.placeholder=dd[1];
+    var T=form.T.value===''?null:+form.T.value,et=form.echoType,ea=form.echoAbility,en=$('rg-enote');
+    var noEcho=T===0;et.disabled=noEcho;ea.disabled=noEcho||et.value==='없음';
+    if(noEcho)et.value='없음';
+    en.textContent=noEcho?'T0 무감염자에게는 잔향이 나타나지 않아요.':T===1?'T1은 본인도 모르게 새어 나오는 정도예요.':T>=2?'쓸 때마다 결정이 자라요.':'';
+    var G=+form.G.value,C=+form.C.value,sum=$('rg-sum');
+    if(!G||!C||T==null){sum.innerHTML='G, C, T를 고르면 명부 점수와 거주 등급을 계산해요.';return;}
+    var score=G+C-T,tier=score>=9?0:score>=7?1:score>=5?2:score>=3?3:score>=1?4:5,notes=[];
+    if(sp!=='human'&&tier<2){tier=2;notes.push('Class-L 상한');}
+    if(T>=2&&tier<4){tier=4;notes.push('T2 이상 검역 강제');}
+    if(T>=3){notes.push('다음 정차지에서 하선 대상');}
+    var city=/^TB-/.test(o);
+    sum.innerHTML='명부 점수 <b>'+G+' + '+C+' − '+T+' = '+score+'</b> → <b>'+TIERS[tier][0]+' '+TIERS[tier][1]+'</b>'+(notes.length?'<br>'+notes.join(' · '):'')+(o&&!city?'<br>'+(o==='OPH'?'성좌는 명부를 인정하지 않아요. 도시에 들어가면 이 등급으로 심사돼요.':o==='SEIR'?'세일은 씨족 서열만 있어요. 도시에 들어가면 이 등급으로 심사돼요.':'광야에는 명부가 없어요. 도시에 들어가면 이 등급으로 심사돼요.'):'');
+  }
+  function collect(){
+    var d={};Object.keys(LABEL).forEach(function(k){var el=form[k];if(!el)return;d[k]=el.value;});
+    ['G','C','T'].forEach(function(k){d[k]=d[k]===''?null:+d[k];});
+    if(d.species==='uc'){d.G=null;d.C=null;d.T=null;d.echoType='없음';d.echoAbility='';}
+    if(d.species!=='later'&&d.species!=='mixed')d.lineage='';
+    return d;
+  }
+  function markBad(field){
+    [].forEach.call(form.querySelectorAll('.fld.bad'),function(f){f.classList.remove('bad');});
+    var f=field&&form.querySelector('[data-f="'+field+'"]');if(f){f.classList.add('bad');var i=f.querySelector('input,select,textarea');if(i)i.focus();}
+  }
+  form.addEventListener('submit',function(e){
+    e.preventDefault();if(busy)return;
+    var d=collect(),msg=$('rg-cmsg'),miss=null;
+    if(!d.name.trim())miss='name';else if(!d.origin)miss='origin';else if(!d.species)miss='species';
+    else if(d.species==='later'&&!d.lineage.trim())miss='lineage';
+    else if(d.species!=='uc'){if(d.G==null)miss='G';else if(d.C==null)miss='C';else if(d.T==null)miss='T';}
+    if(miss){markBad(miss);setMsg(msg,REASON.required(LABEL[miss]));return;}
+    markBad(null);busy=true;setMsg(msg,'기록하는 중…',true);
+    req(editing?'PUT':'POST',editing?'/characters/'+editing:'/characters',{data:d}).then(function(r){
+      busy=false;
+      if(!r.ok){setMsg(msg,errText(r));if(r.data&&r.data.field)markBad(r.data.field);return;}
+      me=r.data;editing=r.data.savedId||editing;renderMe();announce();
+      setMsg(msg,'기록했어요.',true);
+      setTimeout(function(){if(window.AG_NAV&&window.AG_NAV.current()==='register')window.AG_NAV.pop();},420);
+    });
+  });
+
+  document.addEventListener('ag-open',function(e){if(e.detail==='register'){me=me&&token()?me:null;render();}});
+  window.addEventListener('storage',function(e){if(e.key===TK||e.key==='ag-user-ping'){me=null;if(window.AG_NAV&&window.AG_NAV.current()==='register')render();}});
+  render();
 })();
 </script>
 </body>
