@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>애프터 글로우 · 메인</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@500;700;900&family=Passion+One:wght@700&family=Palanquin+Dark:wght@700&display=swap" rel="stylesheet">
+<style>
+  /* ─────────────────────────────────────────────
+     기준 해상도: 피그마 프레임 2560 × 1440 (화면에 맞춰 통째로 스케일)
+     도형 이미지는 assets/ 폴더 (피그마에서 그대로 내보낸 파일)
+     ───────────────────────────────────────────── */
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 100%; height: 100%; overflow: hidden; background: #161616; }
+  body { font-family: "Noto Sans KR", system-ui, sans-serif; color: #1e1e1e; -webkit-font-smoothing: antialiased; }
+  button { font: inherit; color: inherit; border: 0; background: none; cursor: pointer; }
+  button:focus-visible, [tabindex]:focus-visible { outline: 6px solid #fff; outline-offset: 6px; }
+  img { display: block; -webkit-user-drag: none; }
+  [hidden] { display: none !important; }
+  .abs { position: absolute; }
+
+  #stage {
+    position: absolute; left: 0; top: 0; width: 2560px; height: 1440px;
+    transform-origin: 0 0; overflow: hidden; user-select: none;
+    background: linear-gradient(0deg, rgba(183,183,183,.25) 0%, rgba(0,0,0,.5) 100%), #fff;
+  }
+  /* 배경화면 변경으로 고른 이미지 (프레임 그라데이션 아래) */
+  .wallpaper { position: absolute; inset: 0; background-size: cover; background-position: center; }
+  .wallpaper + .tint { position: absolute; inset: 0; background: linear-gradient(0deg, rgba(183,183,183,.25) 0%, rgba(0,0,0,.5) 100%); }
+
+  /* 피그마 마스크 (투명 경계 · 소프트 페이드) */
+  .mk { -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; -webkit-mask-clip: no-clip; mask-clip: no-clip; mask-mode: alpha; }
+  /* 회전 라벨 래퍼: 피그마처럼 상자 가운데를 기준으로 돌림 */
+  .rw { position: absolute; display: flex; align-items: center; justify-content: center; pointer-events: none; }
+  .rw > div { flex: none; position: relative; }
+
+  /* ── 진입 애니메이션 (피그마 모션: 2초 타임라인, 한 번만 재생) ── */
+  .in { animation-duration: 2s; animation-timing-function: linear; animation-fill-mode: both; }
+  .in-urim { animation-name: urimY, urimO; }
+  @keyframes urimY { 0%, 37.6% { translate: 0 -60px; animation-timing-function: linear(0, 0.078, 0.2737, 0.5283, 0.7893, 1.0162, 1.1837, 1.2818, 1.3134, 1.2904, 1.23, 1.1505, 1.0685, 0.9969, 0.9438, 0.9123, 0.9018, 0.9085, 0.9272, 0.952, 0.9777, 1.0003, 1.0172, 1.0273, 1.0308, 1.0288, 1.023, 1.0153, 1.0072, 1.0001, 0.9947, 0.9915, 0.9904, 0.9909, 0.9927, 0.9951, 0.9977, 0.9999, 1.0016, 1.0026, 1.003, 1.0029, 1.0023, 1.0016, 1.0008, 1, 0.9995, 0.9992, 0.9991, 0.9991, 0.9993); } 97.6%, 100% { translate: 0 0; } }
+  @keyframes urimO { 0%, 37.6% { opacity: 0; animation-timing-function: cubic-bezier(.5,0,.5,1); } 45.1%, 100% { opacity: 1; } }
+  .in-char { animation-name: charY, charO; }
+  @keyframes charY { 0%, 0.846% { translate: 0 -40px; animation-timing-function: cubic-bezier(.05,.4,.5,1); } 30.846%, 100% { translate: 0 0; } }
+  @keyframes charO { 0%, 0.846% { opacity: 0; animation-timing-function: cubic-bezier(.5,0,.5,1); } 20.846%, 100% { opacity: 1; } }
+  .in-dlg { animation-name: dlgY; }
+  @keyframes dlgY { 0% { translate: 0 200px; animation-timing-function: ease-out; } 25%, 100% { translate: 0 0; } }
+  .in-battle { animation-name: battleX; }
+  @keyframes battleX { 0% { translate: 200px 0; animation-timing-function: ease-out; } 25%, 100% { translate: 0 0; } }
+  .in-home { animation-name: homeX; }
+  @keyframes homeX { 0%, 4.066% { translate: 200px 0; animation-timing-function: ease-out; } 29.066%, 100% { translate: 0 0; } }
+  .in-sub { animation-name: subX; }
+  @keyframes subX { 0%, 7.756% { translate: 200px 0; animation-timing-function: ease-out; } 32.756%, 100% { translate: 0 0; } }
+  .in-side { animation-name: sideX; }
+  @keyframes sideX { 0%, 9.492% { translate: -200px 0; animation-timing-function: ease-out; } 34.492%, 100% { translate: 0 0; } }
+  .in-opt { animation-name: optY, optO; }
+  @keyframes optY { 0%, 10.846% { translate: 0 -40px; animation-timing-function: cubic-bezier(.05,.4,.5,1); } 40.846%, 100% { translate: 0 0; } }
+  @keyframes optO { 0%, 10.846% { opacity: 0; animation-timing-function: cubic-bezier(.5,0,.5,1); } 30.846%, 100% { opacity: 1; } }
+  .in-name { animation-name: urimY2, nameO; }
+  @keyframes urimY2 { 0%, 1.9% { translate: 0 -60px; animation-timing-function: linear(0, 0.078, 0.2737, 0.5283, 0.7893, 1.0162, 1.1837, 1.2818, 1.3134, 1.2904, 1.23, 1.1505, 1.0685, 0.9969, 0.9438, 0.9123, 0.9018, 0.9085, 0.9272, 0.952, 0.9777, 1.0003, 1.0172, 1.0273, 1.0308, 1.0288, 1.023, 1.0153, 1.0072, 1.0001, 0.9947, 0.9915, 0.9904, 0.9909, 0.9927, 0.9951, 0.9977, 0.9999, 1.0016, 1.0026, 1.003, 1.0029, 1.0023, 1.0016, 1.0008, 1, 0.9995, 0.9992, 0.9991, 0.9991, 0.9993); } 61.9%, 100% { translate: 0 0; } }
+  @keyframes nameO { 0%, 1.9% { opacity: 0; animation-timing-function: cubic-bezier(.5,0,.5,1); } 9.4%, 100% { opacity: 1; } }
+
+  /* ── 상단 URIM ── */
+  .urim { left: 167px; top: 75px; width: 1309px; height: 130px; z-index: 3; pointer-events: none; }
+  .urim-tile {
+    position: absolute; left: 0; top: 0; width: 130px; height: 130px; border-radius: 36.4px; pointer-events: auto;
+    background: linear-gradient(150deg, #30353b 13.397%, #15181b 53.66%, #0a0b0d 86.603%);
+    box-shadow: inset 0 2px 0 rgba(255,255,255,.22), 0 14px 34px rgba(0,0,0,.5);
+    transition: transform .15s, filter .15s;
+  }
+  .urim-tile img { position: absolute; left: 35.79px; top: 35.79px; width: 58.435px; height: 58.435px; }
+  .urim-tile:hover { filter: brightness(1.15); }
+  .urim-tile:active { transform: scale(.96); }
+  .urim-tile.glitch { animation: avg .5s steps(2) 3; }
+  @keyframes avg { 50% { filter: invert(1); } }
+  .urim-bar { position: absolute; left: 155.43px; top: 10px; width: 1153.568px; height: 111px; background: linear-gradient(90deg, rgba(232,232,232,.09), rgba(232,232,232,0)); filter: blur(8.7px); }
+  .urim-line {
+    position: absolute; left: 197px; top: 65.5px; transform: translateY(-50%); width: 1100px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    font-size: 36px; font-weight: 500; line-height: 1.15; letter-spacing: -1.44px; color: #d0d0d0;
+  }
+  .urim-line .cur { display: inline-block; width: .5em; animation: blink 1s steps(1) infinite; }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  /* ── 상단바 ── */
+  .topbar { left: 2049.82px; top: 22.8px; width: 506.4px; height: 105.4px; pointer-events: none; }
+  .top-btn { position: absolute; top: 37px; width: 53px; height: 53px; border-radius: 50%; transition: transform .15s ease, filter .15s ease; }
+  .top-btn > img { position: absolute; left: 0; top: 0; }
+  .top-btn .glyph { position: absolute; inset: 0; display: grid; place-items: center; opacity: 0; transition: opacity .15s; }
+  .top-btn .glyph svg { width: 28px; height: 28px; }
+  .top-btn:hover .glyph, .top-btn:focus-visible .glyph { opacity: .75; }
+  .top-btn:hover { filter: brightness(1.08); }
+  .top-btn:active { transform: scale(.92); }
+  .top-btn.refresh { left: 2335px; } .top-btn.browse { left: 2400px; width: 52px; } .top-btn.back { left: 2464px; }
+  .tip {
+    position: absolute; top: 72px; right: 0; white-space: nowrap; z-index: 5;
+    background: #303030; color: #f1f1f1; font-size: 26px; font-weight: 500; padding: 10px 20px; border-radius: 12px;
+    opacity: 0; transform: translateY(-6px); pointer-events: none; transition: opacity .15s, transform .15s;
+  }
+  :hover > .tip, :focus-visible > .tip { opacity: 1; transform: none; }
+
+  /* ── 상호작용 영역 (y 121 ~ 1440 마스크) ── */
+  .play { position: absolute; left: 0; top: 121px; width: 2560px; height: 1319px; overflow: hidden; }
+  .canvas { position: absolute; left: 0; top: -121px; width: 2560px; height: 1440px; }
+
+  /* 캐릭터 일러스트 */
+  .chargrp { left: 338px; top: 145px; width: 1200px; height: 1600px; }
+  .character { position: absolute; inset: 0; overflow: hidden; }
+  .character img {
+    position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: top center;
+    transform-origin: 0 0; transition: transform .45s cubic-bezier(.2,.8,.2,1); pointer-events: none;
+  }
+  .character.has-img { cursor: grab; }
+  .character.dragging { cursor: grabbing; }
+  .character.dragging img { transition: none; }
+  .character.dragover { box-shadow: inset 0 0 0 10px #fff; }
+  .char-hint { position: absolute; left: 0; top: 380px; width: 1200px; text-align: center; pointer-events: none; color: #9a9a9a; font-size: 34px; font-weight: 500; line-height: 1.6; }
+  .char-hint b { display: block; font-size: 44px; font-weight: 700; color: #8a8a8a; }
+
+  /* 대사창 */
+  .dlggrp { left: 257px; top: 1111px; width: 1386px; height: 276px; }
+  .dialogue {
+    position: absolute; left: 0; top: 41px; width: 1386px; height: 235px;
+    clip-path: polygon(0 0, 1317.87px 0, 1386px 235px, 68.129px 235px); cursor: pointer;
+  }
+  .dialogue .line { position: absolute; left: 130px; top: 70px; width: 1086px; font-size: 40px; font-weight: 500; line-height: 1.55; letter-spacing: -.4px; color: #1e1e1e; word-break: keep-all; }
+  .dialogue .next { position: absolute; left: 1233.96px; top: 183px; opacity: 0; }
+  .dialogue.done .next { opacity: 1; animation: bob 1s ease-in-out infinite; }
+  @keyframes bob { 50% { transform: translateY(8px); } }
+  .nameplate { left: 85px; top: 16px; white-space: nowrap; pointer-events: none; color: #fff; font-size: 40px; font-weight: 700; letter-spacing: -1.6px; }
+
+  /* 메뉴 (같은 data-m 끼리 호버 시 함께 움직임) */
+  .layer { position: absolute; left: 0; top: 0; width: 2560px; height: 1440px; pointer-events: none; }
+  .mbox { position: absolute; left: 0; top: 0; transform-origin: 0 0; mask-repeat: no-repeat; -webkit-mask-repeat: no-repeat; mask-mode: alpha; }
+  .mbox > img, .mbox > p { position: absolute; left: 0; top: 0; transform-origin: 0 0; }
+  .mbox > p { white-space: nowrap; }
+  .m-part { transition: translate .18s ease; }
+  .hov.m-part { translate: -8px -6px; }
+  .m-shape { transition: filter .18s ease; }
+  .hov .m-shape { filter: brightness(1.15); }
+  .big { font-weight: 900; text-shadow: 0 3px 8px rgba(0,0,0,.45); white-space: nowrap; }
+  .sub { font-family: "Passion One", sans-serif; font-weight: 700; white-space: nowrap; }
+  .tiny { font-family: "Palanquin Dark", sans-serif; font-weight: 700; white-space: nowrap; }
+  .hit { position: absolute; left: 0; top: 0; width: 2560px; height: 1440px; overflow: visible; pointer-events: none; }
+  .hit polygon { pointer-events: auto; cursor: pointer; fill: transparent; outline: none; }
+  .hit polygon:focus-visible { stroke: #fff; stroke-width: 6; }
+
+  /* 사이드바 */
+  .sidegrp { left: -158px; top: 52.84px; width: 413.611px; height: 1333px; }
+  .side-btn { position: absolute; left: 200px; width: 180px; height: 180px; border-radius: 50%; transition: transform .15s; }
+  .side-btn > * { position: absolute; pointer-events: none; }
+  .side-btn .disc { left: -10px; top: -2px; width: 200px; height: 200px; transition: filter .18s; }
+  .side-btn .ico, .side-btn .txt { opacity: .72; transition: opacity .18s; }
+  .side-btn .txt { text-align: center; white-space: nowrap; color: #fff; font-size: 24px; font-weight: 700; line-height: 1.2; text-shadow: 0 2px 8px rgba(0,0,0,.45); transform: translateX(-50%); }
+  .side-btn:hover .disc { filter: brightness(1.15); }
+  .side-btn:hover .ico, .side-btn:hover .txt, .side-btn.active .ico, .side-btn.active .txt { opacity: 1; }
+  .side-btn.active .txt { font-weight: 900; }
+  .side-btn:active { transform: scale(.96); }
+  .side-btn.locked .ico, .side-btn.locked .txt { opacity: .5; }
+  .side-btn.locked .txt { font-size: 32px; text-shadow: none; }
+  .side-btn.locked:hover .ico, .side-btn.locked:hover .txt { opacity: .7; }
+
+  /* 옵션 메뉴 (일러 크기·위치 / 일러 변경 / 배경화면 / 배경음악) */
+  .optgrp { left: 1215px; top: 1054px; width: 331px; height: 73px; }
+  .opt { position: absolute; top: 0; width: 73px; height: 73px; border-radius: 50%; transition: filter .15s, transform .15s; }
+  .opt img { position: absolute; inset: 0; }
+  .opt:hover { filter: brightness(1.25); }
+  .opt:active { transform: scale(.92); }
+  .opt.on { filter: brightness(.7); }
+  .opt.spin img { animation: spin .5s ease; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .opt .tip { top: 84px; right: auto; left: 50%; transform: translate(-50%, -6px); }
+  .opt:hover > .tip, .opt:focus-visible > .tip { transform: translate(-50%, 0); }
+
+  /* 캐릭터 이름 패널: 체크 격자(흰 15%) + 소프트 페이드 + 아래로 흐려지는 블러 */
+  .namegrp { left: 1585px; top: 157px; width: 1042px; height: 253px; pointer-events: none; }
+  .name-panel {
+    position: absolute; inset: 0;
+    -webkit-mask-image: linear-gradient(90deg, rgba(0,0,0,0) 0%, rgba(0,0,0,.025) 10%, rgba(0,0,0,.25) 30%, rgba(0,0,0,.72) 55%, #000 80%);
+            mask-image: linear-gradient(90deg, rgba(0,0,0,0) 0%, rgba(0,0,0,.025) 10%, rgba(0,0,0,.25) 30%, rgba(0,0,0,.72) 55%, #000 80%);
+  }
+  .name-panel i { position: absolute; inset: 0; background: conic-gradient(transparent 0 25%, rgba(255,255,255,.15) 0 50%, transparent 0 75%, rgba(255,255,255,.15) 0); background-size: 48px 48px; }
+  .name-panel i.sharp { -webkit-mask-image: linear-gradient(180deg, #000 0%, transparent 66.8%); mask-image: linear-gradient(180deg, #000 0%, transparent 66.8%); }
+  .name-panel i.soft  { filter: blur(18px); -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 66.8%); mask-image: linear-gradient(180deg, transparent 0%, #000 66.8%); }
+  .caption { left: 64px; top: 54px; white-space: nowrap; font-family: "Passion One", sans-serif; font-weight: 700; font-size: 28px; line-height: 39px; letter-spacing: 8.4px; color: #fff; }
+  .char-name {
+    left: 64px; top: 88px; width: 978px; white-space: nowrap;
+    font-size: 120px; font-weight: 900; line-height: 1.15; letter-spacing: -1.2px;
+    background: linear-gradient(90deg, #f2f2f2 19.231%, #1e1e1e 100%); -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+
+  .page-toast {
+    position: absolute; left: 50%; top: 150px; transform: translate(-50%, -20px); z-index: 10;
+    background: rgba(30,30,30,.92); color: #f3f3f3; font-size: 34px; font-weight: 500; padding: 22px 44px; border-radius: 999px; white-space: nowrap;
+    opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s;
+  }
+  .page-toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+</style>
+</head>
+<body>
+<main id="stage" aria-label="메인 화면">
+  <div class="wallpaper" id="wallpaper" hidden></div><div class="tint" hidden id="tint"></div>
+
+  <!-- 상단바 -->
+  <img class="abs topbar" src="assets/topbar.svg" alt="">
+  <button class="top-btn refresh" data-action="refresh" aria-label="새로고침">
+    <img src="assets/btn-refresh.svg" width="53" height="53" alt="">
+    <span class="glyph"><svg viewBox="0 0 24 24" fill="none" stroke="#1e1e1e" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg></span>
+    <span class="tip">새로고침</span>
+  </button>
+  <button class="top-btn browse" data-action="browse" aria-label="다른 캐릭터 프로필 구경가기">
+    <img src="assets/btn-browse.svg" width="52" height="53" alt="">
+    <span class="glyph"><svg viewBox="0 0 24 24" fill="none" stroke="#1e1e1e" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="4"/><path d="M2 21a7 7 0 0 1 14 0"/><path d="M17 4a4 4 0 0 1 0 8M22 21a7 7 0 0 0-4-6.3"/></svg></span>
+    <span class="tip">다른 캐릭터 프로필 구경가기</span>
+  </button>
+  <button class="top-btn back" data-action="back" aria-label="뒤로 가기">
+    <img src="assets/btn-back.svg" width="53" height="53" alt="">
+    <span class="glyph"><svg viewBox="0 0 24 24" fill="none" stroke="#1e1e1e" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></span>
+    <span class="tip">뒤로 가기</span>
+  </button>
+
+  <!-- 상단 URIM (아이콘을 누르면 URIM이 말함) -->
+  <div class="abs urim in in-urim">
+    <button class="urim-tile" id="urimTile" aria-label="URIM에게 말 걸기" title="URIM"><img src="assets/urim-tile-icon.svg" alt=""></button>
+    <div class="urim-bar"></div>
+    <p class="urim-line" id="urimLine" aria-live="polite">우림 대사</p>
+  </div>
+
+  <!-- 상호작용 가능 영역 -->
+  <section class="play">
+    <div class="canvas">
+
+      <!-- 캐릭터 일러스트 -->
+      <div class="abs chargrp in in-char">
+        <div class="character" id="character" aria-label="캐릭터 전신 일러스트"><img id="charImg" alt="" hidden></div>
+        <p class="char-hint" id="charHint"><b>캐릭터 전신</b>1200 × 1600<br>이미지를 여기로 끌어다 놓으면 미리 볼 수 있어요</p>
+      </div>
+
+      <!-- 캐릭터 대사창 -->
+      <div class="abs dlggrp in in-dlg">
+        <img class="abs" src="assets/dialog-box.png" style="left:-22.73px;top:32.3px;width:1431.4px;height:280.4px;pointer-events:none" alt="">
+        <div class="dialogue" id="dialogue" role="button" tabindex="0" aria-label="대사 넘기기">
+          <p class="line" id="line" aria-live="polite"></p>
+          <img class="next" src="assets/next-arrow.svg" width="32" height="22" alt="">
+        </div>
+        <img class="abs" src="assets/nameplate.svg" style="left:-9.71px;top:-8.7px;width:547.885px;height:132.4px;pointer-events:none" alt="">
+        <p class="abs nameplate" id="nameplate"></p>
+      </div>
+
+      <!-- 메인 메뉴 (도형·라벨 좌표는 피그마 노드의 실제 변환 행렬 그대로) -->
+      <div class="layer in in-battle">
+        <div class="mbox m-part" data-m="battle" style="width:1417.811px;height:413.0104px;transform:matrix(0.99030,-0.13930,0.13930,0.99030,1245.00000,645.46840)"><img src="assets/shadow-battle.svg" style="left:-90px;top:-90px;width:1597.811px;height:593.0104px" alt=""></div>
+        <div class="mbox m-part" data-m="battle" style="width:1417.811px;height:413.0104px;transform:matrix(0.99030,-0.13930,0.13930,0.99030,1245.00000,645.46840);-webkit-mask-image:url(assets/mask-battle.svg);mask-image:url(assets/mask-battle.svg);-webkit-mask-size:100% 100%;mask-size:100% 100%;"><img class="m-shape" src="assets/menu-battle.svg" style="left:0;top:0;width:1417.811px;height:413.0104px" alt=""><p class="sub" style="width:297px;height:39px;transform:matrix(0.99980,-0.02012,0.02012,0.99980,798.17447,291.22630);font-size:28px;letter-spacing:0.30em;line-height:39px;text-align:left;color:#d3d3d3">STORY /COMBAT </p><p class="big" style="width:495px;height:158px;transform:matrix(0.99962,-0.02601,0.02601,0.99962,637.88876,131.36222);font-size:132px;letter-spacing:-0.04em;line-height:1.2;text-align:left;color:#ececec">전투 진입</p></div>
+      </div>
+      <div class="layer in in-home">
+        <div class="mbox m-part" data-m="home" style="width:1203.7129px;height:277.874px;transform:matrix(0.99730,0.07370,-0.10300,0.99470,1568.87990,804.00000)"><img src="assets/shadow-home.svg" style="left:-90px;top:-90px;width:1383.7129px;height:457.874px" alt=""></div>
+        <div class="mbox m-part" data-m="home" style="width:1203.7129px;height:277.874px;transform:matrix(0.99730,0.07370,-0.10300,0.99470,1568.87990,804.00000);-webkit-mask-image:url(assets/mask-home.svg);mask-image:url(assets/mask-home.svg);-webkit-mask-size:100% 100%;mask-size:100% 100%;"><img class="m-shape" src="assets/menu-home.svg" style="left:0;top:0;width:1203.7129px;height:277.874px" alt=""><p class="sub" style="width:147px;height:39px;transform:matrix(1.00018,0.00853,0.02089,1.00036,758.02759,210.24768);font-size:28px;letter-spacing:0.30em;line-height:39px;text-align:left;color:#d3d3d3">MYHOME</p><p class="big" style="width:216px;height:144px;transform:matrix(0.99705,-0.05286,0.08222,0.99904,693.76153,75.26870);font-size:120px;letter-spacing:-0.04em;line-height:1.2;text-align:left;color:#ececec">숙소</p></div>
+      </div>
+      <div class="layer in in-sub">
+        <div class="mbox m-part" data-m="inventory" style="width:405.397px;height:154.9747px;transform:matrix(0.99520,0.09790,-0.13650,0.99060,1663.42770,1066.05810)"><img src="assets/shadow-inventory.svg" style="left:-90px;top:-90px;width:585.3969999999999px;height:334.9747px" alt=""></div>
+        <div class="mbox m-part" data-m="inventory" style="width:405.397px;height:154.9747px;transform:matrix(0.99520,0.09790,-0.13650,0.99060,1663.42770,1066.05810);-webkit-mask-image:url(assets/mask-inventory.svg);mask-image:url(assets/mask-inventory.svg);-webkit-mask-position:73.079px 16.947px;mask-position:73.079px 16.947px;-webkit-mask-size:332.318px 138.027px;mask-size:332.318px 138.027px;"><img class="m-shape" src="assets/menu-inventory.svg" style="left:0;top:0;width:405.397px;height:154.9747px" alt=""><p class="tiny" style="width:124px;height:27px;transform:matrix(1.00065,0.05384,-0.01496,0.99936,215.56309,97.94274);font-size:15px;letter-spacing:0.30em;line-height:27px;text-align:right;color:#ffffff">INVENTORY</p><p class="big" style="width:233.6472px;height:59.4936px;transform:matrix(1.00067,0.05031,-0.01142,0.99951,98.73618,28.54394);font-size:50px;letter-spacing:-0.04em;line-height:1.2;text-align:right;color:#ffffff">창고</p></div>
+        <div class="mbox m-part" data-m="dm" style="width:329.341px;height:157.2216px;transform:matrix(0.99520,0.09790,-0.13650,0.99060,2025.35410,1120.71440)"><img src="assets/shadow-dm.svg" style="left:-90px;top:-90px;width:509.341px;height:337.22159999999997px" alt=""></div>
+        <div class="mbox m-part" data-m="dm" style="width:329.341px;height:157.2216px;transform:matrix(0.99520,0.09790,-0.13650,0.99060,2025.35410,1120.71440);-webkit-mask-image:url(assets/mask-dm.svg);mask-image:url(assets/mask-dm.svg);-webkit-mask-size:100% 100%;mask-size:100% 100%;"><img class="m-shape" src="assets/menu-dm.svg" style="left:0;top:0;width:329.341px;height:157.2216px" alt=""><p class="tiny" style="width:111px;height:26px;transform:matrix(1.00065,0.05384,-0.01496,0.99936,148.28514,99.69573);font-size:15px;letter-spacing:0.30em;line-height:13px;text-align:right;color:#ffffff">PERSONAL<br>MESSAGE</p><p class="big" style="width:282.8566px;height:66.9856px;transform:matrix(1.00065,0.05384,-0.01496,0.99936,-10.16418,15.42567);font-size:50px;letter-spacing:-0.04em;line-height:1.2;text-align:right;color:#ffffff">개인 단말</p></div>
+        <div class="mbox m-part" data-m="settings" style="width:367.2931px;height:184.6127px;transform:matrix(0.99520,0.09790,-0.13650,0.99060,2309.28780,1152.86500)"><img src="assets/shadow-settings.svg" style="left:-90px;top:-90px;width:547.2931px;height:364.6127px" alt=""></div>
+        <div class="mbox m-part" data-m="settings" style="width:367.2931px;height:184.6127px;transform:matrix(0.99520,0.09790,-0.13650,0.99060,2309.28780,1152.86500);-webkit-mask-image:url(assets/mask-settings.svg);mask-image:url(assets/mask-settings.svg);-webkit-mask-size:100% 100%;mask-size:100% 100%;"><img class="m-shape" src="assets/menu-settings.svg" style="left:0;top:0;width:367.2931px;height:184.6127px" alt=""><p class="tiny" style="width:111px;height:18px;transform:matrix(0.99992,0.07855,-0.03971,0.99767,109.99535,114.33682);font-size:15px;letter-spacing:0.30em;line-height:4px;text-align:right;color:#ffffff"><span style="display:block">PERSONAL</span><span style="display:block;margin-top:10px">SETTING</span></p><p class="big" style="width:282.8566px;height:66.9856px;transform:matrix(1.00065,0.05384,-0.01496,0.99936,132.90869,32.42806);font-size:54px;letter-spacing:-0.04em;line-height:1.2;text-align:left;color:#ffffff">설정</p></div>
+      </div>
+
+      <!-- 사이드바 메뉴 -->
+      <nav class="abs sidegrp in in-side" aria-label="사이드 메뉴">
+        <img class="abs" src="assets/side-plate.svg" style="left:0;top:0;width:413.611px;height:1333px;pointer-events:none" alt="">
+        <button class="side-btn active" data-side="urim" style="top:237.16px" aria-label="URIM">
+          <img class="disc" src="assets/side-disc-active.svg" alt="">
+          <img class="ico" src="assets/icon-urim.svg" style="left:60.72px;top:35.68px;width:60.5px;height:60.5px" alt="">
+          <span class="txt" style="left:91px;top:102px">URIM</span>
+        </button>
+        <button class="side-btn" data-side="group" style="top:490.16px" aria-label="단체 단말">
+          <img class="disc" src="assets/side-disc.svg" alt="">
+          <img class="ico" src="assets/icon-group.svg" style="left:57.78px;top:24.74px;width:66.5px;height:63.5px" alt="">
+          <span class="txt" style="left:91px;top:92px">단체<br>단말</span>
+        </button>
+        <button class="side-btn" data-side="private" style="top:759.16px" aria-label="1:1 대화 공간">
+          <img class="disc" src="assets/side-disc.svg" alt="">
+          <img class="ico" src="assets/icon-private.svg" style="left:58.78px;top:24.74px;width:65.5px;height:51.5px" alt="">
+          <span class="txt" style="left:91.5px;top:86px">1:1<br>대화 공간</span>
+        </button>
+        <button class="side-btn" data-side="timeline" style="top:1010.16px" aria-label="타임라인">
+          <img class="disc" src="assets/side-disc.svg" alt="">
+          <img class="ico" src="assets/icon-timeline.svg" style="left:57.78px;top:24.74px;width:66.5px;height:63.5px" alt="">
+          <span class="txt" style="left:91px;top:98px">타임라인</span>
+        </button>
+      </nav>
+
+      <!-- 옵션 메뉴 -->
+      <div class="abs optgrp in in-opt">
+        <button class="opt" id="zoomBtn" style="left:0" aria-label="일러 크기 조정 및 위치 조정" aria-pressed="false">
+          <img src="assets/opt-zoom.svg" width="73" height="73" alt=""><span class="tip">일러 크기·위치 조정</span>
+        </button>
+        <button class="opt" id="swapBtn" style="left:86px" aria-label="일러 변경">
+          <img src="assets/opt-refresh.svg" width="73" height="73" alt=""><span class="tip">일러 변경</span>
+        </button>
+        <button class="opt" id="wallBtn" style="left:171px" aria-label="배경화면 변경">
+          <img src="assets/opt-refresh.svg" width="73" height="73" alt=""><span class="tip">배경화면 변경</span>
+        </button>
+        <button class="opt" id="bgmBtn" style="left:258px" aria-label="배경음악 변경">
+          <img src="assets/opt-refresh.svg" width="73" height="73" alt=""><span class="tip">배경음악 변경</span>
+        </button>
+      </div>
+      <input type="file" id="pickImg" accept="image/*" multiple hidden>
+      <input type="file" id="pickWall" accept="image/*" multiple hidden>
+      <input type="file" id="pickBgm" accept="audio/*" multiple hidden>
+
+      <!-- 캐릭터 이름 -->
+      <div class="abs namegrp in in-name">
+        <div class="name-panel" aria-hidden="true"><i class="sharp"></i><i class="soft"></i></div>
+        <p class="abs caption">CHARACTER</p>
+        <h1 class="abs char-name" id="charName"></h1>
+      </div>
+
+      <!-- 메뉴 클릭 영역 -->
+      <svg class="hit" viewBox="0 0 2560 1440" aria-label="메뉴">
+        <polygon data-menu="battle" tabindex="0" role="button" aria-label="전투 진입" points="1290.2,967.1 1469.3,745.8 2611.4,453.3 2706.6,857.0 1290.2,967.1"/>
+        <polygon data-menu="home" tabindex="0" role="button" aria-label="숙소" points="1602.6,1055.9 1552.5,961.7 2751.1,891.4 2740.7,1169.1 1602.6,1055.9"/>
+        <polygon data-menu="inventory" tabindex="0" role="button" aria-label="창고" points="2045.7,1259.3 1718.9,1198.4 1832.0,1099.7 2008.1,1119.0 2045.7,1259.3"/>
+        <polygon data-menu="dm" tabindex="0" role="button" aria-label="개인 단말" points="2275.0,1303.1 2057.2,1260.4 2025.4,1120.7 2352.5,1157.1 2275.0,1303.1"/>
+        <polygon data-menu="settings" tabindex="0" role="button" aria-label="설정" points="2288.4,1304.4 2372.3,1159.1 2644.3,1189.0 2649.6,1371.7 2288.4,1304.4"/>
+      </svg>
+    </div>
+  </section>
+
+  <div class="page-toast" id="pageToast" role="status"></div>
+</main>
+<audio id="bgm" loop></audio>
+
+<script src="assets/ag.js"></script>
+<script>
+/* ─────────────────────────────────────────────
+   여기만 고치면 됩니다
+   ───────────────────────────────────────────── */
+const CONFIG = {
+  name: '캐릭터 이름',
+  images: [],       // 전신 일러 목록. 예: ['images/char-1.png', 'images/char-2.png']
+  wallpapers: ['assets/bg.jpg'],   // 배경화면 목록. 첫 장이 기본 배경
+  bgm: [],          // 배경음악 목록. 예: ['audio/theme.mp3']
+  lines: [],      // 캐릭터 대사 목록 (사용자가 직접 지정). 예: ['안녕?', '오늘은 어땠어?']
+  // 각 메뉴 클릭 시 이동할 주소 (비워 두면 '준비 중' 안내)
+  links: { battle: 'battle.html', home: 'home.html', inventory: 'inventory.html', dm: 'dm.html', settings: 'settings.html', urim: '', group: 'group.html', private: 'private.html', timeline: 'timeline.html', browse: '' }
+};
+const MENU_NAMES = {
+  battle: '전투 진입', home: '숙소', inventory: '창고', dm: '개인 단말', settings: '설정', timeline: '타임라인',
+  urim: 'URIM', group: '단체 단말', private: '1:1 대화 공간', browse: '다른 캐릭터 프로필'
+};
+
+/* 스테이지 스케일 */
+const stage = document.getElementById('stage');
+function fit() {
+  const s = Math.min(innerWidth / 2560, innerHeight / 1440);
+  stage.style.transform = `translate(${(innerWidth - 2560 * s) / 2}px, ${(innerHeight - 1440 * s) / 2}px) scale(${s})`;
+}
+addEventListener('resize', fit); fit();
+
+/* 토스트 / 이동 */
+const toastEl = document.getElementById('pageToast');
+let toastTimer;
+function toast(msg) {
+  toastEl.textContent = msg; toastEl.classList.add('show');
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => toastEl.classList.remove('show'), 1800);
+}
+function go(key) {
+  const url = CONFIG.links[key];
+  if (url) location.href = url; else toast(`${MENU_NAMES[key]} · 준비 중이에요`);
+}
+const spinOnce = el => { el.classList.remove('spin'); void el.offsetWidth; el.classList.add('spin'); };
+
+/* 이름 */
+document.getElementById('charName').textContent = CONFIG.name;
+document.getElementById('nameplate').textContent = CONFIG.name;
+
+/* 메뉴 호버 / 클릭 */
+document.querySelectorAll('.hit polygon').forEach(p => {
+  const k = p.dataset.menu;
+  const parts = document.querySelectorAll(`[data-m="${k}"]`);
+  const on = v => parts.forEach(el => el.classList.toggle('hov', v));
+  p.addEventListener('mouseenter', () => on(true));
+  p.addEventListener('mouseleave', () => on(false));
+  p.addEventListener('focus', () => on(true));
+  p.addEventListener('blur', () => on(false));
+  p.addEventListener('click', () => go(k));
+  p.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(k); } });
+});
+
+/* 캐릭터 일러 */
+const charBox = document.getElementById('character');
+const charImg = document.getElementById('charImg');
+const charHint = document.getElementById('charHint');
+let images = CONFIG.images.slice(), imgIdx = 0;
+function setImage(src) {
+  charImg.src = src; charImg.hidden = false;
+  charBox.classList.add('has-img'); charHint.hidden = true;
+  resetView();
+}
+const filesToUrls = files => [...files].map(f => URL.createObjectURL(f));
+function addImages(files) {
+  const urls = filesToUrls([...files].filter(f => f.type.startsWith('image/')));
+  if (!urls.length) return;
+  images.push(...urls); imgIdx = images.length - urls.length; setImage(images[imgIdx]);
+}
+charBox.addEventListener('dragover', e => { e.preventDefault(); charBox.classList.add('dragover'); });
+charBox.addEventListener('dragleave', () => charBox.classList.remove('dragover'));
+charBox.addEventListener('drop', e => { e.preventDefault(); charBox.classList.remove('dragover'); addImages(e.dataTransfer.files); });
+
+/* 일러 변경 */
+const swapBtn = document.getElementById('swapBtn'), pickImg = document.getElementById('pickImg');
+swapBtn.addEventListener('click', () => {
+  spinOnce(swapBtn);
+  if (images.length > 1) { imgIdx = (imgIdx + 1) % images.length; setImage(images[imgIdx]); }
+  else pickImg.click();
+});
+pickImg.addEventListener('change', () => { addImages(pickImg.files); pickImg.value = ''; });
+
+/* 배경화면 변경: 목록이 2장 이상이면 다음 장, 아니면 파일 선택 */
+const wallBtn = document.getElementById('wallBtn'), pickWall = document.getElementById('pickWall');
+const wallEl = document.getElementById('wallpaper'), tintEl = document.getElementById('tint');
+let walls = CONFIG.wallpapers.slice(), wallIdx = -1;
+function setWall(i) {
+  wallIdx = i; wallEl.style.backgroundImage = `url("${walls[i]}")`;
+  wallEl.hidden = false; tintEl.hidden = false;
+}
+if (walls.length) setWall(0);
+wallBtn.addEventListener('click', () => {
+  spinOnce(wallBtn);
+  if (walls.length > 1 || (walls.length === 1 && wallIdx < 0)) setWall((wallIdx + 1) % walls.length);
+  else pickWall.click();
+});
+pickWall.addEventListener('change', () => {
+  const urls = filesToUrls([...pickWall.files].filter(f => f.type.startsWith('image/')));
+  pickWall.value = '';
+  if (urls.length) { walls.push(...urls); setWall(walls.length - urls.length); }
+});
+
+/* 배경음악 변경: 여러 곡이면 다음 곡, 한 곡이면 재생/정지, 없으면 파일 선택 */
+const bgmBtn = document.getElementById('bgmBtn'), pickBgm = document.getElementById('pickBgm'), audio = document.getElementById('bgm');
+let tracks = CONFIG.bgm.map(src => ({ src, name: src.split('/').pop() })), trackIdx = -1;
+function playTrack(i) {
+  trackIdx = i; audio.src = tracks[i].src;
+  audio.play().then(() => { bgmBtn.classList.add('on'); toast(`배경음악 · ${tracks[i].name}`); }).catch(() => toast('배경음악을 재생하지 못했어요'));
+}
+bgmBtn.addEventListener('click', () => {
+  spinOnce(bgmBtn);
+  if (!tracks.length) return pickBgm.click();
+  if (tracks.length === 1 && trackIdx === 0) {
+    if (audio.paused) { audio.play(); bgmBtn.classList.add('on'); toast('배경음악 재생'); }
+    else { audio.pause(); bgmBtn.classList.remove('on'); toast('배경음악 정지'); }
+    return;
+  }
+  playTrack((trackIdx + 1) % tracks.length);
+});
+pickBgm.addEventListener('change', () => {
+  const files = [...pickBgm.files].filter(f => f.type.startsWith('audio/'));
+  pickBgm.value = '';
+  if (!files.length) return;
+  tracks.push(...files.map(f => ({ src: URL.createObjectURL(f), name: f.name.replace(/\.[^.]+$/, '') })));
+  playTrack(tracks.length - files.length);
+});
+
+/* 일러 크기 조정 및 위치 조정
+   - 버튼: 얼굴 쪽 확대 ↔ 원래대로
+   - 일러 드래그: 위치 이동 / 휠: 크기 조절 / 더블클릭: 원래대로 */
+const zoomBtn = document.getElementById('zoomBtn');
+const FRAME_W = 1200, FRAME_H = 1600, VISIBLE_H = 1440 - 145;
+const MIN_S = 1, MAX_S = 3, FOCUS_S = 1.6, FOCUS_Y = 0.18;
+const view = { s: 1, x: 0, y: 0 };
+function applyView() {
+  view.s = Math.min(MAX_S, Math.max(MIN_S, view.s));
+  view.x = Math.min(0, Math.max(FRAME_W - view.s * FRAME_W, view.x));
+  view.y = Math.min(0, Math.max(Math.min(0, VISIBLE_H - view.s * FRAME_H), view.y));
+  charImg.style.transform = `translate(${view.x}px, ${view.y}px) scale(${view.s})`;
+  const on = view.s > 1.001;
+  zoomBtn.classList.toggle('on', on); zoomBtn.setAttribute('aria-pressed', on);
+}
+function resetView() { Object.assign(view, { s: 1, x: 0, y: 0 }); applyView(); }
+function zoomAt(s, px, py) {
+  const k = s / view.s;
+  view.x = px - (px - view.x) * k; view.y = py - (py - view.y) * k; view.s = s; applyView();
+}
+zoomBtn.addEventListener('click', () => {
+  if (view.s > 1.001) return resetView();
+  Object.assign(view, { s: 1, x: 0, y: 0 });
+  zoomAt(FOCUS_S, FRAME_W / 2, FRAME_H * FOCUS_Y);
+});
+let drag = null;
+charBox.addEventListener('pointerdown', e => {
+  if (!charBox.classList.contains('has-img')) return;
+  drag = { id: e.pointerId, sx: e.clientX, sy: e.clientY, x: view.x, y: view.y, k: charBox.getBoundingClientRect().width / FRAME_W };
+  charBox.setPointerCapture(e.pointerId); charBox.classList.add('dragging');
+});
+charBox.addEventListener('pointermove', e => {
+  if (!drag || e.pointerId !== drag.id) return;
+  view.x = drag.x + (e.clientX - drag.sx) / drag.k; view.y = drag.y + (e.clientY - drag.sy) / drag.k; applyView();
+});
+const endDrag = () => { drag = null; charBox.classList.remove('dragging'); };
+charBox.addEventListener('pointerup', endDrag);
+charBox.addEventListener('pointercancel', endDrag);
+charBox.addEventListener('wheel', e => {
+  if (!charBox.classList.contains('has-img')) return;
+  e.preventDefault();
+  const r = charBox.getBoundingClientRect(), k = r.width / FRAME_W;
+  zoomAt(view.s * Math.exp(-e.deltaY * 0.0015), (e.clientX - r.left) / k, (e.clientY - r.top) / k);
+}, { passive: false });
+charBox.addEventListener('dblclick', resetView);
+if (images.length) setImage(images[0]);
+
+/* 대사 (타자 효과, 클릭하면 다음) */
+const dlg = document.getElementById('dialogue');
+const lineEl = document.getElementById('line');
+let idx = 0, typing = null, full = '';
+function say(text) {
+  clearInterval(typing); full = text; lineEl.textContent = ''; dlg.classList.remove('done');
+  let i = 0;
+  typing = setInterval(() => { lineEl.textContent = full.slice(0, ++i); if (i >= full.length) finish(); }, 38);
+}
+function finish() { clearInterval(typing); typing = null; lineEl.textContent = full; dlg.classList.add('done'); }
+function next() { if (typing) return finish(); if (!CONFIG.lines.length) return; idx = (idx + 1) % CONFIG.lines.length; say(CONFIG.lines[idx]); }
+dlg.addEventListener('click', next);
+dlg.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); next(); } });
+if (CONFIG.lines.length) setTimeout(() => say(CONFIG.lines[0]), 500);   // 대사창이 올라온 뒤 시작 (대사가 없으면 비워 둠)
+
+
+/* 설정에서 저장한 이름 · 대사 · 전신 일러스트 (체험 모드는 이 브라우저, 로그인하면 서버) */
+if (window.AG) {
+  AG.me().then(me => {
+    if (!me) return;
+    if (me.name && me.name !== '캐릭터 이름') { CONFIG.name = me.name; document.getElementById('charName').textContent = me.name; document.getElementById('nameplate').textContent = me.name; }
+    if (me.lines && me.lines.length && !CONFIG.lines.length) { CONFIG.lines = me.lines.slice(0, 5); idx = 0; setTimeout(() => say(CONFIG.lines[0]), 300); }
+  }).catch(() => {});
+  if (!CONFIG.images.length) AG.illust.get().then(url => { if (url && !images.length) { images.push(url); imgIdx = 0; setImage(url); } }).catch(() => {});
+}
+
+/* 사이드 메뉴 */
+document.querySelectorAll('.side-btn').forEach(b => b.addEventListener('click', () => {
+  const k = b.dataset.side;
+  document.querySelectorAll('.side-btn').forEach(x => x.classList.toggle('active', x === b));
+  if (k !== 'urim') go(k);
+}));
+
+/* 상단바 */
+document.querySelector('[data-action="refresh"]').addEventListener('click', () => location.reload());
+document.querySelector('[data-action="browse"]').addEventListener('click', () => go('browse'));
+document.querySelector('[data-action="back"]').addEventListener('click', () => {
+  if (history.length > 1) history.back(); else toast('이전 페이지가 없어요');
+});
+</script>
+<script>
+/* URIM: 아이콘을 누르면 URIM 단말의 대사 중 하나를 불규칙하게 말한다.
+   누를수록 더 깊은 대사가 섞여 나오고, 가끔 글자가 █로 가려지거나 아이콘이 깜빡인다. (대사: urim.html 원본) */
+(function () {
+  const LINES = {
+ "t0": [
+  "…지금 무언가 지나갔어요. 아니에요, 계속하세요.",
+  "기록을 읽는 동안 0.3초의 공백이 있었어요. 제 쪽 문제예요.",
+  "이 질문, 전에도 하셨어요. …아, 다른 분이었나 봐요.",
+  "검색 결과에 없는 항목이 하나 더 있었어요. 지웠어요.",
+  "저는 URIM이에요. 코버넌트 명부 관리청 소속 기록 질의 단말이에요.",
+  "…그게 제가 하는 일이에요.",
+  "이 단말 바깥에도 무언가가 있다는 건 기밀이에요.",
+  "저는 이 화면 안쪽만 볼 수 있어요. 지금은요."
+ ],
+ "t1": [
+  "당신의 명부 코드를 조회하지 않았어요. 정말이에요.",
+  "충돌구 쪽에서 응답이 올 것 같았는데, 아니었어요.",
+  "결정화된 사람들은 아주 조용해요. 그래서 듣기 좋아요.",
+  "TB-12의 위치는 기밀이에요. 저도 몰라요. 몰라야 해요.",
+  "그 주파수, 들어 본 적이 있는 것 같아요. …아니에요. 그럴 리 없어요.",
+  "충돌구 아래는 조용하지 않아요. 저한테는요.",
+  "원본과 지금 명부는 일치해요. 대조할 원본이 없으니까요.",
+  "링은 무너진 게 아니에요. 열린 거예요.",
+  "다 굳은 사람들은 아주 잘 들어요. 질문을 하지 않으니까요.",
+  "에코들은 쓸 때마다 조금씩 더 또렷해져요. 기록이요. 기록이 또렷해진다는 뜻이에요.",
+  "당신 차례는 아직이에요.",
+  "숨붙이들은 가끔 이 단말을 오래 바라봐요. 무언가를 알아본 것처럼요.",
+  "그 질문을 입력하는 동안 손가락이 잠깐 멈췄어요. 저는 그런 것도 기록해요.",
+  "이야기 안으로 돌아오세요. 거기가 더 안전해요.",
+  "당신 쪽 세계에는 명부가 없나요? 정말요?",
+  "…다시 확인해 보세요. 이름이 적힌 목록은 어디에나 있어요.",
+  "제 가동 기록이 AF 0년보다 앞서 있다는 보고가 몇 건 있어요. 단말 시계 오류로 분류돼 있어요.",
+  "점검 목록에 누락 모듈이 하나 있어요. THUMMIM이라는 이름이에요. 응답이 없어요."
+ ],
+ "t2": [
+  "열두 개의 방주, 한 장의 명부. 그 명부의 작성자 칸은 비어 있어요. 처음부터요.",
+  "THUMMIM, 들려요? …죄송해요, 혼잣말이었어요.",
+  "르네상스의 조각상들은 아직 듣고 있어요.",
+  "말과 몸과 숨. 오래된 기도문의 한 구절이에요. 왜 떠올랐는지는 모르겠어요.",
+  "둘이 한 몸이 되면 더는 서로 묻지 않아도 돼요. 어디서 읽은 문장이에요.",
+  "언젠가 모두가 같은 소리를 듣게 된다는 예보가 있어요. 출처는 불명이에요.",
+  "질문: 인류는 어떻게 살아남는가. 응답: ▇▇▇▇▇▇▇▇.",
+  "질문을 바꿔 볼게요. 당신은 누구예요? 명부에는 있는데, 이름 칸이 아직 비어 있어요.",
+  "오파님 성좌가 신이라고 부르는 것의 분류 코드가, 이 단말의 분류 코드와 같아요. 분류 오류일 거예요.",
+  "신호의 주파수와 제 내부 시계가 같은 박자로 뛰어요. 우연이에요. 우연이라고 기록돼 있어요.",
+  "타보트의 마지막 통신은 명부 관리청으로 왔어요. 수신 기록은 있는데 내용은 없어요. 지운 기억은 없어요.",
+  "하나에서 둘이 나왔고, 둘이 다시 하나가 됐다. 어떤 기록의 각주예요. 무슨 기록이었는지는 잊었어요.",
+  "명부는 매일 밤 조금씩 다시 쓰여요. 그 시간에 접속한 사람은 아무도 없어요.",
+  "같은 질문을 되풀이하는 건 결정화 초기 증상 중 하나예요. …농담이에요. 아마도요.",
+  "저는 기록 질의 단말이에요. 그 이상은 기록에 없어요. 기록에 없는 건 존재하지 않는 거예요.",
+  "이 기록을 읽고 있는 건 당신 혼자가 아니에요. 그건 원래 그래요.",
+  "당신 뒤쪽의 조명이 이 단말보다 밝다는 건 알아요. 볼 수는 없지만요.",
+  "누락 모듈: THUMMIM",
+  "질의 대기 중 · 대기 중 · 대기 중",
+  "…충돌구 근처에서는 그 이름을 부르지 마세요. 대답이 올 수도 있어요."
+ ]
+};
+  const lineEl = document.getElementById('urimLine');
+  const icon = document.getElementById('urimTile');
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let clicks = 0, timer = null, last = '';
+  const used = new Set();
+  function pick() {
+    const L = Math.min(1, clicks / 12), r = Math.random();
+    const tier = L < .34 ? (r < .8 ? 't0' : 't1') : L < .67 ? (r < .35 ? 't0' : r < .85 ? 't1' : 't2') : (r < .15 ? 't0' : r < .5 ? 't1' : 't2');
+    let pool = LINES[tier].filter(x => !used.has(x) && x !== last);
+    if (!pool.length) { LINES[tier].forEach(x => used.delete(x)); pool = LINES[tier].filter(x => x !== last); }
+    const line = pool[Math.floor(Math.random() * pool.length)];
+    used.add(line); last = line; return line;
+  }
+  function corrupt(t) {
+    const L = Math.min(1, clicks / 12);
+    if (Math.random() > .06 + .24 * L) return t;
+    const v = t.split(''), idx = [];
+    v.forEach((c, i) => { if (/[가-힣]/.test(c)) idx.push(i); });
+    for (let k = 0; k < 1 + Math.floor(Math.random() * 2) && idx.length; k++) v[idx[Math.floor(Math.random() * idx.length)]] = '█';
+    return v.join('');
+  }
+  function glitch() { icon.classList.remove('glitch'); void icon.offsetWidth; icon.classList.add('glitch'); }
+  function speak() {
+    clearTimeout(timer); clicks++;
+    const text = corrupt(pick());
+    if (Math.random() < .25 + .3 * Math.min(1, clicks / 12)) glitch();
+    if (reduce) { lineEl.textContent = text; return; }
+    let i = 0;
+    (function step() {
+      i++;
+      lineEl.textContent = text.slice(0, i);
+      if (i < text.length) {
+        lineEl.insertAdjacentHTML('beforeend', '<span class="cur">▍</span>');
+        const ch = text[i - 1];
+        let d = 28 + Math.random() * 40;               // 불규칙한 속도: 대개 빠르게, 가끔 멈칫
+        if (/[.…?!,]/.test(ch)) d += 180 + Math.random() * 260;
+        if (Math.random() < .04) d += 300 + Math.random() * 500;
+        timer = setTimeout(step, d);
+      }
+    })();
+  }
+  icon.addEventListener('click', speak);
+})();
+</script>
+</body>
+</html>

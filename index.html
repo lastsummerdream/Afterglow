@@ -1525,7 +1525,7 @@ a.icon{text-decoration:none;color:inherit}
   var TIERS=[['Tier 0','시날 스파이어'],['Tier 1','상층 갑판'],['Tier 2','중층 갑판'],['Tier 3','하층 화물칸'],['Tier 4','검역 갑판'],['하선','광야']];
   var LABEL={name:'이름',nameEn:'영문 이름',age:'나이',gender:'성별',origin:'출신',originDetail:'출신 세부',species:'종족',lineage:'혈통',G:'혈통 지수 G',C:'신용 지수 C',T:'결정화 단계 T',echoType:'잔향 갈래',echoAbility:'잔향 능력',job:'직업',faction:'소속',appearance:'외형',personality:'성격',background:'배경',secret:'비밀',notes:'메모',attackStyle:'공격 스타일',attackStyle2:'보조 스타일',attackNormalName:'일반 공격 이름',attackNormal:'일반 공격',attackSpecialName:'특수 공격 이름',attackSpecial:'특수 공격',attackUltimateName:'필살기 이름',attackUltimate:'필살기'};
   var STYLES=[['근접','근접 · 칼날, 둔기, 맨손'],['사격','사격 · 총기, 석궁, 저격'],['투척','투척 · 단검, 폭약, 결정 파편'],['의체','의체 · 내장 무기, 강화 의수'],['잔향','잔향 · 능력 자체로 싸운다'],['기계','기계 · 드론, 포탑, 원격 장비'],['지원','지원 · 치료, 교란, 정찰']];
-  var ERR={bad_avatar:'사진을 저장하지 못했어요. 다른 사진으로 해 주세요.',bad_username:'아이디는 영문, 숫자, 밑줄(_)로 4~20자예요.',short_password:'비밀번호는 8자 이상이어야 해요.',long_password:'비밀번호는 72자 이하로 정해 주세요.',username_taken:'이미 쓰이는 아이디예요.',wrong_login:'아이디나 비밀번호가 맞지 않아요.',wrong_password:'비밀번호가 맞지 않아요.',rate_limited:'시도가 너무 많아요. 잠시 뒤 다시 해 주세요.',too_many_characters:'캐릭터는 한 계정에 하나만 등록할 수 있어요.',not_found:'기록을 찾지 못했어요. 새로고침해 주세요.',server_error:'서버에서 문제가 생겼어요. 잠시 뒤 다시 해 주세요.',server_not_ready:'등록 서버가 아직 준비되지 않았어요.'};
+  var ERR={invite_required:'초대 코드를 입력해 주세요.',bad_invite:'초대 코드가 맞지 않아요.',bad_avatar:'사진을 저장하지 못했어요. 다른 사진으로 해 주세요.',bad_username:'아이디는 영문, 숫자, 밑줄(_)로 4~20자예요.',short_password:'비밀번호는 8자 이상이어야 해요.',long_password:'비밀번호는 72자 이하로 정해 주세요.',username_taken:'이미 쓰이는 아이디예요.',wrong_login:'아이디나 비밀번호가 맞지 않아요.',wrong_password:'비밀번호가 맞지 않아요.',rate_limited:'시도가 너무 많아요. 잠시 뒤 다시 해 주세요.',too_many_characters:'캐릭터는 한 계정에 하나만 등록할 수 있어요.',not_found:'기록을 찾지 못했어요. 새로고침해 주세요.',server_error:'서버에서 문제가 생겼어요. 잠시 뒤 다시 해 주세요.',server_not_ready:'등록 서버가 아직 준비되지 않았어요.'};
   function jo(w,a,b){w=String(w);var c=w.charCodeAt(w.length-1);if(c<0xAC00||c>0xD7A3)return w+b;return w+((c-0xAC00)%28?a:b);}
   var REASON={no_echo:function(){return '잔향이 없는 캐릭터는 잔향 스타일을 고를 수 없어요.';},required:function(l){return jo(l,'을','를')+' 입력해 주세요.';},range:function(l){return l+'의 값이 범위를 벗어났어요.';},too_long:function(l){return jo(l,'이','가')+' 너무 길어요.';},type:function(l){return l+'의 형식이 맞지 않아요.';},enum:function(l){return jo(l,'을','를')+' 목록에서 골라 주세요.';}};
 
@@ -1555,6 +1555,7 @@ a.icon{text-decoration:none;color:inherit}
       '<p class="para">명부 관리청에 사용자로 등록하면 자작 캐릭터 한 명의 기록을 남길 수 있어요. 등록한 캐릭터로 URIM과 대화할 수 있고, 이 기록은 앞으로 열릴 롤플레잉 사이트에서도 그대로 쓰여요.</p>'+
       '<div class="seg" role="group" aria-label="로그인 또는 가입"><button type="button" data-m="login" aria-pressed="'+(mode==='login')+'">로그인</button><button type="button" data-m="signup" aria-pressed="'+(mode==='signup')+'">새로 등록</button></div>'+
       '<form class="rgbox" id="rg-auth" novalidate><div class="group"><div class="glist">'+
+        (mode==='signup'?'<label class="fld"><span>초대 코드<em>운영진에게 받은 코드</em></span><input name="invite" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="40" required></label>':'')+
         '<label class="fld"><span>아이디'+(mode==='signup'?'<em>영문, 숫자, 밑줄 4~20자</em>':'')+'</span><input name="username" autocomplete="username" autocapitalize="off" spellcheck="false" maxlength="20" required></label>'+
         '<label class="fld"><span>비밀번호'+(mode==='signup'?'<em>8자 이상</em>':'')+'</span><input name="password" type="password" autocomplete="'+(mode==='signup'?'new-password':'current-password')+'" maxlength="72" required></label>'+
         (mode==='signup'?'<label class="fld"><span>비밀번호 확인</span><input name="password2" type="password" autocomplete="new-password" maxlength="72" required></label>':'')+
@@ -1567,12 +1568,13 @@ a.icon{text-decoration:none;color:inherit}
       e.preventDefault();if(busy)return;
       var u=f.username.value.trim(),p=f.password.value;
       if(mode==='signup'){
+        if(!f.invite.value.trim()){setMsg(msg,ERR.invite_required);f.invite.focus();return;}
         if(!/^[A-Za-z0-9_]{4,20}$/.test(u)){setMsg(msg,ERR.bad_username);f.username.focus();return;}
         if(p.length<8){setMsg(msg,ERR.short_password);f.password.focus();return;}
         if(p!==f.password2.value){setMsg(msg,'비밀번호가 서로 달라요.');f.password2.focus();return;}
       }else if(!u||!p){setMsg(msg,'아이디와 비밀번호를 입력해 주세요.');return;}
       busy=true;setMsg(msg,mode==='signup'?'등록하는 중…':'확인하는 중…',true);
-      req('POST',mode==='signup'?'/auth/signup':'/auth/login',{username:u,password:p}).then(function(r){
+      req('POST',mode==='signup'?'/auth/signup':'/auth/login',mode==='signup'?{username:u,password:p,invite:f.invite.value.trim()}:{username:u,password:p}).then(function(r){
         busy=false;
         if(!r.ok){setMsg(msg,errText(r));if(r.net)renderAuth();return;}
         setToken(r.data.token);me=r.data;render();announce();

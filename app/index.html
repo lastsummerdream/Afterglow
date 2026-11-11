@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AFTERGLOW · 잔광</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&family=Passion+One:wght@700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/ag.css">
+<style>
+.cv { transition: filter .45s, opacity .45s; }
+#stage.panel-open .cv { filter: blur(12px); opacity: .35; pointer-events: none; }
+.dim { position: absolute; inset: 0; background: rgba(0,0,0,.5); opacity: 0; pointer-events: none; transition: opacity .35s; }
+#stage.panel-open .dim { opacity: 1; pointer-events: auto; }
+.panel { visibility: hidden; opacity: 0; scale: .97; transform-origin: 1280px 720px; transition: opacity .3s, scale .35s cubic-bezier(.2,.8,.2,1), visibility 0s .35s; }
+.panel.show { visibility: visible; opacity: 1; scale: 1; transition: opacity .3s, scale .35s cubic-bezier(.2,.8,.2,1), visibility 0s; }
+.panel .t { pointer-events: none; } .panel button.t { pointer-events: auto; }
+.panel button.t:hover { text-decoration: underline; color: #1e1e1e !important; }
+#logoImg { position: absolute; left: 780px; top: 290px; width: 1000px; height: 440px; object-fit: contain; }
+.has-logo .logo-ph { display: none; }
+#loadTxt, #loadPct { transition: opacity .3s; }
+.enter { opacity: 0; translate: 0 60px; pointer-events: none; transition: opacity .6s, translate .7s cubic-bezier(.2,.8,.2,1); }
+.ready .enter { opacity: 1; translate: 0 0; pointer-events: auto; }
+.ready .press { animation: press 1.6s ease-in-out infinite; }
+@keyframes press { 50% { opacity: .25; } }
+.loading-l { transition: opacity .6s; }
+.ready .loading-l { opacity: .55; }
+#stage.leaving { transition: opacity .5s; opacity: 0; }
+.field { caret-color: #fff; }
+.busy .hb { pointer-events: none; filter: grayscale(1); }
+#demoBtn { left: 1080px; top: 1376px; width: 400px; text-align: center; font-size: 22px; font-weight: 700; color: #e6e6e6; opacity: .8; pointer-events: auto; }
+#demoBtn:hover { opacity: 1; text-decoration: underline; }
+</style>
+</head>
+<body>
+<main id="stage" aria-label="AFTERGLOW 접속">
+<div class="wallpaper"></div><div class="tint"></div>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><pattern id="agVid" patternUnits="userSpaceOnUse" width="128" height="128"><image href="assets/vid-tile.png" width="128" height="128"/></pattern>
+<filter id="agGrain" x="0" y="0" width="100%" height="100%" filterUnits="objectBoundingBox">
+<feTurbulence id="agGrainTurb" type="fractalNoise" baseFrequency=".85" numOctaves="2" seed="1" result="n"/>
+<feColorMatrix in="n" type="matrix" values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 .9 -.25" result="a"/>
+<feComposite in="a" in2="SourceGraphic" operator="in"/></filter></defs><defs>
+<filter id="cover_filter0_d_87_2" x="950" y="988" width="655.722" height="129.917" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="8"/>
+<feGaussianBlur stdDeviation="5"/>
+<feComposite in2="hardAlpha" operator="out"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
+<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_87_2"/>
+<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_87_2" result="shape"/>
+</filter>
+<linearGradient id="cover_paint0_linear_87_2" x1="780" y1="856" x2="1500" y2="856" gradientUnits="userSpaceOnUse">
+<stop stop-color="#262626"/>
+<stop offset="1" stop-color="#C7C7C7"/>
+</linearGradient>
+<linearGradient id="cover_paint1_linear_87_2" x1="957.861" y1="1044.96" x2="1596.89" y2="1069.83" gradientUnits="userSpaceOnUse">
+<stop stop-color="white" stop-opacity="0"/>
+<stop offset="1" stop-color="#4A4A4A"/>
+</linearGradient>
+<pattern id="cover_pattern0_87_2" patternUnits="userSpaceOnUse" patternTransform="matrix(48 0 0 48 780 290)" preserveAspectRatio="none" viewBox="0 0 48 48" width="1" height="1">
+<g>
+<g clip-path="url(#cover_clip0_87_2)">
+<rect width="24" height="24" fill="black"/>
+<rect x="24" y="24" width="24" height="24" fill="black"/>
+</g>
+</g>
+</pattern><pattern id="cover_pattern1_87_2" patternUnits="userSpaceOnUse" patternTransform="matrix(48 0 -1.86675 47.9637 960 990)" preserveAspectRatio="none" viewBox="0 0 48 48" width="1" height="1">
+<g>
+<g clip-path="url(#cover_clip1_87_2)">
+<rect width="24" height="24" fill="black"/>
+<rect x="24" y="24" width="24" height="24" fill="black"/>
+</g>
+</g>
+</pattern><clipPath id="cover_clip0_87_2">
+<rect width="48" height="48" fill="white"/>
+</clipPath>
+<clipPath id="cover_clip1_87_2">
+<rect width="48" height="48" fill="white"/>
+</clipPath>
+</defs>
+<defs>
+<filter id="login_filter0_d_87_2" x="877.3" y="291.3" width="805.4" height="905.4" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="14"/>
+<feGaussianBlur stdDeviation="11.35"/>
+<feComposite in2="hardAlpha" operator="out"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
+<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_87_2"/>
+<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_87_2" result="shape"/>
+</filter>
+<filter id="login_filter1_d_87_2" x="947.3" y="531.3" width="645.4" height="131.4" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="14"/>
+<feGaussianBlur stdDeviation="11.35"/>
+<feComposite in2="hardAlpha" operator="out"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
+<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_87_2"/>
+<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_87_2" result="shape"/>
+</filter>
+<filter id="login_filter2_d_87_2" x="947.3" y="681.3" width="645.4" height="131.4" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="14"/>
+<feGaussianBlur stdDeviation="11.35"/>
+<feComposite in2="hardAlpha" operator="out"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
+<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_87_2"/>
+<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_87_2" result="shape"/>
+</filter>
+<filter id="login_filter3_d_87_2" x="960" y="818" width="616.422" height="111.93" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="8"/>
+<feGaussianBlur stdDeviation="5"/>
+<feComposite in2="hardAlpha" operator="out"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
+<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_87_2"/>
+<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_87_2" result="shape"/>
+</filter>
+<filter id="login_filter4_d_87_2" x="960" y="1028" width="616.422" height="111.93" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="8"/>
+<feGaussianBlur stdDeviation="5"/>
+<feComposite in2="hardAlpha" operator="out"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
+<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_87_2"/>
+<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_87_2" result="shape"/>
+</filter>
+<linearGradient id="login_paint0_linear_87_2" x1="1280" y1="1160" x2="1280" y2="300" gradientUnits="userSpaceOnUse">
+<stop stop-color="#4B4B4B" stop-opacity="0"/>
+<stop offset="1" stop-color="#252525"/>
+</linearGradient>
+<linearGradient id="login_paint1_linear_87_2" x1="970" y1="583" x2="1623.15" y2="583" gradientUnits="userSpaceOnUse">
+<stop/>
+<stop offset="1" stop-color="#666666" stop-opacity="0.3"/>
+</linearGradient>
+<linearGradient id="login_paint2_linear_87_2" x1="970" y1="733" x2="1623.15" y2="733" gradientUnits="userSpaceOnUse">
+<stop/>
+<stop offset="1" stop-color="#666666" stop-opacity="0.3"/>
+</linearGradient>
+<linearGradient id="login_paint3_linear_87_2" x1="968.211" y1="865.965" x2="1567.3" y2="889.282" gradientUnits="userSpaceOnUse">
+<stop stop-color="white" stop-opacity="0"/>
+<stop offset="1" stop-color="#4A4A4A"/>
+</linearGradient>
+<linearGradient id="login_paint4_linear_87_2" x1="968.211" y1="1075.97" x2="1567.3" y2="1099.28" gradientUnits="userSpaceOnUse">
+<stop stop-color="white" stop-opacity="0"/>
+<stop offset="1" stop-color="#4A4A4A"/>
+</linearGradient>
+<pattern id="login_pattern0_87_2" patternUnits="userSpaceOnUse" patternTransform="matrix(48 0 -1.86675 47.9637 970 820)" preserveAspectRatio="none" viewBox="0 0 48 48" width="1" height="1">
+<g>
+<g clip-path="url(#login_clip0_87_2)">
+<rect width="24" height="24" fill="black"/>
+<rect x="24" y="24" width="24" height="24" fill="black"/>
+</g>
+</g>
+</pattern><pattern id="login_pattern1_87_2" patternUnits="userSpaceOnUse" patternTransform="matrix(48 0 -1.86675 47.9637 970 1030)" preserveAspectRatio="none" viewBox="0 0 48 48" width="1" height="1">
+<g>
+<g clip-path="url(#login_clip1_87_2)">
+<rect width="24" height="24" fill="black"/>
+<rect x="24" y="24" width="24" height="24" fill="black"/>
+</g>
+</g>
+</pattern><clipPath id="login_clip0_87_2">
+<rect width="48" height="48" fill="white"/>
+</clipPath>
+<clipPath id="login_clip1_87_2">
+<rect width="48" height="48" fill="white"/>
+</clipPath>
+</defs>
+<defs>
+<filter id="signup_filter0_d_87_2" x="877.3" y="131.3" width="805.4" height="1215.4" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="14"/>
+<feGaussianBlur stdDeviation="11.35"/>
+<feComposite in2="hardAlpha" operator="out"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
+<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_87_2"/>
+<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_87_2" result="shape"/>
+</filter>
+<filter id="signup_filter1_d_87_2" x="947.3" y="371.3" width="645.4" height="131.4" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="14"/>
+<feGaussianBlur stdDeviation="11.35"/>
+<feComposite in2="hardAlpha" operator="out"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
+<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_87_2"/>
+<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_87_2" result="shape"/>
+</filter>
+<filter id="signup_filter2_d_87_2" x="947.3" y="555.3" width="645.4" height="131.4" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="14"/>
+<feGaussianBlur stdDeviation="11.35"/>
+<feComposite in2="hardAlpha" operator="out"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
+<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_87_2"/>
+<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_87_2" result="shape"/>
+</filter>
+<filter id="signup_filter3_d_87_2" x="947.3" y="739.3" width="645.4" height="131.4" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="14"/>
+<feGaussianBlur stdDeviation="11.35"/>
+<feComposite in2="hardAlpha" operator="out"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
+<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_87_2"/>
+<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_87_2" result="shape"/>
+</filter>
+<filter id="signup_filter4_d_87_2" x="947.3" y="923.3" width="645.4" height="131.4" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="14"/>
+<feGaussianBlur stdDeviation="11.35"/>
+<feComposite in2="hardAlpha" operator="out"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
+<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_87_2"/>
+<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_87_2" result="shape"/>
+</filter>
+<filter id="signup_filter5_d_87_2" x="960" y="1068" width="616.422" height="111.93" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="8"/>
+<feGaussianBlur stdDeviation="5"/>
+<feComposite in2="hardAlpha" operator="out"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
+<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_87_2"/>
+<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_87_2" result="shape"/>
+</filter>
+<linearGradient id="signup_paint0_linear_87_2" x1="1280" y1="1310" x2="1280" y2="140" gradientUnits="userSpaceOnUse">
+<stop stop-color="#4B4B4B" stop-opacity="0"/>
+<stop offset="1" stop-color="#252525"/>
+</linearGradient>
+<linearGradient id="signup_paint1_linear_87_2" x1="970" y1="423" x2="1623.15" y2="423" gradientUnits="userSpaceOnUse">
+<stop/>
+<stop offset="1" stop-color="#666666" stop-opacity="0.3"/>
+</linearGradient>
+<linearGradient id="signup_paint2_linear_87_2" x1="970" y1="607" x2="1623.15" y2="607" gradientUnits="userSpaceOnUse">
+<stop/>
+<stop offset="1" stop-color="#666666" stop-opacity="0.3"/>
+</linearGradient>
+<linearGradient id="signup_paint3_linear_87_2" x1="970" y1="791" x2="1623.15" y2="791" gradientUnits="userSpaceOnUse">
+<stop/>
+<stop offset="1" stop-color="#666666" stop-opacity="0.3"/>
+</linearGradient>
+<linearGradient id="signup_paint4_linear_87_2" x1="970" y1="975" x2="1623.15" y2="975" gradientUnits="userSpaceOnUse">
+<stop/>
+<stop offset="1" stop-color="#666666" stop-opacity="0.3"/>
+</linearGradient>
+<linearGradient id="signup_paint5_linear_87_2" x1="968.211" y1="1115.97" x2="1567.3" y2="1139.28" gradientUnits="userSpaceOnUse">
+<stop stop-color="white" stop-opacity="0"/>
+<stop offset="1" stop-color="#4A4A4A"/>
+</linearGradient>
+<pattern id="signup_pattern0_87_2" patternUnits="userSpaceOnUse" patternTransform="matrix(48 0 -1.86675 47.9637 970 1070)" preserveAspectRatio="none" viewBox="0 0 48 48" width="1" height="1">
+<g>
+<g clip-path="url(#signup_clip0_87_2)">
+<rect width="24" height="24" fill="black"/>
+<rect x="24" y="24" width="24" height="24" fill="black"/>
+</g>
+</g>
+</pattern><clipPath id="signup_clip0_87_2">
+<rect width="48" height="48" fill="white"/>
+</clipPath>
+</defs>
+</svg>
+<div class="L cv in in-title" id="logoL"><div class="logo-ph"><svg class="sh " viewBox="0 0 2560 1440" fill="none" aria-hidden="true" ><g>
+<g>
+<rect x="780" y="290" width="1000" height="440" rx="24" fill="url(#cover_pattern0_87_2)" fill-opacity="0.15"/>
+<rect x="782" y="292" width="996" height="436" rx="22" stroke="white" stroke-opacity="0.45" stroke-width="4" stroke-dasharray="18 12"/>
+</g>
+</g>
+</svg>
+  <p class="t"  style="left:780px;top:440px;width:1000px;text-align:center;font-family:'Passion One';font-weight:700;font-size:96px;color:#fff;opacity:.55;letter-spacing:.2em;line-height:106px">LOGO</p>
+  <p class="t"  style="left:780px;top:560px;width:1000px;text-align:center;font-size:26px;font-weight:500;color:#e6e6e6;opacity:.75">로고 이미지 · 1000 × 440 (PNG, 투명 배경)</p></div>
+  <img id="logoImg" alt="AFTERGLOW" hidden></div>
+<div class="L cv loading-l in in-top"><svg class="sh " viewBox="0 0 2560 1440" fill="none" aria-hidden="true" ><g>
+<rect x="780" y="850" width="1000" height="12" rx="6" fill="black" fill-opacity="0.22"/>
+<rect x="780" y="850" id="loadFill" width="0" height="12" rx="6" fill="url(#cover_paint0_linear_87_2)"/>
+</g>
+</svg>
+  <p class="t"  style="left:780px;top:770px;width:1000px;text-align:center;font-family:'Passion One';font-weight:700;font-size:28px;color:#e6e6e6;letter-spacing:.3em">AFTERGLOW · 잔광 기록 단말</p>
+  <p class="t" id="loadTxt" style="left:780px;top:882px;text-align:left;font-size:24px;font-weight:500;color:#e6e6e6">기록 단말과 동기화하는 중 …</p>
+  <p class="t" id="loadPct" style="left:1580px;top:876px;width:200px;text-align:right;font-family:'Passion One';font-weight:700;font-size:32px;color:#fff;letter-spacing:.1em">0%</p></div>
+<div class="L cv enter"><svg class="sh " viewBox="0 0 2560 1440" fill="none" aria-hidden="true" ><g>
+<g filter="url(#cover_filter0_d_87_2)">
+<path d="M960 990H1572.57L1595.72 1099.92H983.151L960 990Z" fill="url(#cover_pattern1_87_2)" fill-opacity="0.15" />
+<path d="M960 990H1572.57L1595.72 1099.92H983.151L960 990Z" fill="url(#cover_paint1_linear_87_2)" />
+</g>
+</g>
+</svg>
+  <p class="t"  style="left:960px;top:1013px;width:640px;text-align:center;font-size:44px;font-weight:900;color:#fff;text-shadow:0 2px 6px rgba(0,0,0,.45);line-height:53px">진입하기</p>
+  <p class="t" class="press" style="left:960px;top:1124px;width:640px;text-align:center;font-family:'Passion One';font-weight:700;font-size:24px;color:#e6e6e6;opacity:.8;letter-spacing:.3em">PRESS TO ENTER</p>
+  <button class="hb " style="left:960px;top:990px;width:640px;height:110px;clip-path:polygon(0 0, 96% 0, 100% 100%, 4% 100%)" id="enterBtn" aria-label="진입하기"></button></div>
+<div class="L cv in in-bottom"><p class="t"  style="left:120px;top:1350px;text-align:left;font-family:'Passion One';font-weight:700;font-size:24px;color:#c7c7c7;letter-spacing:.2em">AFTERGLOW · v0.1</p>
+  <p class="t" id="urimTxt" style="left:1940px;top:1350px;width:500px;text-align:right;font-size:24px;font-weight:500;color:#c7c7c7">URIM · 접속을 기다리고 있어요</p>
+  <button class="t" id="demoBtn" hidden>로그인 없이 체험 모드로 둘러보기</button></div>
+<div class="dim" data-close></div>
+<form class="L panel" id="loginP" onsubmit="return false" aria-label="로그인"><svg class="sh " viewBox="0 0 2560 1440" fill="none" aria-hidden="true" ><g>
+<path d="M900 300H1600L1660 1160H960L900 300Z" fill="#D1D1D1" fill-opacity="0.9"/>
+<g filter="url(#login_filter0_d_87_2)">
+<path d="M900 300H1600L1660 1160H960L900 300Z" fill="url(#login_paint0_linear_87_2)" fill-opacity="0.4" />
+<path d="M900 300H1600L1660 1160H960L900 300Z" fill="url(#agVid)" opacity="0.2"/>
+</g>
+</g>
+<g>
+<g filter="url(#login_filter1_d_87_2)">
+<path d="M970 540H1537.86L1570 626H1002.14L970 540Z" fill="url(#login_paint1_linear_87_2)" fill-opacity="0.8" />
+</g>
+</g>
+<g>
+<g filter="url(#login_filter2_d_87_2)">
+<path d="M970 690H1537.86L1570 776H1002.14L970 690Z" fill="url(#login_paint2_linear_87_2)" fill-opacity="0.8" />
+</g>
+</g>
+<g filter="url(#login_filter3_d_87_2)">
+<path d="M970 820H1544.29L1566.42 911.93H992.136L970 820Z" fill="url(#login_pattern0_87_2)" fill-opacity="0.15" />
+<path d="M970 820H1544.29L1566.42 911.93H992.136L970 820Z" fill="url(#login_paint3_linear_87_2)" />
+</g>
+<rect x="980" y="960" width="600" height="2" fill="black" fill-opacity="0.15"/>
+<g filter="url(#login_filter4_d_87_2)">
+<path d="M970 1030H1544.29L1566.42 1121.93H992.136L970 1030Z" fill="url(#login_pattern1_87_2)" fill-opacity="0.15" />
+<path d="M970 1030H1544.29L1566.42 1121.93H992.136L970 1030Z" fill="url(#login_paint4_linear_87_2)" />
+</g>
+</svg><p class="t"  style="left:980px;top:340px;text-align:left;font-family:'Passion One';font-weight:700;font-size:28px;color:#2b2b2b;letter-spacing:.3em;line-height:31px">LOGIN</p><p class="t" id="loginTitle" style="left:980px;top:384px;text-align:left;font-size:56px;font-weight:900;color:#1e1e1e;line-height:67px">로그인</p><button class="t x" data-close style="left:1500px;top:348px;font-size:24px;font-weight:700;color:#5a5a5a">닫기 ×</button><p class="t"  style="left:980px;top:500px;text-align:left;font-size:24px;font-weight:500;color:#5a5a5a">아이디</p><input class="field" id="lUser" type="text" style="left:1030px;top:552px;width:500px;height:56px;font-size:30px" placeholder="아이디를 입력하세요" autocomplete="username" maxlength="20" spellcheck="false"><p class="t"  style="left:980px;top:650px;text-align:left;font-size:24px;font-weight:500;color:#5a5a5a">비밀번호</p><input class="field" id="lPass" type="password" style="left:1030px;top:702px;width:500px;height:56px;font-size:30px" placeholder="••••••••" autocomplete="current-password" maxlength="200" spellcheck="false"><p class="t" id="lErr" role="alert" style="left:980px;top:784px;text-align:left;font-size:22px;font-weight:700;color:#b24545"></p><p class="t"  style="left:970px;top:846px;width:600px;text-align:center;font-size:30px;font-weight:700;color:#fff;text-shadow:0 2px 6px rgba(0,0,0,.45)">로그인</p><button class="hb " style="left:970px;top:820px;width:600px;height:92px;clip-path:polygon(4% 0, 100% 0, 96% 100%, 0 100%)" id="lGo"></button><p class="t"  style="left:970px;top:982px;width:600px;text-align:center;font-size:22px;font-weight:500;color:#5a5a5a">아직 계정이 없나요? 초대 코드가 있어야 가입할 수 있어요</p><p class="t"  style="left:970px;top:1056px;width:600px;text-align:center;font-size:30px;font-weight:700;color:#fff;text-shadow:0 2px 6px rgba(0,0,0,.45)">초대 코드로 회원가입</p><button class="hb " style="left:970px;top:1030px;width:600px;height:92px;clip-path:polygon(4% 0, 100% 0, 96% 100%, 0 100%)" id="toSignup"></button></form>
+<form class="L panel" id="signupP" onsubmit="return false" aria-label="회원가입"><svg class="sh " viewBox="0 0 2560 1440" fill="none" aria-hidden="true" ><path d="M900 140H1600L1660 1310H960L900 140Z" fill="#D1D1D1" fill-opacity="0.9"/>
+<g filter="url(#signup_filter0_d_87_2)">
+<path d="M900 140H1600L1660 1310H960L900 140Z" fill="url(#signup_paint0_linear_87_2)" fill-opacity="0.4" />
+<path d="M900 140H1600L1660 1310H960L900 140Z" fill="url(#agVid)" opacity="0.2"/>
+</g>
+<g>
+<g filter="url(#signup_filter1_d_87_2)">
+<path d="M970 380H1537.86L1570 466H1002.14L970 380Z" fill="url(#signup_paint1_linear_87_2)" fill-opacity="0.8" />
+</g>
+</g>
+<g>
+<g filter="url(#signup_filter2_d_87_2)">
+<path d="M970 564H1537.86L1570 650H1002.14L970 564Z" fill="url(#signup_paint2_linear_87_2)" fill-opacity="0.8" />
+</g>
+</g>
+<g>
+<g filter="url(#signup_filter3_d_87_2)">
+<path d="M970 748H1537.86L1570 834H1002.14L970 748Z" fill="url(#signup_paint3_linear_87_2)" fill-opacity="0.8" />
+</g>
+</g>
+<g>
+<g filter="url(#signup_filter4_d_87_2)">
+<path d="M970 932H1537.86L1570 1018H1002.14L970 932Z" fill="url(#signup_paint4_linear_87_2)" fill-opacity="0.8" />
+</g>
+</g>
+<g filter="url(#signup_filter5_d_87_2)">
+<path d="M970 1070H1544.29L1566.42 1161.93H992.136L970 1070Z" fill="url(#signup_pattern0_87_2)" fill-opacity="0.15" />
+<path d="M970 1070H1544.29L1566.42 1161.93H992.136L970 1070Z" fill="url(#signup_paint5_linear_87_2)" />
+</g>
+</svg><p class="t"  style="left:980px;top:180px;text-align:left;font-family:'Passion One';font-weight:700;font-size:28px;color:#2b2b2b;letter-spacing:.3em;line-height:31px">SIGN UP</p><p class="t"  style="left:980px;top:224px;text-align:left;font-size:56px;font-weight:900;color:#1e1e1e;line-height:67px">회원가입</p><button class="t x" data-close style="left:1500px;top:188px;font-size:24px;font-weight:700;color:#5a5a5a">닫기 ×</button><p class="t"  style="left:980px;top:340px;text-align:left;font-size:24px;font-weight:500;color:#5a5a5a">초대 코드</p><input class="field" id="sCode" type="text" style="left:1030px;top:392px;width:500px;height:56px;font-size:30px" placeholder="AG-XXXX-XXXX" autocomplete="off" maxlength="40" spellcheck="false"><p class="t"  style="left:980px;top:476px;text-align:left;font-size:22px;font-weight:500;color:#5a5a5a">운영진에게 받은 초대 코드를 입력해 주세요</p><p class="t"  style="left:980px;top:524px;text-align:left;font-size:24px;font-weight:500;color:#5a5a5a">아이디</p><input class="field" id="sUser" type="text" style="left:1030px;top:576px;width:500px;height:56px;font-size:30px" placeholder="아이디를 입력하세요" autocomplete="username" maxlength="20" spellcheck="false"><p class="t"  style="left:980px;top:660px;text-align:left;font-size:22px;font-weight:500;color:#5a5a5a">영문 · 숫자 · 밑줄 4~20자</p><p class="t"  style="left:980px;top:708px;text-align:left;font-size:24px;font-weight:500;color:#5a5a5a">비밀번호</p><input class="field" id="sPass" type="password" style="left:1030px;top:760px;width:500px;height:56px;font-size:30px" placeholder="••••••••" autocomplete="new-password" maxlength="200" spellcheck="false"><p class="t"  style="left:980px;top:844px;text-align:left;font-size:22px;font-weight:500;color:#5a5a5a">8자 이상</p><p class="t"  style="left:980px;top:892px;text-align:left;font-size:24px;font-weight:500;color:#5a5a5a">비밀번호 확인</p><input class="field" id="sPass2" type="password" style="left:1030px;top:944px;width:500px;height:56px;font-size:30px" placeholder="••••••••" autocomplete="new-password" maxlength="200" spellcheck="false"><p class="t" id="sErr" role="alert" style="left:980px;top:1032px;text-align:left;font-size:22px;font-weight:700;color:#b24545"></p><p class="t"  style="left:970px;top:1096px;width:600px;text-align:center;font-size:30px;font-weight:700;color:#fff;text-shadow:0 2px 6px rgba(0,0,0,.45)">가입하기</p><button class="hb " style="left:970px;top:1070px;width:600px;height:92px;clip-path:polygon(4% 0, 100% 0, 96% 100%, 0 100%)" id="sGo"></button><button class="t" id="toLogin" style="left:970px;top:1200px;width:600px;text-align:center;font-size:24px;font-weight:700;color:#3a3a3a">이미 계정이 있어요 · 로그인</button></form>
+<div class="page-toast" id="pageToast" role="status"></div>
+</main>
+<script>window.AG_NO_GATE = true;</script>
+<script src="assets/ag.js"></script>
+<script src="assets/p-cover.js"></script>
+</body>
+</html>

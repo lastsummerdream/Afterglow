@@ -1,0 +1,26 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="1417.81" height="413.01" viewBox="0 0 1417.81 413.01" fill="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="&#236;&#160;&#132;&#237;&#136;&#172; &#236;&#167;&#132;&#236;&#158;&#133; &#235;&#169;&#148;&#235;&#137;&#180;">
+<path d="M0 324.808L208.165 130.641L1379.83 0L1417.81 413.01L0 324.808Z" fill="url(#pattern0_0_38)" fill-opacity="0.15"/>
+<path d="M0 324.808L208.165 130.641L1379.83 0L1417.81 413.01L0 324.808Z" fill="url(#paint0_linear_0_38)"/>
+</g>
+<defs>
+<linearGradient id="paint0_linear_0_38" x1="388.577" y1="4.01432e-05" x2="863.602" y2="-141.81" gradientUnits="userSpaceOnUse">
+<stop stop-color="white" stop-opacity="0"/>
+<stop offset="0.163462" stop-color="#B8B8B8" stop-opacity="0.347701"/>
+<stop offset="0.548077" stop-color="#888888" stop-opacity="0.581731"/>
+<stop offset="0.754808" stop-color="#555555" stop-opacity="0.795315"/>
+<stop offset="0.822115" stop-color="#484848" stop-opacity="0.84749"/>
+<stop offset="1" stop-color="#252525"/>
+</linearGradient>
+<pattern id="pattern0_0_38" patternUnits="userSpaceOnUse" patternTransform="matrix(48 0 0 48 0 0)" preserveAspectRatio="none" viewBox="0 0 48 48" width="1" height="1">
+<g id="pattern0_0_38_inner">
+<g id="&#236;&#178;&#180;&#237;&#129;&#172; &#237;&#140;&#168;&#237;&#132;&#180; &#236;&#155;&#144;&#235;&#179;&#184; &#194;&#183; 24px" clip-path="url(#clip0_0_38)">
+<rect id="&#236;&#178;&#180;&#237;&#129;&#172; &#236;&#185;&#184; &#194;&#183; &#236;&#153;&#188;&#236;&#170;&#189; &#236;&#156;&#132;" width="24" height="24" fill="white"/>
+<rect id="&#236;&#178;&#180;&#237;&#129;&#172; &#236;&#185;&#184; &#194;&#183; &#236;&#152;&#164;&#235;&#165;&#184;&#236;&#170;&#189; &#236;&#149;&#132;&#235;&#158;&#152;" x="24" y="24" width="24" height="24" fill="white"/>
+</g>
+</g>
+</pattern><clipPath id="clip0_0_38">
+<rect width="48" height="48" fill="white"/>
+</clipPath>
+</defs>
+</svg>

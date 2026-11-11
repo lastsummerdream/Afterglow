@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>애프터 글로우 · 창고</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&family=Passion+One:wght@700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/ag.css">
+<style>
+.sact{font-weight:900;font-size:32px;color:#fff;line-height:1.2;text-align:center}
+.s0{font-family:"Passion One";font-weight:700;font-size:28px;color:#fff;line-height:39px;letter-spacing:.3em}
+.s1{font-weight:900;font-size:110px;line-height:115px;letter-spacing:-.01em}
+.s2{font-family:"Passion One";font-weight:700;font-size:64px;color:#fff;line-height:70px;letter-spacing:.1em}
+.s3{font-weight:900;font-size:38px;color:#fff;line-height:1.2;letter-spacing:-.02em;text-shadow:0 3px 8px rgba(0,0,0,.45)}
+.s4{font-weight:500;font-size:24px;color:#fff;line-height:1.2;letter-spacing:-.02em;text-shadow:0 2px 6px rgba(0,0,0,.45)}
+.s5{font-weight:900;font-size:38px;color:#969696;line-height:1.2;letter-spacing:-.02em}
+.s6{font-weight:500;font-size:24px;color:#898989;line-height:1.2;letter-spacing:-.02em}
+.s7{font-weight:500;font-size:34px;color:#bdbdbd;line-height:34px;letter-spacing:-.05em}
+.s8{font-weight:700;font-size:34px;color:#fff;line-height:1.2;text-shadow:0 3px 8px rgba(0,0,0,.45)}
+.s9{font-weight:500;font-size:22px;color:#e6e6e6;line-height:1.2}
+.s10{font-weight:500;font-size:22px;color:#595959;line-height:1.2}
+.s11{font-weight:700;font-size:32px;color:#1e1e1e;line-height:1.2}
+.s12{font-weight:500;font-size:22px;color:#5a5a5a;line-height:1.2}
+.s13{font-weight:500;font-size:32px;color:#1e1e1e;line-height:34px;letter-spacing:-.05em}
+.s14{font-weight:500;font-size:32px;color:#fff;line-height:34px;letter-spacing:-.05em;text-align:right}
+.s15{font-weight:500;font-size:22px;color:#5a5a5a;line-height:1.2;text-align:right}
+.s18{font-weight:500;font-size:22px;color:#c7c7c7;line-height:1.2}
+.s19{font-weight:700;font-size:30px;color:#fff;line-height:1.2;text-shadow:0 3px 8px rgba(0,0,0,.45)}
+.s20{font-weight:900;font-size:30px;color:#fff;line-height:1.2;letter-spacing:-.02em;text-align:center;text-shadow:0 3px 8px rgba(0,0,0,.45)}
+.s21{font-weight:700;font-size:22px;color:#ff9d9d;line-height:1.2}
+.s23{font-weight:700;font-size:24px;color:#fff;line-height:44px;text-align:center}
+.s24{font-weight:900;font-size:30px;color:#fff;line-height:1.2;letter-spacing:-.02em;text-shadow:0 3px 8px rgba(0,0,0,.45)}
+.s25{font-weight:900;font-size:30px;color:#fff;line-height:1.2;letter-spacing:-.02em;text-align:right;text-shadow:0 3px 8px rgba(0,0,0,.45)}
+.s26{font-family:"Passion One";font-weight:700;font-size:44px;color:#fff;line-height:1.1;letter-spacing:.1em;text-shadow:0 2px 6px rgba(0,0,0,.45)}
+.s27{font-weight:900;font-size:38px;color:#1a1a1a;line-height:1.2}
+.s28{font-family:"Passion One";font-weight:700;font-size:44px;color:#3a3a3a;line-height:1.1;letter-spacing:.1em}
+.s29{font-weight:900;font-size:38px;color:#fff;line-height:1.2;text-shadow:0 2px 6px rgba(0,0,0,.45)}
+.s30{font-weight:700;font-size:30px;color:#8a8a8a;line-height:1.6;text-align:center}
+.s31{font-weight:900;font-size:48px;color:#fff;line-height:1.2}
+.s32{font-weight:900;font-size:24px;color:#fff;line-height:1.2;letter-spacing:-.05em}
+.s33{font-weight:700;font-size:34px;color:#d2d2d2;line-height:1.2}
+.s34{font-family:"Passion One";font-weight:700;font-size:28px;color:#c7c7c7;line-height:39px;letter-spacing:.3em}
+.s35{font-family:"Passion One";font-weight:700;font-size:56px;color:#fff;line-height:1.1}
+.s36{font-weight:900;font-size:24px;color:#b9b9b9;line-height:1.2;letter-spacing:-.1em}
+.s37{font-weight:700;font-size:28px;color:#fff;line-height:1.2}
+.s38{font-family:"Passion One";font-weight:700;font-size:72px;color:#fff;line-height:1.1;letter-spacing:.04em;text-shadow:0 2px 6px rgba(0,0,0,.45)}
+.s39{font-weight:700;font-size:22px;color:#f9f9f9;line-height:1.2}
+.s40{font-weight:700;font-size:28px;color:#f8f8f8;line-height:1.2}
+.s41{font-family:"Passion One";font-weight:700;font-size:40px;color:#cdcdcd;line-height:1.1}
+.s42{font-weight:500;font-size:26px;color:#cecece;line-height:1.5}
+.s43{font-weight:700;font-size:24px;color:#b3b3b3;line-height:1.2;text-align:center}
+.s44{font-family:"Passion One";font-weight:700;font-size:48px;color:#fff;line-height:1.1;letter-spacing:.1em;text-shadow:0 2px 6px rgba(0,0,0,.45)}
+.s45{font-weight:900;font-size:40px;color:#fff;line-height:1.2}
+.s46{font-weight:700;font-size:22px;color:#e6e6e6;line-height:1.2}
+.s47{font-weight:900;font-size:40px;color:#fff;line-height:1.2;text-shadow:0 2px 6px rgba(0,0,0,.45)}
+.s48{font-weight:700;font-size:22px;color:#fff;line-height:1.2;text-shadow:0 2px 6px rgba(0,0,0,.45)}
+.s49{font-weight:500;font-size:32px;color:#bdbdbd;line-height:1.2}
+.s50{font-weight:500;font-size:24px;color:#cfcfcf;line-height:1.2}
+.s51{font-family:"Passion One";font-weight:700;font-size:28px;color:#2b2b2b;line-height:39px;letter-spacing:.3em}
+.s52{font-family:"Passion One";font-weight:700;font-size:30px;color:#1e1e1e;line-height:1.1;letter-spacing:.1em}
+.s53{font-weight:500;font-size:32px;color:#1e1e1e;line-height:1.45}
+.s54{font-family:"Passion One";font-weight:700;font-size:30px;color:#5a5a5a;line-height:1.1;letter-spacing:.1em}
+.s55{font-weight:500;font-size:32px;color:#5a5a5a;line-height:1.45}
+.s56{font-weight:900;font-size:38px;color:#3a3a3a;line-height:1.2}
+.s57{font-weight:700;font-size:26px;color:#fff;line-height:1.2;text-align:center}
+.s58{font-family:"Passion One";font-weight:700;font-size:22px;color:#dadada;line-height:1.1;letter-spacing:.2em;text-align:center}
+.s59{font-family:"Passion One";font-weight:700;font-size:28px;color:#e6e6e6;line-height:39px;letter-spacing:.3em}
+.s60{font-weight:900;font-size:52px;color:#eaeaea;line-height:1.2}
+.s61{font-family:"Passion One";font-weight:700;font-size:26px;color:#d3d3d3;line-height:1.1;letter-spacing:.2em}
+.s62{font-weight:500;font-size:28px;color:#eaeaea;line-height:1.5}
+.s63{font-weight:700;font-size:30px;color:#fff;line-height:1.2;text-shadow:0 2px 6px rgba(0,0,0,.45)}
+.s64{font-weight:900;font-size:26px;color:#8a3a3a;line-height:1.2}
+.s65{font-weight:900;font-size:36px;color:#fff;line-height:1.2;text-shadow:0 2px 6px rgba(0,0,0,.45)}
+.s66{font-weight:900;font-size:36px;color:#3a3a3a;line-height:1.2}
+.s67{font-weight:700;font-size:22px;color:#fff;line-height:1.2;text-align:center}
+.s68{font-weight:500;font-size:24px;color:#d0d0d0;line-height:1.2}
+.s69{font-weight:700;font-size:32px;color:#bfbfbf;line-height:1.2}
+.s70{font-weight:500;font-size:22px;color:#b7b7b7;line-height:1.2}
+.s71{font-weight:500;font-size:24px;color:#e9e9e9;line-height:1.5}
+.s72{font-weight:500;font-size:24px;color:#5a5a5a;line-height:1.2}
+.s73{font-weight:500;font-size:30px;color:#fff;line-height:1.2}
+.s74{font-weight:900;font-size:22px;color:#8a3a3a;line-height:1.2}
+.s75{font-weight:500;font-size:24px;color:#3a3a3a;line-height:1.5}
+.s76{font-weight:500;font-size:24px;color:#acacac;line-height:1.5}
+.s77{font-family:"Passion One";font-weight:700;font-size:44px;color:#2b2b2b;line-height:1.1}
+.s78{font-weight:500;font-size:28px;color:#9a9a9a;line-height:1.2}
+
+.c { text-align: center; }
+.tabbtn { transition: color .25s, text-shadow .25s; }
+.tabbtn.off { color: #3a3a3a; text-shadow: none; }
+.tabbtn:hover { filter: brightness(1.3); }
+[data-r="tabs"].L > svg.sh { transition: translate .35s cubic-bezier(.2,.8,.2,1); }
+.cellbtn { position: absolute; width: 220px; height: 220px; pointer-events: auto; transition: backdrop-filter .18s, translate .15s; }
+.cellbtn:hover { backdrop-filter: brightness(1.25); }
+.cellbtn.sel { backdrop-filter: brightness(1.45); box-shadow: inset 0 0 0 4px rgba(255,255,255,.75); border-radius: 18px; }
+.cellbtn:active { translate: 0 3px; }
+.cellbtn .nm { position: absolute; left: 0; top: 146px; width: 220px; overflow: hidden; text-overflow: ellipsis; padding: 0 8px; }
+.cellbtn .rr { position: absolute; left: 0; top: 180px; width: 220px; }
+.cellbtn .ico { position: absolute; left: 60px; top: 24px; width: 100px; height: 100px; object-fit: contain; image-rendering: pixelated; }
+.cellbtn .tag { position: absolute; right: 12px; top: 10px; font-size: 18px; font-weight: 900; color: #1e1e1e; background: #e6e6e6; padding: 2px 10px; border-radius: 999px; }
+.cellbtn .glyph { position: absolute; left: 0; top: 36px; width: 220px; text-align: center; font-family: "Passion One"; font-size: 72px; color: rgba(255,255,255,.28); }
+.selmark { position: absolute; pointer-events: none; overflow: visible; transition: left .25s cubic-bezier(.2,.8,.2,1), top .25s cubic-bezier(.2,.8,.2,1); }
+.R-RARE { color: #9fc4ff !important; } .R-EPIC { color: #d9a8ff !important; }
+#dImgBox .glyph { font-family: "Passion One"; font-size: 140px; color: rgba(255,255,255,.3); }
+#dImgBox img { max-width: 240px; max-height: 240px; image-rendering: pixelated; }
+
+</style>
+</head>
+<body>
+<main id="stage" aria-label="창고">
+<div class="wallpaper"></div><div class="tint"></div>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><pattern id="agVid" patternUnits="userSpaceOnUse" width="128" height="128"><image href="assets/vid-tile.png" width="128" height="128"/></pattern>
+<filter id="agGrain" x="0" y="0" width="100%" height="100%" filterUnits="objectBoundingBox">
+<feTurbulence id="agGrainTurb" type="fractalNoise" baseFrequency=".85" numOctaves="2" seed="1" result="n"/>
+<feColorMatrix in="n" type="matrix" values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 .9 -.25" result="a"/>
+<feComposite in="a" in2="SourceGraphic" operator="in"/></filter></defs><defs>
+<filter id="inventory_filter0_d_72_184" x="2049.8" y="22.8" width="506.4" height="105.4" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="12"/>
+<feGaussianBlur stdDeviation="7.6"/>
+<feComposite in2="hardAlpha" operator="out"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
+<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_72_184"/>
+<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_72_184" result="shape"/>
+</filter>
+<filter id="inventory_filter1_i_72_184" x="2464" y="37" width="53" height="61" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="8"/>
+<feGaussianBlur stdDeviation="4.85"/>
+<feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
+<feBlend mode="normal" in2="shape" result="effect1_innerShadow_72_184"/>
+</filter>
+<filter id="inventory_filter2_i_72_184" x="2400" y="37" width="52" height="61" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="8"/>
+<feGaussianBlur stdDeviation="4.85"/>
+<feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
+<feBlend mode="normal" in2="shape" result="effect1_innerShadow_72_184"/>
+</filter>
+<filter id="inventory_filter3_i_72_184" x="2335" y="37" width="53" height="61" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="8"/>
+<feGaussianBlur stdDeviation="4.85"/>
+<feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
+<feBlend mode="normal" in2="shape" result="effect1_innerShadow_72_184"/>
+</filter>
+<filter id="inventory_filter4_d_72_184" x="1184.58" y="119" width="316.422" height="111.93" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="8"/>
+<feGaussianBlur stdDeviation="5"/>
+<feComposite in2="hardAlpha" operator="out"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
+<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_72_184"/>
+<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_72_184" result="shape"/>
+</filter>
+<filter id="inventory_filter5_d_72_184" x="1697.3" y="291.3" width="765.4" height="1085.4" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="14"/>
+<feGaussianBlur stdDeviation="11.35"/>
+<feComposite in2="hardAlpha" operator="out"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
+<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_72_184"/>
+<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_72_184" result="shape"/>
+</filter>
+<filter id="inventory_filter6_d_72_184" x="1790" y="1018" width="556.422" height="111.93" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="8"/>
+<feGaussianBlur stdDeviation="5"/>
+<feComposite in2="hardAlpha" operator="out"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
+<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_72_184"/>
+<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_72_184" result="shape"/>
+</filter>
+<filter id="inventory_filter7_d_72_184" x="1790" y="1128" width="556.422" height="111.93" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="8"/>
+<feGaussianBlur stdDeviation="5"/>
+<feComposite in2="hardAlpha" operator="out"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
+<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_72_184"/>
+<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_72_184" result="shape"/>
+</filter>
+<filter id="inventory_filter8_d_72_184" x="148.438" y="358" width="253.125" height="240" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="8"/>
+<feGaussianBlur stdDeviation="5"/>
+<feComposite in2="hardAlpha" operator="out"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
+<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_72_184"/>
+<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_72_184" result="shape"/>
+</filter>
+<linearGradient id="inventory_paint0_linear_72_184" x1="1192.79" y1="166.965" x2="1492.34" y2="178.624" gradientUnits="userSpaceOnUse">
+<stop stop-color="white" stop-opacity="0"/>
+<stop offset="0.504808" stop-color="#7B7B7B" stop-opacity="0.5"/>
+<stop offset="1" stop-color="#171717"/>
+</linearGradient>
+<linearGradient id="inventory_paint1_linear_72_184" x1="2080" y1="1340" x2="2080" y2="300" gradientUnits="userSpaceOnUse">
+<stop stop-color="#4B4B4B" stop-opacity="0"/>
+<stop offset="1" stop-color="#252525"/>
+</linearGradient>
+<linearGradient id="inventory_paint2_linear_72_184" x1="1798.21" y1="1065.97" x2="2337.39" y2="1086.95" gradientUnits="userSpaceOnUse">
+<stop stop-color="white" stop-opacity="0"/>
+<stop offset="1" stop-color="#4A4A4A"/>
+</linearGradient>
+<linearGradient id="inventory_paint3_linear_72_184" x1="1798.21" y1="1175.97" x2="2337.39" y2="1196.95" gradientUnits="userSpaceOnUse">
+<stop stop-color="white" stop-opacity="0"/>
+<stop offset="1" stop-color="#4A4A4A"/>
+</linearGradient>
+<linearGradient id="inventory_paint4_linear_72_184" x1="162.719" y1="470" x2="386.942" y2="478.727" gradientUnits="userSpaceOnUse">
+<stop stop-color="white" stop-opacity="0"/>
+<stop offset="1" stop-color="#4A4A4A"/>
+</linearGradient>
+<pattern id="inventory_pattern0_72_184" patternUnits="userSpaceOnUse" patternTransform="matrix(24 0 -0.933374 23.9818 1194.58 121)" preserveAspectRatio="none" viewBox="0 0 48 48" width="1" height="1">
+<g>
+<g clip-path="url(#inventory_clip0_72_184)">
+<rect width="24" height="24" fill="black"/>
+<rect x="24" y="24" width="24" height="24" fill="black"/>
+</g>
+</g>
+</pattern><pattern id="inventory_pattern1_72_184" patternUnits="userSpaceOnUse" patternTransform="matrix(48 0 0 48 167 360)" preserveAspectRatio="none" viewBox="0 0 48 48" width="1" height="1">
+<g>
+<g clip-path="url(#inventory_clip1_72_184)">
+<rect width="24" height="24" fill="black"/>
+<rect x="24" y="24" width="24" height="24" fill="black"/>
+</g>
+</g>
+</pattern><pattern id="inventory_pattern2_72_184" patternUnits="userSpaceOnUse" patternTransform="matrix(48 0 0 48 417 360)" preserveAspectRatio="none" viewBox="0 0 48 48" width="1" height="1">
+<g>
+<g clip-path="url(#inventory_clip2_72_184)">
+<rect width="24" height="24" fill="black"/>
+<rect x="24" y="24" width="24" height="24" fill="black"/>
+</g>
+</g>
+</pattern><pattern id="inventory_pattern3_72_184" patternUnits="userSpaceOnUse" patternTransform="matrix(48 0 0 48 667 360)" preserveAspectRatio="none" viewBox="0 0 48 48" width="1" height="1">
+<g>
+<g clip-path="url(#inventory_clip3_72_184)">
+<rect width="24" height="24" fill="black"/>
+<rect x="24" y="24" width="24" height="24" fill="black"/>
+</g>
+</g>
+</pattern><pattern id="inventory_pattern4_72_184" patternUnits="userSpaceOnUse" patternTransform="matrix(48 0 0 48 917 360)" preserveAspectRatio="none" viewBox="0 0 48 48" width="1" height="1">
+<g>
+<g clip-path="url(#inventory_clip4_72_184)">
+<rect width="24" height="24" fill="black"/>
+<rect x="24" y="24" width="24" height="24" fill="black"/>
+</g>
+</g>
+</pattern><pattern id="inventory_pattern5_72_184" patternUnits="userSpaceOnUse" patternTransform="matrix(48 0 0 48 1167 360)" preserveAspectRatio="none" viewBox="0 0 48 48" width="1" height="1">
+<g>
+<g clip-path="url(#inventory_clip5_72_184)">
+<rect width="24" height="24" fill="black"/>
+<rect x="24" y="24" width="24" height="24" fill="black"/>
+</g>
+</g>
+</pattern><pattern id="inventory_pattern6_72_184" patternUnits="userSpaceOnUse" patternTransform="matrix(48 0 0 48 1417 360)" preserveAspectRatio="none" viewBox="0 0 48 48" width="1" height="1">
+<g>
+<g clip-path="url(#inventory_clip6_72_184)">
+<rect width="24" height="24" fill="black"/>
+<rect x="24" y="24" width="24" height="24" fill="black"/>
+</g>
+</g>
+</pattern><pattern id="inventory_pattern7_72_184" patternUnits="userSpaceOnUse" patternTransform="matrix(48 0 0 48 167 610)" preserveAspectRatio="none" viewBox="0 0 48 48" width="1" height="1">
+<g>
+<g clip-path="url(#inventory_clip7_72_184)">
+<rect width="24" height="24" fill="black"/>
+<rect x="24" y="24" width="24" height="24" fill="black"/>
+</g>
+</g>
+</pattern><pattern id="inventory_pattern8_72_184" patternUnits="userSpaceOnUse" patternTransform="matrix(48 0 0 48 417 610)" preserveAspectRatio="none" viewBox="0 0 48 48" width="1" height="1">
+<g>
+<g clip-path="url(#inventory_clip8_72_184)">
+<rect width="24" height="24" fill="black"/>
+<rect x="24" y="24" width="24" height="24" fill="black"/>
+</g>
+</g>
+</pattern><pattern id="inventory_pattern9_72_184" patternUnits="userSpaceOnUse" patternTransform="matrix(48 0 0 48 667 610)" preserveAspectRatio="none" viewBox="0 0 48 48" width="1" height="1">
+<g>
+<g clip-path="url(#inventory_clip9_72_184)">
+<rect width="24" height="24" fill="black"/>
+<rect x="24" y="24" width="24" height="24" fill="black"/>
+</g>
+</g>
+</pattern><pattern id="inventory_pattern10_72_184" patternUnits="userSpaceOnUse" patternTransform="matrix(48 0 0 48 917 610)" preserveAspectRatio="none" viewBox="0 0 48 48" width="1" height="1">
+<g>
+<g clip-path="url(#inventory_clip10_72_184)">
+<rect width="24" height="24" fill="black"/>
+<rect x="24" y="24" width="24" height="24" fill="black"/>
+</g>
+</g>
+</pattern><pattern id="inventory_pattern11_72_184" patternUnits="userSpaceOnUse" patternTransform="matrix(48 0 0 48 1167 610)" preserveAspectRatio="none" viewBox="0 0 48 48" width="1" height="1">
+<g>
+<g clip-path="url(#inventory_clip11_72_184)">
+<rect width="24" height="24" fill="black"/>
+<rect x="24" y="24" width="24" height="24" fill="black"/>
+</g>
+</g>
+</pattern><pattern id="inventory_pattern12_72_184" patternUnits="userSpaceOnUse" patternTransform="matrix(48 0 0 48 1417 610)" preserveAspectRatio="none" viewBox="0 0 48 48" width="1" height="1">
+<g>
+<g clip-path="url(#inventory_clip12_72_184)">
+<rect width="24" height="24" fill="black"/>
+<rect x="24" y="24" width="24" height="24" fill="black"/>
+</g>
+</g>
+</pattern><pattern id="inventory_pattern13_72_184" patternUnits="userSpaceOnUse" patternTransform="matrix(48 0 0 48 167 860)" preserveAspectRatio="none" viewBox="0 0 48 48" width="1" height="1">
+<g>
+<g clip-path="url(#inventory_clip13_72_184)">
+<rect width="24" height="24" fill="black"/>
+<rect x="24" y="24" width="24" height="24" fill="black"/>
+</g>
+</g>
+</pattern><pattern id="inventory_pattern14_72_184" patternUnits="userSpaceOnUse" patternTransform="matrix(48 0 0 48 417 860)" preserveAspectRatio="none" viewBox="0 0 48 48" width="1" height="1">
+<g>
+<g clip-path="url(#inventory_clip14_72_184)">
+<rect width="24" height="24" fill="black"/>
+<rect x="24" y="24" width="24" height="24" fill="black"/>
+</g>
+</g>
+</pattern><pattern id="inventory_pattern15_72_184" patternUnits="userSpaceOnUse" patternTransform="matrix(48 0 0 48 667 860)" preserveAspectRatio="none" viewBox="0 0 48 48" width="1" height="1">
+<g>
+<g clip-path="url(#inventory_clip15_72_184)">
+<rect width="24" height="24" fill="black"/>
+<rect x="24" y="24" width="24" height="24" fill="black"/>
+</g>
+</g>
+</pattern><pattern id="inventory_pattern16_72_184" patternUnits="userSpaceOnUse" patternTransform="matrix(48 0 0 48 917 860)" preserveAspectRatio="none" viewBox="0 0 48 48" width="1" height="1">
+<g>
+<g clip-path="url(#inventory_clip16_72_184)">
+<rect width="24" height="24" fill="black"/>
+<rect x="24" y="24" width="24" height="24" fill="black"/>
+</g>
+</g>
+</pattern><pattern id="inventory_pattern17_72_184" patternUnits="userSpaceOnUse" patternTransform="matrix(48 0 0 48 1167 860)" preserveAspectRatio="none" viewBox="0 0 48 48" width="1" height="1">
+<g>
+<g clip-path="url(#inventory_clip17_72_184)">
+<rect width="24" height="24" fill="black"/>
+<rect x="24" y="24" width="24" height="24" fill="black"/>
+</g>
+</g>
+</pattern><pattern id="inventory_pattern18_72_184" patternUnits="userSpaceOnUse" patternTransform="matrix(48 0 0 48 1417 860)" preserveAspectRatio="none" viewBox="0 0 48 48" width="1" height="1">
+<g>
+<g clip-path="url(#inventory_clip18_72_184)">
+<rect width="24" height="24" fill="black"/>
+<rect x="24" y="24" width="24" height="24" fill="black"/>
+</g>
+</g>
+</pattern><pattern id="inventory_pattern19_72_184" patternUnits="userSpaceOnUse" patternTransform="matrix(48 0 0 48 1800 390)" preserveAspectRatio="none" viewBox="0 0 48 48" width="1" height="1">
+<g>
+<g clip-path="url(#inventory_clip19_72_184)">
+<rect width="24" height="24" fill="black"/>
+<rect x="24" y="24" width="24" height="24" fill="black"/>
+</g>
+</g>
+</pattern><pattern id="inventory_pattern20_72_184" patternUnits="userSpaceOnUse" patternTransform="matrix(48 0 -1.86675 47.9637 1800 1020)" preserveAspectRatio="none" viewBox="0 0 48 48" width="1" height="1">
+<g>
+<g clip-path="url(#inventory_clip20_72_184)">
+<rect width="24" height="24" fill="black"/>
+<rect x="24" y="24" width="24" height="24" fill="black"/>
+</g>
+</g>
+</pattern><pattern id="inventory_pattern21_72_184" patternUnits="userSpaceOnUse" patternTransform="matrix(48 0 -1.86675 47.9637 1800 1130)" preserveAspectRatio="none" viewBox="0 0 48 48" width="1" height="1">
+<g>
+<g clip-path="url(#inventory_clip21_72_184)">
+<rect width="24" height="24" fill="black"/>
+<rect x="24" y="24" width="24" height="24" fill="black"/>
+</g>
+</g>
+</pattern><pattern id="inventory_pattern22_72_184" patternUnits="userSpaceOnUse" patternTransform="matrix(48 0 -1.86675 47.9637 167 360)" preserveAspectRatio="none" viewBox="0 0 48 48" width="1" height="1">
+<g>
+<g clip-path="url(#inventory_clip22_72_184)">
+<rect width="24" height="24" fill="black"/>
+<rect x="24" y="24" width="24" height="24" fill="black"/>
+</g>
+</g>
+</pattern><clipPath id="inventory_clip0_72_184">
+<rect width="48" height="48" fill="white"/>
+</clipPath>
+<clipPath id="inventory_clip1_72_184">
+<rect width="48" height="48" fill="white"/>
+</clipPath>
+<clipPath id="inventory_clip2_72_184">
+<rect width="48" height="48" fill="white"/>
+</clipPath>
+<clipPath id="inventory_clip3_72_184">
+<rect width="48" height="48" fill="white"/>
+</clipPath>
+<clipPath id="inventory_clip4_72_184">
+<rect width="48" height="48" fill="white"/>
+</clipPath>
+<clipPath id="inventory_clip5_72_184">
+<rect width="48" height="48" fill="white"/>
+</clipPath>
+<clipPath id="inventory_clip6_72_184">
+<rect width="48" height="48" fill="white"/>
+</clipPath>
+<clipPath id="inventory_clip7_72_184">
+<rect width="48" height="48" fill="white"/>
+</clipPath>
+<clipPath id="inventory_clip8_72_184">
+<rect width="48" height="48" fill="white"/>
+</clipPath>
+<clipPath id="inventory_clip9_72_184">
+<rect width="48" height="48" fill="white"/>
+</clipPath>
+<clipPath id="inventory_clip10_72_184">
+<rect width="48" height="48" fill="white"/>
+</clipPath>
+<clipPath id="inventory_clip11_72_184">
+<rect width="48" height="48" fill="white"/>
+</clipPath>
+<clipPath id="inventory_clip12_72_184">
+<rect width="48" height="48" fill="white"/>
+</clipPath>
+<clipPath id="inventory_clip13_72_184">
+<rect width="48" height="48" fill="white"/>
+</clipPath>
+<clipPath id="inventory_clip14_72_184">
+<rect width="48" height="48" fill="white"/>
+</clipPath>
+<clipPath id="inventory_clip15_72_184">
+<rect width="48" height="48" fill="white"/>
+</clipPath>
+<clipPath id="inventory_clip16_72_184">
+<rect width="48" height="48" fill="white"/>
+</clipPath>
+<clipPath id="inventory_clip17_72_184">
+<rect width="48" height="48" fill="white"/>
+</clipPath>
+<clipPath id="inventory_clip18_72_184">
+<rect width="48" height="48" fill="white"/>
+</clipPath>
+<clipPath id="inventory_clip19_72_184">
+<rect width="48" height="48" fill="white"/>
+</clipPath>
+<clipPath id="inventory_clip20_72_184">
+<rect width="48" height="48" fill="white"/>
+</clipPath>
+<clipPath id="inventory_clip21_72_184">
+<rect width="48" height="48" fill="white"/>
+</clipPath>
+<clipPath id="inventory_clip22_72_184">
+<rect width="48" height="48" fill="white"/>
+</clipPath>
+</defs>
+</svg>
+<div class="L in in-tabs" data-r="tabs"><svg class="sh" viewBox="0 0 2560 1440" fill="none" aria-hidden="true"><g filter="url(#inventory_filter4_d_72_184)">
+<path d="M1194.58 121H1470.58L1491 212.93H1215L1194.58 121Z" fill="url(#inventory_pattern0_72_184)" fill-opacity="0.15" />
+<path d="M1194.58 121H1470.58L1491 212.93H1215L1194.58 121Z" fill="url(#inventory_paint0_linear_72_184)" />
+</g>
+</svg></div><div class="L in in-center" data-r="center"><svg class="sh" viewBox="0 0 2560 1440" fill="none" aria-hidden="true"><rect x="167" y="360" width="220" height="220" fill="url(#inventory_pattern1_72_184)" fill-opacity="0.15"/>
+<rect x="167" y="360" width="220" height="220" rx="20" fill="black" fill-opacity="0.1"/>
+<rect x="417" y="360" width="220" height="220" fill="url(#inventory_pattern2_72_184)" fill-opacity="0.15"/>
+<rect x="417" y="360" width="220" height="220" rx="20" fill="black" fill-opacity="0.1"/>
+<rect x="667" y="360" width="220" height="220" fill="url(#inventory_pattern3_72_184)" fill-opacity="0.15"/>
+<rect x="667" y="360" width="220" height="220" rx="20" fill="black" fill-opacity="0.1"/>
+<rect x="917" y="360" width="220" height="220" fill="url(#inventory_pattern4_72_184)" fill-opacity="0.15"/>
+<rect x="917" y="360" width="220" height="220" rx="20" fill="black" fill-opacity="0.1"/>
+<rect x="1167" y="360" width="220" height="220" fill="url(#inventory_pattern5_72_184)" fill-opacity="0.15"/>
+<rect x="1167" y="360" width="220" height="220" rx="20" fill="black" fill-opacity="0.1"/>
+<rect x="1417" y="360" width="220" height="220" fill="url(#inventory_pattern6_72_184)" fill-opacity="0.15"/>
+<rect x="1417" y="360" width="220" height="220" rx="20" fill="black" fill-opacity="0.1"/>
+<rect x="167" y="610" width="220" height="220" fill="url(#inventory_pattern7_72_184)" fill-opacity="0.15"/>
+<rect x="167" y="610" width="220" height="220" rx="20" fill="black" fill-opacity="0.1"/>
+<rect x="417" y="610" width="220" height="220" fill="url(#inventory_pattern8_72_184)" fill-opacity="0.15"/>
+<rect x="417" y="610" width="220" height="220" rx="20" fill="black" fill-opacity="0.1"/>
+<rect x="667" y="610" width="220" height="220" fill="url(#inventory_pattern9_72_184)" fill-opacity="0.15"/>
+<rect x="667" y="610" width="220" height="220" rx="20" fill="black" fill-opacity="0.1"/>
+<rect x="917" y="610" width="220" height="220" fill="url(#inventory_pattern10_72_184)" fill-opacity="0.15"/>
+<rect x="917" y="610" width="220" height="220" rx="20" fill="black" fill-opacity="0.1"/>
+<rect x="1167" y="610" width="220" height="220" fill="url(#inventory_pattern11_72_184)" fill-opacity="0.15"/>
+<rect x="1167" y="610" width="220" height="220" rx="20" fill="black" fill-opacity="0.1"/>
+<rect x="1417" y="610" width="220" height="220" fill="url(#inventory_pattern12_72_184)" fill-opacity="0.15"/>
+<rect x="1417" y="610" width="220" height="220" rx="20" fill="black" fill-opacity="0.1"/>
+<rect x="167" y="860" width="220" height="220" fill="url(#inventory_pattern13_72_184)" fill-opacity="0.15"/>
+<rect x="167" y="860" width="220" height="220" rx="20" fill="black" fill-opacity="0.1"/>
+<rect x="417" y="860" width="220" height="220" fill="url(#inventory_pattern14_72_184)" fill-opacity="0.15"/>
+<rect x="417" y="860" width="220" height="220" rx="20" fill="black" fill-opacity="0.1"/>
+<rect x="667" y="860" width="220" height="220" fill="url(#inventory_pattern15_72_184)" fill-opacity="0.15"/>
+<rect x="667" y="860" width="220" height="220" rx="20" fill="black" fill-opacity="0.1"/>
+<rect x="917" y="860" width="220" height="220" fill="url(#inventory_pattern16_72_184)" fill-opacity="0.15"/>
+<rect x="917" y="860" width="220" height="220" rx="20" fill="black" fill-opacity="0.1"/>
+<rect x="1167" y="860" width="220" height="220" fill="url(#inventory_pattern17_72_184)" fill-opacity="0.15"/>
+<rect x="1167" y="860" width="220" height="220" rx="20" fill="black" fill-opacity="0.1"/>
+<rect x="1417" y="860" width="220" height="220" fill="url(#inventory_pattern18_72_184)" fill-opacity="0.15"/>
+<rect x="1417" y="860" width="220" height="220" rx="20" fill="black" fill-opacity="0.1"/>
+</svg></div><div class="L in in-right" data-r="right"><svg class="sh" viewBox="0 0 2560 1440" fill="none" aria-hidden="true"><g filter="url(#inventory_filter5_d_72_184)">
+<path d="M1720 300H2380L2440 1340H1780L1720 300Z" fill="url(#inventory_paint1_linear_72_184)" />
+<path d="M1720 300H2380L2440 1340H1780L1720 300Z" fill="url(#agVid)" opacity="0.2"/>
+</g>
+<rect x="1800" y="390" width="300" height="300" fill="url(#inventory_pattern19_72_184)" fill-opacity="0.15"/>
+<g filter="url(#inventory_filter6_d_72_184)">
+<path d="M1800 1020H2316L2336.42 1111.93H1820.42L1800 1020Z" fill="url(#inventory_pattern20_72_184)" fill-opacity="0.15" />
+<path d="M1800 1020H2316L2336.42 1111.93H1820.42L1800 1020Z" fill="url(#inventory_paint2_linear_72_184)" />
+</g>
+<g filter="url(#inventory_filter7_d_72_184)">
+<path d="M1800 1130H2316L2336.42 1221.93H1820.42L1800 1130Z" fill="url(#inventory_pattern21_72_184)" fill-opacity="0.15" />
+<path d="M1800 1130H2316L2336.42 1221.93H1820.42L1800 1130Z" fill="url(#inventory_paint3_linear_72_184)" />
+</g>
+</svg></div>
+<div class="L in in-title" data-r="title" id="L-title"><p class="t s0 " style="left:167px;top:64px" >INVENTORY</p><p class="t s1 title-grad" style="left:167px;top:98px;width:978px" >창고</p></div><div class="L in in-tabs" data-r="tabs" id="L-tabs"><button class="t s29 on tabbtn" data-tab="loot" style="left:1290px;top:140px">전리품</button><button class="t s56 on tabbtn" data-tab="deco" style="left:1580px;top:140px">숙소 꾸미기</button></div><div class="L in in-center" data-r="center" id="L-center"><p class="t s0 " style="left:167px;top:300px" id="count">ITEMS · 0 / 48</p><div class="abs" id="grid" style="left:0;top:0"></div></div><div class="L in in-right" data-r="right" id="L-right"><p class="t s59 " style="left:1800px;top:330px" >DETAIL</p><div class="abs" id="dImgBox" style="left:1800px;top:390px;width:300px;height:300px;display:grid;place-items:center"></div><p class="t s60 " style="left:1800px;top:720px" id="dName">—</p><p class="t s61 " style="left:1800px;top:796px" id="dMeta"></p><p class="t s62 w wrap" style="left:1800px;top:850px;width:560px;height:126px" id="dDesc"></p><p class="t s63 c" style="left:1800px;top:1046px;width:540px" id="equipLbl">장착하기</p><p class="t s63 c" style="left:1800px;top:1156px;width:540px" id="placeLbl">숙소에 놓기</p><button class="hb " style="left:1800px;top:1020px;width:540px;height:92px;clip-path:polygon(0 0, 96% 0, 100% 100%, 4% 100%)" id="equipBtn"></button><button class="hb " style="left:1800px;top:1130px;width:540px;height:92px;clip-path:polygon(0 0, 96% 0, 100% 100%, 4% 100%)" id="placeBtn"></button><button class="abs t s64 on" id="dropBtn" style="left:1810px;top:1250px">버리기</button></div>
+<img class="abs topbar" src="assets/topbar.svg" alt="">
+<button class="top-btn refresh" data-action="refresh" aria-label="새로고침"><img src="assets/btn-refresh.svg" width="53" height="53" alt=""><span class="glyph"><svg viewBox="0 0 24 24" fill="none" stroke="#1e1e1e" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg></span><span class="tip">새로고침</span></button>
+<button class="top-btn browse" data-action="browse" aria-label="다른 캐릭터 프로필 구경가기"><img src="assets/btn-browse.svg" width="52" height="53" alt=""><span class="glyph"><svg viewBox="0 0 24 24" fill="none" stroke="#1e1e1e" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="4"/><path d="M2 21a7 7 0 0 1 14 0"/><path d="M17 4a4 4 0 0 1 0 8M22 21a7 7 0 0 0-4-6.3"/></svg></span><span class="tip">다른 캐릭터 프로필 구경가기</span></button>
+<button class="top-btn back" data-action="back" aria-label="뒤로 가기"><img src="assets/btn-back.svg" width="53" height="53" alt=""><span class="glyph"><svg viewBox="0 0 24 24" fill="none" stroke="#1e1e1e" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></span><span class="tip">뒤로 가기</span></button>
+<template id="tpl-sel" data-box="150,352,250,236"><svg><g opacity="0.25" filter="url(#inventory_filter8_d_72_184)">
+<path d="M167 360H391.562L383 580H158.438L167 360Z" fill="url(#inventory_pattern22_72_184)" fill-opacity="0.15" />
+<path d="M167 360H391.562L383 580H158.438L167 360Z" fill="url(#inventory_paint4_linear_72_184)" />
+</g>
+</svg></template>
+<div class="page-toast" id="pageToast" role="status"></div>
+</main>
+<script src="assets/ag.js"></script>
+
+<script src="assets/p-inventory.js"></script>
+</body>
+</html>

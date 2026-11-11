@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>애프터 글로우 · 전투 진입</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&family=Passion+One:wght@700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/ag.css">
+<style>
+.sact{font-weight:900;font-size:32px;color:#fff;line-height:1.2;text-align:center}
+.s0{font-family:"Passion One";font-weight:700;font-size:28px;color:#fff;line-height:39px;letter-spacing:.3em}
+.s1{font-weight:900;font-size:110px;line-height:115px;letter-spacing:-.01em}
+.s2{font-family:"Passion One";font-weight:700;font-size:64px;color:#fff;line-height:70px;letter-spacing:.1em}
+.s3{font-weight:900;font-size:38px;color:#fff;line-height:1.2;letter-spacing:-.02em;text-shadow:0 3px 8px rgba(0,0,0,.45)}
+.s4{font-weight:500;font-size:24px;color:#fff;line-height:1.2;letter-spacing:-.02em;text-shadow:0 2px 6px rgba(0,0,0,.45)}
+.s5{font-weight:900;font-size:38px;color:#969696;line-height:1.2;letter-spacing:-.02em}
+.s6{font-weight:500;font-size:24px;color:#898989;line-height:1.2;letter-spacing:-.02em}
+.s7{font-weight:500;font-size:34px;color:#bdbdbd;line-height:34px;letter-spacing:-.05em}
+.s8{font-weight:700;font-size:34px;color:#fff;line-height:1.2;text-shadow:0 3px 8px rgba(0,0,0,.45)}
+.s9{font-weight:500;font-size:22px;color:#e6e6e6;line-height:1.2}
+.s10{font-weight:500;font-size:22px;color:#595959;line-height:1.2}
+.s11{font-weight:700;font-size:32px;color:#1e1e1e;line-height:1.2}
+.s12{font-weight:500;font-size:22px;color:#5a5a5a;line-height:1.2}
+.s13{font-weight:500;font-size:32px;color:#1e1e1e;line-height:34px;letter-spacing:-.05em}
+.s14{font-weight:500;font-size:32px;color:#fff;line-height:34px;letter-spacing:-.05em;text-align:right}
+.s15{font-weight:500;font-size:22px;color:#5a5a5a;line-height:1.2;text-align:right}
+.s18{font-weight:500;font-size:22px;color:#c7c7c7;line-height:1.2}
+.s19{font-weight:700;font-size:30px;color:#fff;line-height:1.2;text-shadow:0 3px 8px rgba(0,0,0,.45)}
+.s20{font-weight:900;font-size:30px;color:#fff;line-height:1.2;letter-spacing:-.02em;text-align:center;text-shadow:0 3px 8px rgba(0,0,0,.45)}
+.s21{font-weight:700;font-size:22px;color:#ff9d9d;line-height:1.2}
+.s23{font-weight:700;font-size:24px;color:#fff;line-height:44px;text-align:center}
+.s24{font-weight:900;font-size:30px;color:#fff;line-height:1.2;letter-spacing:-.02em;text-shadow:0 3px 8px rgba(0,0,0,.45)}
+.s25{font-weight:900;font-size:30px;color:#fff;line-height:1.2;letter-spacing:-.02em;text-align:right;text-shadow:0 3px 8px rgba(0,0,0,.45)}
+.s26{font-family:"Passion One";font-weight:700;font-size:44px;color:#fff;line-height:1.1;letter-spacing:.1em;text-shadow:0 2px 6px rgba(0,0,0,.45)}
+.s27{font-weight:900;font-size:38px;color:#1a1a1a;line-height:1.2}
+.s28{font-family:"Passion One";font-weight:700;font-size:44px;color:#3a3a3a;line-height:1.1;letter-spacing:.1em}
+.s29{font-weight:900;font-size:38px;color:#fff;line-height:1.2;text-shadow:0 2px 6px rgba(0,0,0,.45)}
+.s30{font-weight:700;font-size:30px;color:#8a8a8a;line-height:1.6;text-align:center}
+.s31{font-weight:900;font-size:48px;color:#fff;line-height:1.2}
+.s32{font-weight:900;font-size:24px;color:#fff;line-height:1.2;letter-spacing:-.05em}
+.s33{font-weight:700;font-size:34px;color:#d2d2d2;line-height:1.2}
+.s34{font-family:"Passion One";font-weight:700;font-size:28px;color:#c7c7c7;line-height:39px;letter-spacing:.3em}
+.s35{font-family:"Passion One";font-weight:700;font-size:56px;color:#fff;line-height:1.1}
+.s36{font-weight:900;font-size:24px;color:#b9b9b9;line-height:1.2;letter-spacing:-.1em}
+.s37{font-weight:700;font-size:28px;color:#fff;line-height:1.2}
+.s38{font-family:"Passion One";font-weight:700;font-size:72px;color:#fff;line-height:1.1;letter-spacing:.04em;text-shadow:0 2px 6px rgba(0,0,0,.45)}
+.s39{font-weight:700;font-size:22px;color:#f9f9f9;line-height:1.2}
+.s40{font-weight:700;font-size:28px;color:#f8f8f8;line-height:1.2}
+.s41{font-family:"Passion One";font-weight:700;font-size:40px;color:#cdcdcd;line-height:1.1}
+.s42{font-weight:500;font-size:26px;color:#cecece;line-height:1.5}
+.s43{font-weight:700;font-size:24px;color:#b3b3b3;line-height:1.2;text-align:center}
+.s44{font-family:"Passion One";font-weight:700;font-size:48px;color:#fff;line-height:1.1;letter-spacing:.1em;text-shadow:0 2px 6px rgba(0,0,0,.45)}
+.s45{font-weight:900;font-size:40px;color:#fff;line-height:1.2}
+.s46{font-weight:700;font-size:22px;color:#e6e6e6;line-height:1.2}
+.s47{font-weight:900;font-size:40px;color:#fff;line-height:1.2;text-shadow:0 2px 6px rgba(0,0,0,.45)}
+.s48{font-weight:700;font-size:22px;color:#fff;line-height:1.2;text-shadow:0 2px 6px rgba(0,0,0,.45)}
+.s49{font-weight:500;font-size:32px;color:#bdbdbd;line-height:1.2}
+.s50{font-weight:500;font-size:24px;color:#cfcfcf;line-height:1.2}
+.s51{font-family:"Passion One";font-weight:700;font-size:28px;color:#2b2b2b;line-height:39px;letter-spacing:.3em}
+.s52{font-family:"Passion One";font-weight:700;font-size:30px;color:#1e1e1e;line-height:1.1;letter-spacing:.1em}
+.s53{font-weight:500;font-size:32px;color:#1e1e1e;line-height:1.45}
+.s54{font-family:"Passion One";font-weight:700;font-size:30px;color:#5a5a5a;line-height:1.1;letter-spacing:.1em}
+.s55{font-weight:500;font-size:32px;color:#5a5a5a;line-height:1.45}
+.s56{font-weight:900;font-size:38px;color:#3a3a3a;line-height:1.2}
+.s57{font-weight:700;font-size:26px;color:#fff;line-height:1.2;text-align:center}
+.s58{font-family:"Passion One";font-weight:700;font-size:22px;color:#dadada;line-height:1.1;letter-spacing:.2em;text-align:center}
+.s59{font-family:"Passion One";font-weight:700;font-size:28px;color:#e6e6e6;line-height:39px;letter-spacing:.3em}
+.s60{font-weight:900;font-size:52px;color:#eaeaea;line-height:1.2}
+.s61{font-family:"Passion One";font-weight:700;font-size:26px;color:#d3d3d3;line-height:1.1;letter-spacing:.2em}
+.s62{font-weight:500;font-size:28px;color:#eaeaea;line-height:1.5}
+.s63{font-weight:700;font-size:30px;color:#fff;line-height:1.2;text-shadow:0 2px 6px rgba(0,0,0,.45)}
+.s64{font-weight:900;font-size:26px;color:#8a3a3a;line-height:1.2}
+.s65{font-weight:900;font-size:36px;color:#fff;line-height:1.2;text-shadow:0 2px 6px rgba(0,0,0,.45)}
+.s66{font-weight:900;font-size:36px;color:#3a3a3a;line-height:1.2}
+.s67{font-weight:700;font-size:22px;color:#fff;line-height:1.2;text-align:center}
+.s68{font-weight:500;font-size:24px;color:#d0d0d0;line-height:1.2}
+.s69{font-weight:700;font-size:32px;color:#bfbfbf;line-height:1.2}
+.s70{font-weight:500;font-size:22px;color:#b7b7b7;line-height:1.2}
+.s71{font-weight:500;font-size:24px;color:#e9e9e9;line-height:1.5}
+.s72{font-weight:500;font-size:24px;color:#5a5a5a;line-height:1.2}
+.s73{font-weight:500;font-size:30px;color:#fff;line-height:1.2}
+.s74{font-weight:900;font-size:22px;color:#8a3a3a;line-height:1.2}
+.s75{font-weight:500;font-size:24px;color:#3a3a3a;line-height:1.5}
+.s76{font-weight:500;font-size:24px;color:#acacac;line-height:1.5}
+.s77{font-family:"Passion One";font-weight:700;font-size:44px;color:#2b2b2b;line-height:1.1}
+.s78{font-weight:500;font-size:28px;color:#9a9a9a;line-height:1.2}
+
+.hp { transition: width .8s cubic-bezier(.2,.8,.2,1); }
+.log { left: 200px; top: 600px; width: 2143px; height: 460px; padding: 6px 0 40px 63px; }
+.ent { display: flex; gap: 0; margin-bottom: 70px; }
+.ent .lb { flex: none; width: 180px; padding-top: 4px; }
+.ent .tx { width: 1880px; white-space: pre-wrap; word-break: keep-all; }
+.ent.urim .lb { color: #5a5a5a; }
+.ent.urim .tx { color: #5a5a5a; }
+.ent.typing .tx::after { content: "▍"; animation: blink 1s steps(1) infinite; }
+@keyframes blink { 50% { opacity: 0; } }
+.busy .hb { pointer-events: none; }
+.battle-items { width: 1000px; }
+.bi-list { display: flex; flex-direction: column; gap: 14px; max-height: 620px; overflow-y: auto; margin-top: 10px; }
+.bi { display: flex; align-items: center; gap: 26px; padding: 20px 28px; border-radius: 16px; background: rgba(255,255,255,.06); text-align: left; transition: background .15s, translate .15s; animation: aPop .3s both; }
+.bi:hover { background: rgba(255,255,255,.15); translate: 6px 0; }
+.bi-ic { flex: none; width: 76px; height: 76px; border-radius: 16px; display: grid; place-items: center; font-family: "Passion One"; font-size: 44px; color: rgba(255,255,255,.55); background: repeating-conic-gradient(rgba(255,255,255,.1) 0 25%, transparent 0 50%) 0 0 / 24px 24px, rgba(0,0,0,.25); }
+.bi-tx { flex: 1; } .bi-tx b { display: block; font-size: 32px; font-weight: 900; } .bi-tx small { display: block; font-size: 22px; color: #aaa; margin-top: 4px; font-family: "Passion One"; letter-spacing: .15em; }
+.bi-ef { flex: none; font-size: 26px; font-weight: 700; color: #b7e08a; }
+.bi-empty { text-align: center; padding: 40px 0; }
+.sk-list { display: flex; flex-direction: column; gap: 16px; margin-top: 10px; }
+.sk { display: flex; align-items: center; gap: 28px; padding: 24px 30px; border-radius: 16px; background: rgba(255,255,255,.06); text-align: left; transition: background .15s, translate .15s; animation: aPop .3s both; }
+.sk:hover:not([disabled]) { background: rgba(255,255,255,.15); translate: 6px 0; }
+.sk[disabled] { opacity: .45; cursor: default; }
+.sk-kind { flex: none; width: 150px; font-size: 24px; font-weight: 900; color: #cfcfcf; }
+.sk-special .sk-kind { color: #9fc4ff; } .sk-ultimate .sk-kind { color: #ff9d9d; }
+.sk-tx { flex: 1; } .sk-tx b { display: block; font-size: 32px; font-weight: 900; } .sk-tx small { display: block; font-size: 22px; color: #aaa; margin-top: 6px; line-height: 1.45; }
+.sk-st { flex: none; max-width: 320px; text-align: right; font-size: 22px; font-weight: 700; color: #bdbdbd; }
+.shake { animation: shake .4s; }
+@keyframes shake { 20% { translate: -10px 0; } 40% { translate: 8px 0; } 60% { translate: -6px 0; } 80% { translate: 4px 0; } }
+.flash { animation: flash .5s; }
+@keyframes flash { 30% { filter: brightness(2.2); } }
+
+</style>
+</head>
+<body>
+<main id="stage" aria-label="전투 진입">
+<div class="wallpaper"></div><div class="tint"></div>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><pattern id="agVid" patternUnits="userSpaceOnUse" width="128" height="128"><image href="assets/vid-tile.png" width="128" height="128"/></pattern>
+<filter id="agGrain" x="0" y="0" width="100%" height="100%" filterUnits="objectBoundingBox">
+<feTurbulence id="agGrainTurb" type="fractalNoise" baseFrequency=".85" numOctaves="2" seed="1" result="n"/>
+<feColorMatrix in="n" type="matrix" values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 .9 -.25" result="a"/>
+<feComposite in="a" in2="SourceGraphic" operator="in"/></filter></defs><defs>
+<filter id="battle_filter0_d_83_2" x="2049.8" y="22.8" width="506.4" height="105.4" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="12"/>
+<feGaussianBlur stdDeviation="7.6"/>
+<feComposite in2="hardAlpha" operator="out"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
+<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_83_2"/>
+<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_83_2" result="shape"/>
+</filter>
+<filter id="battle_filter1_i_83_2" x="2464" y="37" width="53" height="61" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="8"/>
+<feGaussianBlur stdDeviation="4.85"/>
+<feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
+<feBlend mode="normal" in2="shape" result="effect1_innerShadow_83_2"/>
+</filter>
+<filter id="battle_filter2_i_83_2" x="2400" y="37" width="52" height="61" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="8"/>
+<feGaussianBlur stdDeviation="4.85"/>
+<feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
+<feBlend mode="normal" in2="shape" result="effect1_innerShadow_83_2"/>
+</filter>
+<filter id="battle_filter3_i_83_2" x="2335" y="37" width="53" height="61" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="8"/>
+<feGaussianBlur stdDeviation="4.85"/>
+<feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
+<feBlend mode="normal" in2="shape" result="effect1_innerShadow_83_2"/>
+</filter>
+<filter id="battle_filter4_d_83_2" x="1044.58" y="119" width="470.692" height="111.93" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="8"/>
+<feGaussianBlur stdDeviation="5"/>
+<feComposite in2="hardAlpha" operator="out"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
+<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_83_2"/>
+<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_83_2" result="shape"/>
+</filter>
+<filter id="battle_filter5_d_83_2" x="97.3" y="281.3" width="745.4" height="195.4" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="14"/>
+<feGaussianBlur stdDeviation="11.35"/>
+<feComposite in2="hardAlpha" operator="out"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
+<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_83_2"/>
+<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_83_2" result="shape"/>
+</filter>
+<filter id="battle_filter6_d_83_2" x="1730" y="288" width="714.167" height="169.887" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="8"/>
+<feGaussianBlur stdDeviation="5"/>
+<feComposite in2="hardAlpha" operator="out"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
+<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_83_2"/>
+<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_83_2" result="shape"/>
+</filter>
+<filter id="battle_filter7_d_83_2" x="97.3" y="471.3" width="2365.4" height="645.4" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="14"/>
+<feGaussianBlur stdDeviation="11.35"/>
+<feComposite in2="hardAlpha" operator="out"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
+<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_83_2"/>
+<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_83_2" result="shape"/>
+</filter>
+<filter id="battle_filter8_d_83_2" x="109.479" y="1118" width="260.439" height="82" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="8"/>
+<feGaussianBlur stdDeviation="5"/>
+<feComposite in2="hardAlpha" operator="out"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
+<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_83_2"/>
+<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_83_2" result="shape"/>
+</filter>
+<filter id="battle_filter9_d_83_2" x="370.869" y="1118" width="260.439" height="82" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="8"/>
+<feGaussianBlur stdDeviation="5"/>
+<feComposite in2="hardAlpha" operator="out"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
+<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_83_2"/>
+<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_83_2" result="shape"/>
+</filter>
+<filter id="battle_filter10_d_83_2" x="632.258" y="1118" width="260.439" height="82" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="8"/>
+<feGaussianBlur stdDeviation="5"/>
+<feComposite in2="hardAlpha" operator="out"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
+<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_83_2"/>
+<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_83_2" result="shape"/>
+</filter>
+<filter id="battle_filter11_d_83_2" x="893.647" y="1118" width="260.439" height="82" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="8"/>
+<feGaussianBlur stdDeviation="5"/>
+<feComposite in2="hardAlpha" operator="out"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
+<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_83_2"/>
+<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_83_2" result="shape"/>
+</filter>
+<filter id="battle_filter12_d_83_2" x="1155.04" y="1118" width="260.439" height="82" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="8"/>
+<feGaussianBlur stdDeviation="5"/>
+<feComposite in2="hardAlpha" operator="out"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
+<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_83_2"/>
+<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_83_2" result="shape"/>
+</filter>
+<filter id="battle_filter13_d_83_2" x="1421.3" y="1111.3" width="931.4" height="149.4" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="14"/>
+<feGaussianBlur stdDeviation="11.35"/>
+<feComposite in2="hardAlpha" operator="out"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
+<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_83_2"/>
+<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_83_2" result="shape"/>
+</filter>
+<filter id="battle_filter14_i_83_2" x="2323" y="1133" width="77" height="81" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="8"/>
+<feGaussianBlur stdDeviation="2"/>
+<feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
+<feBlend mode="normal" in2="shape" result="effect1_innerShadow_83_2"/>
+</filter>
+<linearGradient id="battle_paint0_linear_83_2" x1="1052.79" y1="166.965" x2="1506.37" y2="184.619" gradientUnits="userSpaceOnUse">
+<stop stop-color="white" stop-opacity="0"/>
+<stop offset="0.504808" stop-color="#7B7B7B" stop-opacity="0.5"/>
+<stop offset="1" stop-color="#171717"/>
+</linearGradient>
+<linearGradient id="battle_paint1_linear_83_2" x1="120" y1="365" x2="882.013" y2="365" gradientUnits="userSpaceOnUse">
+<stop/>
+<stop offset="1" stop-color="#666666" stop-opacity="0.3"/>
+</linearGradient>
+<linearGradient id="battle_paint2_linear_83_2" x1="1737.08" y1="364.943" x2="2436.02" y2="392.146" gradientUnits="userSpaceOnUse">
+<stop stop-color="white" stop-opacity="0"/>
+<stop offset="1" stop-color="#4A4A4A"/>
+</linearGradient>
+<linearGradient id="battle_paint3_linear_83_2" x1="117.717" y1="1151" x2="360.895" y2="1164.82" gradientUnits="userSpaceOnUse">
+<stop stop-color="white" stop-opacity="0"/>
+<stop offset="0.5" stop-color="#CCCCCC" stop-opacity="0.278925"/>
+<stop offset="0.754808" stop-color="#9B9B9B" stop-opacity="0.552486"/>
+<stop offset="1" stop-color="#2F2F2F"/>
+</linearGradient>
+<linearGradient id="battle_paint4_linear_83_2" x1="379.107" y1="1151" x2="622.284" y2="1164.82" gradientUnits="userSpaceOnUse">
+<stop stop-color="white" stop-opacity="0"/>
+<stop offset="0.5" stop-color="#CCCCCC" stop-opacity="0.278925"/>
+<stop offset="0.754808" stop-color="#9B9B9B" stop-opacity="0.552486"/>
+<stop offset="1" stop-color="#2F2F2F"/>
+</linearGradient>
+<linearGradient id="battle_paint5_linear_83_2" x1="640.496" y1="1151" x2="883.674" y2="1164.82" gradientUnits="userSpaceOnUse">
+<stop stop-color="white" stop-opacity="0"/>
+<stop offset="0.5" stop-color="#CCCCCC" stop-opacity="0.278925"/>
+<stop offset="0.754808" stop-color="#9B9B9B" stop-opacity="0.552486"/>
+<stop offset="1" stop-color="#2F2F2F"/>
+</linearGradient>
+<linearGradient id="battle_paint6_linear_83_2" x1="901.885" y1="1151" x2="1145.06" y2="1164.82" gradientUnits="userSpaceOnUse">
+<stop stop-color="white" stop-opacity="0"/>
+<stop offset="0.5" stop-color="#CCCCCC" stop-opacity="0.278925"/>
+<stop offset="0.754808" stop-color="#9B9B9B" stop-opacity="0.552486"/>
+<stop offset="1" stop-color="#2F2F2F"/>
+</linearGradient>
+<linearGradient id="battle_paint7_linear_83_2" x1="1163.27" y1="1151" x2="1406.45" y2="1164.82" gradientUnits="userSpaceOnUse">
+<stop stop-color="white" stop-opacity="0"/>
+<stop offset="0.5" stop-color="#CCCCCC" stop-opacity="0.278925"/>
+<stop offset="0.754808" stop-color="#9B9B9B" stop-opacity="0.552486"/>
+<stop offset="1" stop-color="#2F2F2F"/>
+</linearGradient>
+<linearGradient id="battle_paint8_linear_83_2" x1="1444" y1="1172" x2="2408.49" y2="1172" gradientUnits="userSpaceOnUse">
+<stop/>
+<stop offset="1" stop-color="#666666" stop-opacity="0.3"/>
+</linearGradient>
+<pattern id="battle_pattern0_83_2" patternUnits="userSpaceOnUse" patternTransform="matrix(24 0 -0.933374 23.9818 1054.58 121)" preserveAspectRatio="none" viewBox="0 0 48 48" width="1" height="1">
+<g>
+<g clip-path="url(#battle_clip0_83_2)">
+<rect width="24" height="24" fill="black"/>
+<rect x="24" y="24" width="24" height="24" fill="black"/>
+</g>
+</g>
+</pattern><pattern id="battle_pattern1_83_2" patternUnits="userSpaceOnUse" patternTransform="matrix(34.08 0 -1.32539 34.0542 1740 290)" preserveAspectRatio="none" viewBox="0 0 48 48" width="1" height="1">
+<g>
+<g clip-path="url(#battle_clip1_83_2)">
+<rect width="24" height="24" fill="black"/>
+<rect x="24" y="24" width="24" height="24" fill="black"/>
+</g>
+</g>
+</pattern><pattern id="battle_pattern2_83_2" patternUnits="userSpaceOnUse" patternTransform="matrix(25.92 0 -1.47091 25.8782 119.479 1120)" preserveAspectRatio="none" viewBox="0 0 48 48" width="1" height="1">
+<g>
+<g clip-path="url(#battle_clip2_83_2)">
+<rect width="24" height="24" fill="black"/>
+<rect x="24" y="24" width="24" height="24" fill="black"/>
+</g>
+</g>
+</pattern><pattern id="battle_pattern3_83_2" patternUnits="userSpaceOnUse" patternTransform="matrix(25.92 0 -1.47091 25.8782 380.869 1120)" preserveAspectRatio="none" viewBox="0 0 48 48" width="1" height="1">
+<g>
+<g clip-path="url(#battle_clip3_83_2)">
+<rect width="24" height="24" fill="black"/>
+<rect x="24" y="24" width="24" height="24" fill="black"/>
+</g>
+</g>
+</pattern><pattern id="battle_pattern4_83_2" patternUnits="userSpaceOnUse" patternTransform="matrix(25.92 0 -1.47091 25.8782 642.258 1120)" preserveAspectRatio="none" viewBox="0 0 48 48" width="1" height="1">
+<g>
+<g clip-path="url(#battle_clip4_83_2)">
+<rect width="24" height="24" fill="black"/>
+<rect x="24" y="24" width="24" height="24" fill="black"/>
+</g>
+</g>
+</pattern><pattern id="battle_pattern5_83_2" patternUnits="userSpaceOnUse" patternTransform="matrix(25.92 0 -1.47091 25.8782 903.647 1120)" preserveAspectRatio="none" viewBox="0 0 48 48" width="1" height="1">
+<g>
+<g clip-path="url(#battle_clip5_83_2)">
+<rect width="24" height="24" fill="black"/>
+<rect x="24" y="24" width="24" height="24" fill="black"/>
+</g>
+</g>
+</pattern><pattern id="battle_pattern6_83_2" patternUnits="userSpaceOnUse" patternTransform="matrix(25.92 0 -1.47091 25.8782 1165.04 1120)" preserveAspectRatio="none" viewBox="0 0 48 48" width="1" height="1">
+<g>
+<g clip-path="url(#battle_clip6_83_2)">
+<rect width="24" height="24" fill="black"/>
+<rect x="24" y="24" width="24" height="24" fill="black"/>
+</g>
+</g>
+</pattern><clipPath id="battle_clip0_83_2">
+<rect width="48" height="48" fill="white"/>
+</clipPath>
+<clipPath id="battle_clip1_83_2">
+<rect width="48" height="48" fill="white"/>
+</clipPath>
+<clipPath id="battle_clip2_83_2">
+<rect width="48" height="48" fill="white"/>
+</clipPath>
+<clipPath id="battle_clip3_83_2">
+<rect width="48" height="48" fill="white"/>
+</clipPath>
+<clipPath id="battle_clip4_83_2">
+<rect width="48" height="48" fill="white"/>
+</clipPath>
+<clipPath id="battle_clip5_83_2">
+<rect width="48" height="48" fill="white"/>
+</clipPath>
+<clipPath id="battle_clip6_83_2">
+<rect width="48" height="48" fill="white"/>
+</clipPath>
+</defs>
+</svg>
+<div class="L in in-title" data-r="title"><svg class="sh" viewBox="0 0 2560 1440" fill="none" aria-hidden="true"><g filter="url(#battle_filter4_d_83_2)">
+<path d="M1054.58 121H1472.51L1505.27 212.93H1087.34L1054.58 121Z" fill="url(#battle_pattern0_83_2)" fill-opacity="0.15" />
+<path d="M1054.58 121H1472.51L1505.27 212.93H1087.34L1054.58 121Z" fill="url(#battle_paint0_linear_83_2)" />
+</g>
+</svg></div><div class="L in in-left" data-r="left"><svg class="sh" viewBox="0 0 2560 1440" fill="none" aria-hidden="true"><g filter="url(#battle_filter5_d_83_2)">
+<path d="M120 290H774L820 440H166L120 290Z" fill="url(#battle_paint1_linear_83_2)" fill-opacity="0.8" />
+</g>
+<rect x="300" y="370" width="440" height="20" rx="10" fill="black" fill-opacity="0.16"/>
+</svg></div><div class="L in in-right" data-r="right"><svg class="sh" viewBox="0 0 2560 1440" fill="none" aria-hidden="true"><g filter="url(#battle_filter6_d_83_2)">
+<path d="M1740 290H2394L2434.17 439.887H1780.17L1740 290Z" fill="url(#battle_pattern1_83_2)" fill-opacity="0.15" />
+<path d="M1740 290H2394L2434.17 439.887H1780.17L1740 290Z" fill="url(#battle_paint2_linear_83_2)" />
+</g>
+<rect x="1840" y="370" width="440" height="20" rx="10" fill="black" fill-opacity="0.16"/>
+<rect x="2300" y="290" width="140" height="150" fill="black"/>
+</svg></div><div class="L in in-center" data-r="center"><svg class="sh" viewBox="0 0 2560 1440" fill="none" aria-hidden="true"><g filter="url(#battle_filter7_d_83_2)">
+<path d="M120 480H2360L2440 1080H200L120 480Z" fill="#CECECE" fill-opacity="0.12" />
+<path d="M120 480H2360L2440 1080H200L120 480Z" fill="url(#agVid)" opacity="0.4"/>
+</g>
+</svg></div><div class="L in in-bottom" data-r="bottom"><svg class="sh" viewBox="0 0 2560 1440" fill="none" aria-hidden="true"><g>
+<g filter="url(#battle_filter8_d_83_2)">
+<path d="M119.479 1120H337.304L359.919 1182H142.094L119.479 1120Z" fill="url(#battle_pattern2_83_2)" fill-opacity="0.15" />
+<path d="M119.479 1120H337.304L359.919 1182H142.094L119.479 1120Z" fill="url(#battle_paint3_linear_83_2)" />
+</g>
+<g filter="url(#battle_filter9_d_83_2)">
+<path d="M380.869 1120H598.693L621.308 1182H403.484L380.869 1120Z" fill="url(#battle_pattern3_83_2)" fill-opacity="0.15" />
+<path d="M380.869 1120H598.693L621.308 1182H403.484L380.869 1120Z" fill="url(#battle_paint4_linear_83_2)" />
+</g>
+<g filter="url(#battle_filter10_d_83_2)">
+<path d="M642.258 1120H860.082L882.697 1182H664.873L642.258 1120Z" fill="url(#battle_pattern4_83_2)" fill-opacity="0.15" />
+<path d="M642.258 1120H860.082L882.697 1182H664.873L642.258 1120Z" fill="url(#battle_paint5_linear_83_2)" />
+</g>
+<g filter="url(#battle_filter11_d_83_2)">
+<path d="M903.647 1120H1121.47L1144.09 1182H926.262L903.647 1120Z" fill="url(#battle_pattern5_83_2)" fill-opacity="0.15" />
+<path d="M903.647 1120H1121.47L1144.09 1182H926.262L903.647 1120Z" fill="url(#battle_paint6_linear_83_2)" />
+</g>
+<g filter="url(#battle_filter12_d_83_2)">
+<path d="M1165.04 1120H1382.86L1405.48 1182H1187.65L1165.04 1120Z" fill="url(#battle_pattern6_83_2)" fill-opacity="0.15" />
+<path d="M1165.04 1120H1382.86L1405.48 1182H1187.65L1165.04 1120Z" fill="url(#battle_paint7_linear_83_2)" />
+</g>
+</g>
+<g filter="url(#battle_filter13_d_83_2)">
+<path d="M1444 1120H2283.77L2330 1224H1490.23L1444 1120Z" fill="url(#battle_paint8_linear_83_2)" fill-opacity="0.8" />
+</g>
+<g filter="url(#battle_filter14_i_83_2)">
+<circle cx="2361.5" cy="1171.5" r="38.5" fill="#4B4B4B"/>
+<path d="M2342.68 1172.36L2376.9 1155.24L2364.07 1189.47L2358.72 1175.56L2342.68 1172.36Z" fill="#D9D9D9"/>
+</g>
+</svg></div>
+<div class="L in in-title" data-r="title" id="L-title"><p class="t s0 " style="left:167px;top:64px" >STORY / COMBAT</p><p class="t s1 title-grad" style="left:167px;top:98px;width:978px" >전투 진입</p><p class="t s44 " style="left:1182px;top:140px" id="turn">TURN 01</p></div><div class="L in in-left" data-r="left" id="L-left"><div class="abs" style="left:160px;top:306px;width:118px;height:118px;border-radius:33px;overflow:hidden"><img id="meAva" alt="" hidden style="width:100%;height:100%;object-fit:cover"></div><p class="t s45 " style="left:300px;top:312px" id="meName">캐릭터 이름</p><div class="abs hp" id="meHp" style="left:300px;top:370px;width:0;height:20px;border-radius:10px;background:#7ea34a"></div><p class="t s46 " style="left:300px;top:398px" id="meTxt"></p></div><div class="L in in-right" data-r="right" id="L-right"><p class="t s47 " style="left:1840px;top:312px" id="enName">—</p><div class="abs hp" id="enHp" style="left:1840px;top:370px;width:0;height:20px;border-radius:10px;background:#b24545"></div><p class="t s48 " style="left:1840px;top:398px" id="enTxt"></p><div class="abs" id="enPic" style="left:2300px;top:290px;width:140px;height:150px;display:grid;place-items:center;font-family:'Passion One';font-size:72px;color:#3a3a3a">?</div></div><div class="L in in-center" data-r="center" id="L-center"><p class="t s51 " style="left:243px;top:546px" >BATTLE LOG</p><div class="scroll log fade-y" id="log" aria-live="polite"></div></div><div class="L in in-bottom" data-r="bottom" id="L-bottom"><p class="t sact " style="left:116.0px;top:1132px;width:247px" >공격</p><p class="t sact " style="left:377.5px;top:1132px;width:247px" >방어</p><p class="t sact " style="left:639.0px;top:1132px;width:247px" >잔향</p><p class="t sact " style="left:900.5px;top:1132px;width:247px" >아이템</p><p class="t sact " style="left:1162.0px;top:1132px;width:247px" >도주</p><button class="hb " style="left:116.0px;top:1120px;width:247px;height:62px;clip-path:polygon(0 0, 96% 0, 100% 100%, 4% 100%)" data-act="attack" aria-label="공격"></button><button class="hb " style="left:377.5px;top:1120px;width:247px;height:62px;clip-path:polygon(0 0, 96% 0, 100% 100%, 4% 100%)" data-act="guard" aria-label="방어"></button><button class="hb " style="left:639.0px;top:1120px;width:247px;height:62px;clip-path:polygon(0 0, 96% 0, 100% 100%, 4% 100%)" data-act="echo" aria-label="잔향"></button><button class="hb " style="left:900.5px;top:1120px;width:247px;height:62px;clip-path:polygon(0 0, 96% 0, 100% 100%, 4% 100%)" data-act="item" aria-label="아이템"></button><button class="hb " style="left:1162.0px;top:1120px;width:247px;height:62px;clip-path:polygon(0 0, 96% 0, 100% 100%, 4% 100%)" data-act="run" aria-label="도주"></button><input class="field" id="actInput" style="left:1556px;top:1144px;width:740px;height:50px;font-size:32px" placeholder="행동을 직접 입력" maxlength="200" autocomplete="off"><button class="hb circ" style="left:2323px;top:1133px;width:77px;height:77px" id="sendBtn" aria-label="행동 보내기" title="행동 보내기"></button><p class="t s50 " style="left:120px;top:1260px" id="foot">AI 판정 · 캐릭터 스탯(G·C·T, 전투 스탯, 장비)을 바탕으로 결과를 계산해요</p></div>
+<img class="abs topbar" src="assets/topbar.svg" alt="">
+<button class="top-btn refresh" data-action="refresh" aria-label="새로고침"><img src="assets/btn-refresh.svg" width="53" height="53" alt=""><span class="glyph"><svg viewBox="0 0 24 24" fill="none" stroke="#1e1e1e" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg></span><span class="tip">새로고침</span></button>
+<button class="top-btn browse" data-action="browse" aria-label="다른 캐릭터 프로필 구경가기"><img src="assets/btn-browse.svg" width="52" height="53" alt=""><span class="glyph"><svg viewBox="0 0 24 24" fill="none" stroke="#1e1e1e" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="4"/><path d="M2 21a7 7 0 0 1 14 0"/><path d="M17 4a4 4 0 0 1 0 8M22 21a7 7 0 0 0-4-6.3"/></svg></span><span class="tip">다른 캐릭터 프로필 구경가기</span></button>
+<button class="top-btn back" data-action="back" aria-label="뒤로 가기"><img src="assets/btn-back.svg" width="53" height="53" alt=""><span class="glyph"><svg viewBox="0 0 24 24" fill="none" stroke="#1e1e1e" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></span><span class="tip">뒤로 가기</span></button>
+
+<div class="page-toast" id="pageToast" role="status"></div>
+</main>
+<script src="assets/ag.js"></script>
+
+<script src="assets/p-battle.js"></script>
+</body>
+</html>

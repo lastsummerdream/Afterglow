@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>애프터 글로우 · 설정</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&family=Passion+One:wght@700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/ag.css">
+<style>
+.sact{font-weight:900;font-size:32px;color:#fff;line-height:1.2;text-align:center}
+.s0{font-family:"Passion One";font-weight:700;font-size:28px;color:#fff;line-height:39px;letter-spacing:.3em}
+.s1{font-weight:900;font-size:110px;line-height:115px;letter-spacing:-.01em}
+.s2{font-family:"Passion One";font-weight:700;font-size:64px;color:#fff;line-height:70px;letter-spacing:.1em}
+.s3{font-weight:900;font-size:38px;color:#fff;line-height:1.2;letter-spacing:-.02em;text-shadow:0 3px 8px rgba(0,0,0,.45)}
+.s4{font-weight:500;font-size:24px;color:#fff;line-height:1.2;letter-spacing:-.02em;text-shadow:0 2px 6px rgba(0,0,0,.45)}
+.s5{font-weight:900;font-size:38px;color:#969696;line-height:1.2;letter-spacing:-.02em}
+.s6{font-weight:500;font-size:24px;color:#898989;line-height:1.2;letter-spacing:-.02em}
+.s7{font-weight:500;font-size:34px;color:#bdbdbd;line-height:34px;letter-spacing:-.05em}
+.s8{font-weight:700;font-size:34px;color:#fff;line-height:1.2;text-shadow:0 3px 8px rgba(0,0,0,.45)}
+.s9{font-weight:500;font-size:22px;color:#e6e6e6;line-height:1.2}
+.s10{font-weight:500;font-size:22px;color:#595959;line-height:1.2}
+.s11{font-weight:700;font-size:32px;color:#1e1e1e;line-height:1.2}
+.s12{font-weight:500;font-size:22px;color:#5a5a5a;line-height:1.2}
+.s13{font-weight:500;font-size:32px;color:#1e1e1e;line-height:34px;letter-spacing:-.05em}
+.s14{font-weight:500;font-size:32px;color:#fff;line-height:34px;letter-spacing:-.05em;text-align:right}
+.s15{font-weight:500;font-size:22px;color:#5a5a5a;line-height:1.2;text-align:right}
+.s18{font-weight:500;font-size:22px;color:#c7c7c7;line-height:1.2}
+.s19{font-weight:700;font-size:30px;color:#fff;line-height:1.2;text-shadow:0 3px 8px rgba(0,0,0,.45)}
+.s20{font-weight:900;font-size:30px;color:#fff;line-height:1.2;letter-spacing:-.02em;text-align:center;text-shadow:0 3px 8px rgba(0,0,0,.45)}
+.s21{font-weight:700;font-size:22px;color:#ff9d9d;line-height:1.2}
+.s23{font-weight:700;font-size:24px;color:#fff;line-height:44px;text-align:center}
+.s24{font-weight:900;font-size:30px;color:#fff;line-height:1.2;letter-spacing:-.02em;text-shadow:0 3px 8px rgba(0,0,0,.45)}
+.s25{font-weight:900;font-size:30px;color:#fff;line-height:1.2;letter-spacing:-.02em;text-align:right;text-shadow:0 3px 8px rgba(0,0,0,.45)}
+.s26{font-family:"Passion One";font-weight:700;font-size:44px;color:#fff;line-height:1.1;letter-spacing:.1em;text-shadow:0 2px 6px rgba(0,0,0,.45)}
+.s27{font-weight:900;font-size:38px;color:#1a1a1a;line-height:1.2}
+.s28{font-family:"Passion One";font-weight:700;font-size:44px;color:#3a3a3a;line-height:1.1;letter-spacing:.1em}
+.s29{font-weight:900;font-size:38px;color:#fff;line-height:1.2;text-shadow:0 2px 6px rgba(0,0,0,.45)}
+.s30{font-weight:700;font-size:30px;color:#8a8a8a;line-height:1.6;text-align:center}
+.s31{font-weight:900;font-size:48px;color:#fff;line-height:1.2}
+.s32{font-weight:900;font-size:24px;color:#fff;line-height:1.2;letter-spacing:-.05em}
+.s33{font-weight:700;font-size:34px;color:#d2d2d2;line-height:1.2}
+.s34{font-family:"Passion One";font-weight:700;font-size:28px;color:#c7c7c7;line-height:39px;letter-spacing:.3em}
+.s35{font-family:"Passion One";font-weight:700;font-size:56px;color:#fff;line-height:1.1}
+.s36{font-weight:900;font-size:24px;color:#b9b9b9;line-height:1.2;letter-spacing:-.1em}
+.s37{font-weight:700;font-size:28px;color:#fff;line-height:1.2}
+.s38{font-family:"Passion One";font-weight:700;font-size:72px;color:#fff;line-height:1.1;letter-spacing:.04em;text-shadow:0 2px 6px rgba(0,0,0,.45)}
+.s39{font-weight:700;font-size:22px;color:#f9f9f9;line-height:1.2}
+.s40{font-weight:700;font-size:28px;color:#f8f8f8;line-height:1.2}
+.s41{font-family:"Passion One";font-weight:700;font-size:40px;color:#cdcdcd;line-height:1.1}
+.s42{font-weight:500;font-size:26px;color:#cecece;line-height:1.5}
+.s43{font-weight:700;font-size:24px;color:#b3b3b3;line-height:1.2;text-align:center}
+.s44{font-family:"Passion One";font-weight:700;font-size:48px;color:#fff;line-height:1.1;letter-spacing:.1em;text-shadow:0 2px 6px rgba(0,0,0,.45)}
+.s45{font-weight:900;font-size:40px;color:#fff;line-height:1.2}
+.s46{font-weight:700;font-size:22px;color:#e6e6e6;line-height:1.2}
+.s47{font-weight:900;font-size:40px;color:#fff;line-height:1.2;text-shadow:0 2px 6px rgba(0,0,0,.45)}
+.s48{font-weight:700;font-size:22px;color:#fff;line-height:1.2;text-shadow:0 2px 6px rgba(0,0,0,.45)}
+.s49{font-weight:500;font-size:32px;color:#bdbdbd;line-height:1.2}
+.s50{font-weight:500;font-size:24px;color:#cfcfcf;line-height:1.2}
+.s51{font-family:"Passion One";font-weight:700;font-size:28px;color:#2b2b2b;line-height:39px;letter-spacing:.3em}
+.s52{font-family:"Passion One";font-weight:700;font-size:30px;color:#1e1e1e;line-height:1.1;letter-spacing:.1em}
+.s53{font-weight:500;font-size:32px;color:#1e1e1e;line-height:1.45}
+.s54{font-family:"Passion One";font-weight:700;font-size:30px;color:#5a5a5a;line-height:1.1;letter-spacing:.1em}
+.s55{font-weight:500;font-size:32px;color:#5a5a5a;line-height:1.45}
+.s56{font-weight:900;font-size:38px;color:#3a3a3a;line-height:1.2}
+.s57{font-weight:700;font-size:26px;color:#fff;line-height:1.2;text-align:center}
+.s58{font-family:"Passion One";font-weight:700;font-size:22px;color:#dadada;line-height:1.1;letter-spacing:.2em;text-align:center}
+.s59{font-family:"Passion One";font-weight:700;font-size:28px;color:#e6e6e6;line-height:39px;letter-spacing:.3em}
+.s60{font-weight:900;font-size:52px;color:#eaeaea;line-height:1.2}
+.s61{font-family:"Passion One";font-weight:700;font-size:26px;color:#d3d3d3;line-height:1.1;letter-spacing:.2em}
+.s62{font-weight:500;font-size:28px;color:#eaeaea;line-height:1.5}
+.s63{font-weight:700;font-size:30px;color:#fff;line-height:1.2;text-shadow:0 2px 6px rgba(0,0,0,.45)}
+.s64{font-weight:900;font-size:26px;color:#8a3a3a;line-height:1.2}
+.s65{font-weight:900;font-size:36px;color:#fff;line-height:1.2;text-shadow:0 2px 6px rgba(0,0,0,.45)}
+.s66{font-weight:900;font-size:36px;color:#3a3a3a;line-height:1.2}
+.s67{font-weight:700;font-size:22px;color:#fff;line-height:1.2;text-align:center}
+.s68{font-weight:500;font-size:24px;color:#d0d0d0;line-height:1.2}
+.s69{font-weight:700;font-size:32px;color:#bfbfbf;line-height:1.2}
+.s70{font-weight:500;font-size:22px;color:#b7b7b7;line-height:1.2}
+.s71{font-weight:500;font-size:24px;color:#e9e9e9;line-height:1.5}
+.s72{font-weight:500;font-size:24px;color:#5a5a5a;line-height:1.2}
+.s73{font-weight:500;font-size:30px;color:#fff;line-height:1.2}
+.s74{font-weight:900;font-size:22px;color:#8a3a3a;line-height:1.2}
+.s75{font-weight:500;font-size:24px;color:#3a3a3a;line-height:1.5}
+.s76{font-weight:500;font-size:24px;color:#acacac;line-height:1.5}
+.s77{font-family:"Passion One";font-weight:700;font-size:44px;color:#2b2b2b;line-height:1.1}
+.s78{font-weight:500;font-size:28px;color:#9a9a9a;line-height:1.2}
+
+.c { text-align: center; }
+.sel { appearance: none; -webkit-appearance: none; cursor: pointer; padding-left: 10px; }
+.sel option { color: #1e1e1e; }
+#avaBtn { transition: filter .15s; } #avaBtn:hover { filter: brightness(1.12); }
+#avaTxt:hover { text-decoration: underline; }
+#delBtn:hover { filter: brightness(1.4); }
+.line::placeholder { color: #9a9a9a; }
+
+</style>
+</head>
+<body>
+<main id="stage" aria-label="설정">
+<div class="wallpaper"></div><div class="tint"></div>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><pattern id="agVid" patternUnits="userSpaceOnUse" width="128" height="128"><image href="assets/vid-tile.png" width="128" height="128"/></pattern>
+<filter id="agGrain" x="0" y="0" width="100%" height="100%" filterUnits="objectBoundingBox">
+<feTurbulence id="agGrainTurb" type="fractalNoise" baseFrequency=".85" numOctaves="2" seed="1" result="n"/>
+<feColorMatrix in="n" type="matrix" values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 .9 -.25" result="a"/>
+<feComposite in="a" in2="SourceGraphic" operator="in"/></filter></defs><defs>
+<filter id="settings_filter0_d_72_184" x="2049.8" y="22.8" width="506.4" height="105.4" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="12"/>
+<feGaussianBlur stdDeviation="7.6"/>
+<feComposite in2="hardAlpha" operator="out"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
+<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_72_184"/>
+<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_72_184" result="shape"/>
+</filter>
+<filter id="settings_filter1_i_72_184" x="2464" y="37" width="53" height="61" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="8"/>
+<feGaussianBlur stdDeviation="4.85"/>
+<feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
+<feBlend mode="normal" in2="shape" result="effect1_innerShadow_72_184"/>
+</filter>
+<filter id="settings_filter2_i_72_184" x="2400" y="37" width="52" height="61" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="8"/>
+<feGaussianBlur stdDeviation="4.85"/>
+<feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
+<feBlend mode="normal" in2="shape" result="effect1_innerShadow_72_184"/>
+</filter>
+<filter id="settings_filter3_i_72_184" x="2335" y="37" width="53" height="61" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="8"/>
+<feGaussianBlur stdDeviation="4.85"/>
+<feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
+<feBlend mode="normal" in2="shape" result="effect1_innerShadow_72_184"/>
+</filter>
+<filter id="settings_filter4_d_72_184" x="97.3" y="281.3" width="805.4" height="1095.4" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="14"/>
+<feGaussianBlur stdDeviation="11.35"/>
+<feComposite in2="hardAlpha" operator="out"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
+<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_72_184"/>
+<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_72_184" result="shape"/>
+</filter>
+<filter id="settings_filter5_d_72_184" x="167.3" y="411.3" width="605.4" height="131.4" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="14"/>
+<feGaussianBlur stdDeviation="11.35"/>
+<feComposite in2="hardAlpha" operator="out"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
+<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_72_184"/>
+<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_72_184" result="shape"/>
+</filter>
+<filter id="settings_filter6_d_72_184" x="167.3" y="561.3" width="605.4" height="131.4" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="14"/>
+<feGaussianBlur stdDeviation="11.35"/>
+<feComposite in2="hardAlpha" operator="out"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
+<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_72_184"/>
+<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_72_184" result="shape"/>
+</filter>
+<filter id="settings_filter7_d_72_184" x="167.3" y="711.3" width="605.4" height="131.4" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="14"/>
+<feGaussianBlur stdDeviation="11.35"/>
+<feComposite in2="hardAlpha" operator="out"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
+<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_72_184"/>
+<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_72_184" result="shape"/>
+</filter>
+<filter id="settings_filter8_d_72_184" x="190" y="838" width="576.422" height="111.93" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="8"/>
+<feGaussianBlur stdDeviation="5"/>
+<feComposite in2="hardAlpha" operator="out"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
+<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_72_184"/>
+<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_72_184" result="shape"/>
+</filter>
+<filter id="settings_filter9_d_72_184" x="190" y="948" width="576.422" height="111.93" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="8"/>
+<feGaussianBlur stdDeviation="5"/>
+<feComposite in2="hardAlpha" operator="out"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
+<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_72_184"/>
+<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_72_184" result="shape"/>
+</filter>
+<filter id="settings_filter10_d_72_184" x="842.3" y="281.3" width="805.4" height="1095.4" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="14"/>
+<feGaussianBlur stdDeviation="11.35"/>
+<feComposite in2="hardAlpha" operator="out"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
+<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_72_184"/>
+<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_72_184" result="shape"/>
+</filter>
+<filter id="settings_filter11_i_72_184" x="945" y="380" width="180" height="180" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="2"/>
+<feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1"/>
+<feColorMatrix type="matrix" values="0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.22 0"/>
+<feBlend mode="normal" in2="shape" result="effect1_innerShadow_72_184"/>
+</filter>
+<filter id="settings_filter12_d_72_184" x="912.3" y="631.3" width="605.4" height="131.4" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="14"/>
+<feGaussianBlur stdDeviation="11.35"/>
+<feComposite in2="hardAlpha" operator="out"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
+<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_72_184"/>
+<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_72_184" result="shape"/>
+</filter>
+<filter id="settings_filter13_d_72_184" x="912.3" y="781.3" width="315.4" height="131.4" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="14"/>
+<feGaussianBlur stdDeviation="11.35"/>
+<feComposite in2="hardAlpha" operator="out"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
+<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_72_184"/>
+<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_72_184" result="shape"/>
+</filter>
+<filter id="settings_filter14_d_72_184" x="1202.3" y="781.3" width="315.4" height="131.4" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="14"/>
+<feGaussianBlur stdDeviation="11.35"/>
+<feComposite in2="hardAlpha" operator="out"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
+<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_72_184"/>
+<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_72_184" result="shape"/>
+</filter>
+<filter id="settings_filter15_d_72_184" x="935" y="918" width="576.422" height="111.93" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="8"/>
+<feGaussianBlur stdDeviation="5"/>
+<feComposite in2="hardAlpha" operator="out"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
+<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_72_184"/>
+<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_72_184" result="shape"/>
+</filter>
+<filter id="settings_filter16_d_72_184" x="935" y="1028" width="576.422" height="111.93" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="8"/>
+<feGaussianBlur stdDeviation="5"/>
+<feComposite in2="hardAlpha" operator="out"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
+<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_72_184"/>
+<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_72_184" result="shape"/>
+</filter>
+<filter id="settings_filter17_d_72_184" x="1817.3" y="431.3" width="685.4" height="145.4" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="14"/>
+<feGaussianBlur stdDeviation="11.35"/>
+<feComposite in2="hardAlpha" operator="out"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
+<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_72_184"/>
+<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_72_184" result="shape"/>
+</filter>
+<filter id="settings_filter18_d_72_184" x="1817.3" y="571.3" width="685.4" height="145.4" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="14"/>
+<feGaussianBlur stdDeviation="11.35"/>
+<feComposite in2="hardAlpha" operator="out"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
+<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_72_184"/>
+<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_72_184" result="shape"/>
+</filter>
+<filter id="settings_filter19_d_72_184" x="1817.3" y="711.3" width="685.4" height="145.4" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="14"/>
+<feGaussianBlur stdDeviation="11.35"/>
+<feComposite in2="hardAlpha" operator="out"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
+<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_72_184"/>
+<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_72_184" result="shape"/>
+</filter>
+<filter id="settings_filter20_d_72_184" x="1817.3" y="851.3" width="685.4" height="145.4" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="14"/>
+<feGaussianBlur stdDeviation="11.35"/>
+<feComposite in2="hardAlpha" operator="out"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
+<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_72_184"/>
+<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_72_184" result="shape"/>
+</filter>
+<filter id="settings_filter21_d_72_184" x="1817.3" y="991.3" width="685.4" height="145.4" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="14"/>
+<feGaussianBlur stdDeviation="11.35"/>
+<feComposite in2="hardAlpha" operator="out"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
+<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_72_184"/>
+<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_72_184" result="shape"/>
+</filter>
+<filter id="settings_filter22_d_72_184" x="1830" y="1168" width="656.422" height="111.93" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="8"/>
+<feGaussianBlur stdDeviation="5"/>
+<feComposite in2="hardAlpha" operator="out"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
+<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_72_184"/>
+<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_72_184" result="shape"/>
+</filter>
+<linearGradient id="settings_paint0_linear_72_184" x1="500" y1="1340" x2="500" y2="290" gradientUnits="userSpaceOnUse">
+<stop stop-color="#4B4B4B" stop-opacity="0"/>
+<stop offset="1" stop-color="#252525"/>
+</linearGradient>
+<linearGradient id="settings_paint1_linear_72_184" x1="190" y1="463" x2="799.611" y2="463" gradientUnits="userSpaceOnUse">
+<stop/>
+<stop offset="1" stop-color="#666666" stop-opacity="0.3"/>
+</linearGradient>
+<linearGradient id="settings_paint2_linear_72_184" x1="190" y1="613" x2="799.611" y2="613" gradientUnits="userSpaceOnUse">
+<stop/>
+<stop offset="1" stop-color="#666666" stop-opacity="0.3"/>
+</linearGradient>
+<linearGradient id="settings_paint3_linear_72_184" x1="190" y1="763" x2="799.611" y2="763" gradientUnits="userSpaceOnUse">
+<stop/>
+<stop offset="1" stop-color="#666666" stop-opacity="0.3"/>
+</linearGradient>
+<linearGradient id="settings_paint4_linear_72_184" x1="198.211" y1="885.965" x2="757.364" y2="907.727" gradientUnits="userSpaceOnUse">
+<stop stop-color="white" stop-opacity="0"/>
+<stop offset="1" stop-color="#4A4A4A"/>
+</linearGradient>
+<linearGradient id="settings_paint5_linear_72_184" x1="198.211" y1="995.965" x2="757.364" y2="1017.73" gradientUnits="userSpaceOnUse">
+<stop stop-color="white" stop-opacity="0"/>
+<stop offset="1" stop-color="#4A4A4A"/>
+</linearGradient>
+<linearGradient id="settings_paint6_linear_72_184" x1="1245" y1="1340" x2="1245" y2="290" gradientUnits="userSpaceOnUse">
+<stop stop-color="#4B4B4B" stop-opacity="0"/>
+<stop offset="1" stop-color="#252525"/>
+</linearGradient>
+<linearGradient id="settings_paint7_linear_72_184" x1="935" y1="683" x2="1544.61" y2="683" gradientUnits="userSpaceOnUse">
+<stop/>
+<stop offset="1" stop-color="#666666" stop-opacity="0.3"/>
+</linearGradient>
+<linearGradient id="settings_paint8_linear_72_184" x1="935" y1="833" x2="1228.92" y2="833" gradientUnits="userSpaceOnUse">
+<stop/>
+<stop offset="1" stop-color="#666666" stop-opacity="0.3"/>
+</linearGradient>
+<linearGradient id="settings_paint9_linear_72_184" x1="1225" y1="833" x2="1518.92" y2="833" gradientUnits="userSpaceOnUse">
+<stop/>
+<stop offset="1" stop-color="#666666" stop-opacity="0.3"/>
+</linearGradient>
+<linearGradient id="settings_paint10_linear_72_184" x1="943.211" y1="965.965" x2="1502.36" y2="987.727" gradientUnits="userSpaceOnUse">
+<stop stop-color="white" stop-opacity="0"/>
+<stop offset="1" stop-color="#4A4A4A"/>
+</linearGradient>
+<linearGradient id="settings_paint11_linear_72_184" x1="943.211" y1="1075.97" x2="1502.36" y2="1097.73" gradientUnits="userSpaceOnUse">
+<stop stop-color="white" stop-opacity="0"/>
+<stop offset="1" stop-color="#4A4A4A"/>
+</linearGradient>
+<linearGradient id="settings_paint12_linear_72_184" x1="2140" y1="1440" x2="2140" y2="250" gradientUnits="userSpaceOnUse">
+<stop stop-color="white" stop-opacity="0"/>
+<stop offset="1"/>
+</linearGradient>
+<linearGradient id="settings_paint13_linear_72_184" x1="1840" y1="490" x2="2536.7" y2="490" gradientUnits="userSpaceOnUse">
+<stop/>
+<stop offset="1" stop-color="#666666" stop-opacity="0.3"/>
+</linearGradient>
+<linearGradient id="settings_paint14_linear_72_184" x1="1840" y1="630" x2="2536.7" y2="630" gradientUnits="userSpaceOnUse">
+<stop/>
+<stop offset="1" stop-color="#666666" stop-opacity="0.3"/>
+</linearGradient>
+<linearGradient id="settings_paint15_linear_72_184" x1="1840" y1="770" x2="2536.7" y2="770" gradientUnits="userSpaceOnUse">
+<stop/>
+<stop offset="1" stop-color="#666666" stop-opacity="0.3"/>
+</linearGradient>
+<linearGradient id="settings_paint16_linear_72_184" x1="1840" y1="910" x2="2536.7" y2="910" gradientUnits="userSpaceOnUse">
+<stop/>
+<stop offset="1" stop-color="#666666" stop-opacity="0.3"/>
+</linearGradient>
+<linearGradient id="settings_paint17_linear_72_184" x1="1840" y1="1050" x2="2536.7" y2="1050" gradientUnits="userSpaceOnUse">
+<stop/>
+<stop offset="1" stop-color="#666666" stop-opacity="0.3"/>
+</linearGradient>
+<linearGradient id="settings_paint18_linear_72_184" x1="1838.21" y1="1215.97" x2="2477.24" y2="1240.84" gradientUnits="userSpaceOnUse">
+<stop stop-color="white" stop-opacity="0"/>
+<stop offset="1" stop-color="#4A4A4A"/>
+</linearGradient>
+<pattern id="settings_pattern0_72_184" patternUnits="userSpaceOnUse" patternTransform="matrix(48 0 -1.86675 47.9637 200 840)" preserveAspectRatio="none" viewBox="0 0 48 48" width="1" height="1">
+<g>
+<g clip-path="url(#settings_clip0_72_184)">
+<rect width="24" height="24" fill="black"/>
+<rect x="24" y="24" width="24" height="24" fill="black"/>
+</g>
+</g>
+</pattern><pattern id="settings_pattern1_72_184" patternUnits="userSpaceOnUse" patternTransform="matrix(48 0 -1.86675 47.9637 200 950)" preserveAspectRatio="none" viewBox="0 0 48 48" width="1" height="1">
+<g>
+<g clip-path="url(#settings_clip1_72_184)">
+<rect width="24" height="24" fill="black"/>
+<rect x="24" y="24" width="24" height="24" fill="black"/>
+</g>
+</g>
+</pattern><pattern id="settings_pattern2_72_184" patternUnits="userSpaceOnUse" patternTransform="matrix(25.44 0 -0.989376 25.4208 945 920)" preserveAspectRatio="none" viewBox="0 0 48 48" width="1" height="1">
+<g>
+<g clip-path="url(#settings_clip2_72_184)">
+<rect width="24" height="24" fill="black"/>
+<rect x="24" y="24" width="24" height="24" fill="black"/>
+</g>
+</g>
+</pattern><pattern id="settings_pattern3_72_184" patternUnits="userSpaceOnUse" patternTransform="matrix(25.44 0 -0.989376 25.4208 945 1030)" preserveAspectRatio="none" viewBox="0 0 48 48" width="1" height="1">
+<g>
+<g clip-path="url(#settings_clip3_72_184)">
+<rect width="24" height="24" fill="black"/>
+<rect x="24" y="24" width="24" height="24" fill="black"/>
+</g>
+</g>
+</pattern><pattern id="settings_pattern4_72_184" patternUnits="userSpaceOnUse" patternTransform="matrix(22.08 0 0 22.08 1720 250)" preserveAspectRatio="none" viewBox="0 0 48 48" width="1" height="1">
+<g>
+<g clip-path="url(#settings_clip4_72_184)">
+<rect width="24" height="24" fill="black"/>
+<rect x="24" y="24" width="24" height="24" fill="black"/>
+</g>
+</g>
+</pattern><pattern id="settings_pattern5_72_184" patternUnits="userSpaceOnUse" patternTransform="matrix(48 0 -1.86675 47.9637 1840 1170)" preserveAspectRatio="none" viewBox="0 0 48 48" width="1" height="1">
+<g>
+<g clip-path="url(#settings_clip5_72_184)">
+<rect width="24" height="24" fill="black"/>
+<rect x="24" y="24" width="24" height="24" fill="black"/>
+</g>
+</g>
+</pattern><clipPath id="settings_clip0_72_184">
+<rect width="48" height="48" fill="white"/>
+</clipPath>
+<clipPath id="settings_clip1_72_184">
+<rect width="48" height="48" fill="white"/>
+</clipPath>
+<clipPath id="settings_clip2_72_184">
+<rect width="48" height="48" fill="white"/>
+</clipPath>
+<clipPath id="settings_clip3_72_184">
+<rect width="48" height="48" fill="white"/>
+</clipPath>
+<clipPath id="settings_clip4_72_184">
+<rect width="48" height="48" fill="white"/>
+</clipPath>
+<clipPath id="settings_clip5_72_184">
+<rect width="48" height="48" fill="white"/>
+</clipPath>
+</defs>
+</svg>
+<div class="L in in-left" data-r="left"><svg class="sh" viewBox="0 0 2560 1440" fill="none" aria-hidden="true"><g filter="url(#settings_filter4_d_72_184)">
+<path d="M120 290H820L880 1340H180L120 290Z" fill="url(#settings_paint0_linear_72_184)" fill-opacity="0.4" />
+<path d="M120 290H820L880 1340H180L120 290Z" fill="url(#agVid)" opacity="0.2"/>
+</g>
+<g filter="url(#settings_filter5_d_72_184)">
+<path d="M190 420H720L750 506H220L190 420Z" fill="url(#settings_paint1_linear_72_184)" fill-opacity="0.8" />
+</g>
+<g filter="url(#settings_filter6_d_72_184)">
+<path d="M190 570H720L750 656H220L190 570Z" fill="url(#settings_paint2_linear_72_184)" fill-opacity="0.8" />
+</g>
+<g filter="url(#settings_filter7_d_72_184)">
+<path d="M190 720H720L750 806H220L190 720Z" fill="url(#settings_paint3_linear_72_184)" fill-opacity="0.8" />
+</g>
+<g filter="url(#settings_filter8_d_72_184)">
+<path d="M200 840H736L756.422 931.93H220.422L200 840Z" fill="url(#settings_pattern0_72_184)" fill-opacity="0.15" />
+<path d="M200 840H736L756.422 931.93H220.422L200 840Z" fill="url(#settings_paint4_linear_72_184)" />
+</g>
+<g filter="url(#settings_filter9_d_72_184)">
+<path d="M200 950H736L756.422 1041.93H220.422L200 950Z" fill="url(#settings_pattern1_72_184)" fill-opacity="0.15" />
+<path d="M200 950H736L756.422 1041.93H220.422L200 950Z" fill="url(#settings_paint5_linear_72_184)" />
+</g>
+</svg></div><div class="L in in-center" data-r="center"><svg class="sh" viewBox="0 0 2560 1440" fill="none" aria-hidden="true"><g filter="url(#settings_filter10_d_72_184)">
+<path d="M865 290H1565L1625 1340H925L865 290Z" fill="url(#settings_paint6_linear_72_184)" fill-opacity="0.4" />
+<path d="M865 290H1565L1625 1340H925L865 290Z" fill="url(#agVid)" opacity="0.2"/>
+</g>
+<g filter="url(#settings_filter11_i_72_184)">
+<rect x="945" y="380" width="180" height="180" rx="50.4" fill="#D9D9D9"/>
+</g>
+<g filter="url(#settings_filter12_d_72_184)">
+<path d="M935 640H1465L1495 726H965L935 640Z" fill="url(#settings_paint7_linear_72_184)" fill-opacity="0.8" />
+</g>
+<g filter="url(#settings_filter13_d_72_184)">
+<path d="M935 790H1175L1205 876H965L935 790Z" fill="url(#settings_paint8_linear_72_184)" fill-opacity="0.8" />
+</g>
+<g filter="url(#settings_filter14_d_72_184)">
+<path d="M1225 790H1465L1495 876H1255L1225 790Z" fill="url(#settings_paint9_linear_72_184)" fill-opacity="0.8" />
+</g>
+<g filter="url(#settings_filter15_d_72_184)">
+<path d="M945 920H1481L1501.42 1011.93H965.422L945 920Z" fill="url(#settings_pattern2_72_184)" fill-opacity="0.15" />
+<path d="M945 920H1481L1501.42 1011.93H965.422L945 920Z" fill="url(#settings_paint10_linear_72_184)" />
+</g>
+<g filter="url(#settings_filter16_d_72_184)">
+<path d="M945 1030H1481L1501.42 1121.93H965.422L945 1030Z" fill="url(#settings_pattern3_72_184)" fill-opacity="0.15" />
+<path d="M945 1030H1481L1501.42 1121.93H965.422L945 1030Z" fill="url(#settings_paint11_linear_72_184)" />
+</g>
+</svg></div><div class="L in in-right" data-r="right"><svg class="sh" viewBox="0 0 2560 1440" fill="none" aria-hidden="true"><g>
+<rect x="1720" y="250" width="840" height="1190" fill="url(#settings_pattern4_72_184)" fill-opacity="0.15"/>
+<rect x="1720" y="250" width="840" height="1190" fill="url(#settings_paint12_linear_72_184)"/>
+</g>
+<g filter="url(#settings_filter17_d_72_184)">
+<path d="M1840 440H2450L2480 540H1870L1840 440Z" fill="url(#settings_paint13_linear_72_184)" fill-opacity="0.8" />
+</g>
+<g filter="url(#settings_filter18_d_72_184)">
+<path d="M1840 580H2450L2480 680H1870L1840 580Z" fill="url(#settings_paint14_linear_72_184)" fill-opacity="0.8" />
+</g>
+<g filter="url(#settings_filter19_d_72_184)">
+<path d="M1840 720H2450L2480 820H1870L1840 720Z" fill="url(#settings_paint15_linear_72_184)" fill-opacity="0.8" />
+</g>
+<g filter="url(#settings_filter20_d_72_184)">
+<path d="M1840 860H2450L2480 960H1870L1840 860Z" fill="url(#settings_paint16_linear_72_184)" fill-opacity="0.8" />
+</g>
+<g filter="url(#settings_filter21_d_72_184)">
+<path d="M1840 1000H2450L2480 1100H1870L1840 1000Z" fill="url(#settings_paint17_linear_72_184)" fill-opacity="0.8" />
+</g>
+<g filter="url(#settings_filter22_d_72_184)">
+<path d="M1840 1170H2456L2476.42 1261.93H1860.42L1840 1170Z" fill="url(#settings_pattern5_72_184)" fill-opacity="0.15" />
+<path d="M1840 1170H2456L2476.42 1261.93H1860.42L1840 1170Z" fill="url(#settings_paint18_linear_72_184)" />
+</g>
+</svg></div>
+<div class="L in in-title" data-r="title" id="L-title"><p class="t s0 " style="left:167px;top:64px" >PERSONAL SETTING</p><p class="t s1 title-grad" style="left:167px;top:98px;width:978px" >설정</p></div><div class="L in in-left" data-r="left" id="L-left"><p class="t s51 " style="left:200px;top:320px" >ACCOUNT</p><p class="t s72 " style="left:200px;top:380px" >아이디</p><p class="t s72 " style="left:200px;top:530px" >현재 비밀번호</p><p class="t s72 " style="left:200px;top:680px" >새 비밀번호</p><input class="field s73" id="fUser" style="left:250px;top:432px;width:470px;height:56px" readonly aria-label="아이디"><input class="field s73" id="fCur" type="password" style="left:250px;top:582px;width:470px;height:56px" placeholder="••••••••" autocomplete="current-password" aria-label="현재 비밀번호"><input class="field s73" id="fNew" type="password" style="left:250px;top:732px;width:470px;height:56px" placeholder="8자 이상" autocomplete="new-password" aria-label="새 비밀번호"><p class="t s63 c" style="left:200px;top:866px;width:560px" >비밀번호 바꾸기</p><p class="t s63 c" style="left:200px;top:976px;width:560px" id="outLbl">로그아웃</p><button class="hb " style="left:200px;top:840px;width:560px;height:92px;clip-path:polygon(4% 0, 100% 0, 96% 100%, 0 100%)" id="pwBtn"></button><button class="hb " style="left:200px;top:950px;width:560px;height:92px;clip-path:polygon(4% 0, 100% 0, 96% 100%, 0 100%)" id="outBtn"></button><button class="abs t on" id="delBtn" style="left:258px;top:1080px;width:502px;text-align:left;white-space:normal;color:#8a3a3a;font-weight:900;line-height:1.2"><span style="font-size:32px">계정 삭제</span><br><span style="font-size:22px;white-space:nowrap">: 캐릭터와 대화 기록이 모두 지워지고 되돌릴 수 없어요</span></button></div><div class="L in in-center" data-r="center" id="L-center"><p class="t s51 " style="left:945px;top:320px" >CHARACTER</p><button class="abs on" id="avaBtn" style="left:945px;top:380px;width:180px;height:180px;border-radius:50.4px;overflow:hidden" aria-label="프로필 사진 바꾸기"><img id="ava" alt="" hidden style="width:100%;height:100%;object-fit:cover"></button><button class="abs t s75 on" id="avaTxt" style="left:1155px;top:420px;text-align:left">프로필 사진 바꾸기<br>정사각형 320 × 320</button><p class="t s72 " style="left:945px;top:600px" >이름</p><p class="t s72 " style="left:945px;top:750px" >출신</p><p class="t s72 " style="left:1235px;top:750px" >종족</p><input class="field s73" id="fName" style="left:995px;top:652px;width:460px;height:56px" maxlength="30" aria-label="캐릭터 이름"><select class="field s73 sel" id="fOrigin" style="left:985px;top:808px;width:200px;height:48px" aria-label="출신"></select><select class="field s73 sel" id="fSpecies" style="left:1275px;top:808px;width:200px;height:48px" aria-label="종족"></select><p class="t s63 c" style="left:945px;top:946px;width:560px" >전신 일러스트 바꾸기</p><p class="t s63 c" style="left:945px;top:1056px;width:560px" >캐릭터 정보 자세히 수정</p><button class="hb " style="left:945px;top:920px;width:560px;height:92px;clip-path:polygon(4% 0, 100% 0, 96% 100%, 0 100%)" id="illuBtn"></button><button class="hb " style="left:945px;top:1030px;width:560px;height:92px;clip-path:polygon(4% 0, 100% 0, 96% 100%, 0 100%)" id="detailBtn"></button><input type="file" id="pickAva" accept="image/*" hidden><input type="file" id="pickIllu" accept="image/*" hidden></div><div class="L in in-right" data-r="right" id="L-right"><p class="t s0 " style="left:1780px;top:276px" >MAIN LINES · 최대 5개</p><p class="t s76 w wrap" style="left:1780px;top:330px;width:700px;height:72px" >메인 화면 대사창에 나오는 캐릭터 대사예요. 대사창을 누를 때마다 다음 대사로 넘어가요.</p><p class="t s77 " style="left:1780px;top:458px" >1</p><input class="field s78 line" data-i="0" style="left:1900px;top:466px;top:466px;width:540px;height:44px;color:#fff" placeholder="대사를 입력하세요" maxlength="120" aria-label="대사 1"><p class="t s77 " style="left:1780px;top:598px" >2</p><input class="field s78 line" data-i="1" style="left:1900px;top:466px;top:606px;width:540px;height:44px;color:#fff" placeholder="대사를 입력하세요" maxlength="120" aria-label="대사 2"><p class="t s77 " style="left:1780px;top:738px" >3</p><input class="field s78 line" data-i="2" style="left:1900px;top:466px;top:746px;width:540px;height:44px;color:#fff" placeholder="대사를 입력하세요" maxlength="120" aria-label="대사 3"><p class="t s77 " style="left:1780px;top:878px" >4</p><input class="field s78 line" data-i="3" style="left:1900px;top:466px;top:886px;width:540px;height:44px;color:#fff" placeholder="대사를 입력하세요" maxlength="120" aria-label="대사 4"><p class="t s77 " style="left:1780px;top:1018px" >5</p><input class="field s78 line" data-i="4" style="left:1900px;top:466px;top:1026px;width:540px;height:44px;color:#fff" placeholder="대사를 입력하세요" maxlength="120" aria-label="대사 5"><p class="t s63 c" style="left:1840px;top:1196px;width:640px" >저장하기</p><button class="hb " style="left:1840px;top:1170px;width:640px;height:92px;clip-path:polygon(4% 0, 100% 0, 96% 100%, 0 100%)" id="saveLines"></button></div>
+<img class="abs topbar" src="assets/topbar.svg" alt="">
+<button class="top-btn refresh" data-action="refresh" aria-label="새로고침"><img src="assets/btn-refresh.svg" width="53" height="53" alt=""><span class="glyph"><svg viewBox="0 0 24 24" fill="none" stroke="#1e1e1e" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg></span><span class="tip">새로고침</span></button>
+<button class="top-btn browse" data-action="browse" aria-label="다른 캐릭터 프로필 구경가기"><img src="assets/btn-browse.svg" width="52" height="53" alt=""><span class="glyph"><svg viewBox="0 0 24 24" fill="none" stroke="#1e1e1e" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="4"/><path d="M2 21a7 7 0 0 1 14 0"/><path d="M17 4a4 4 0 0 1 0 8M22 21a7 7 0 0 0-4-6.3"/></svg></span><span class="tip">다른 캐릭터 프로필 구경가기</span></button>
+<button class="top-btn back" data-action="back" aria-label="뒤로 가기"><img src="assets/btn-back.svg" width="53" height="53" alt=""><span class="glyph"><svg viewBox="0 0 24 24" fill="none" stroke="#1e1e1e" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></span><span class="tip">뒤로 가기</span></button>
+
+<div class="page-toast" id="pageToast" role="status"></div>
+</main>
+<script src="assets/ag.js"></script>
+
+<script src="assets/p-settings.js"></script>
+</body>
+</html>

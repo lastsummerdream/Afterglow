@@ -1,0 +1,22 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="405.397" height="154.975" viewBox="0 0 405.397 154.975" fill="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="&#236;&#157;&#184;&#235;&#178;&#164;&#237;&#134;&#160;&#235;&#166;&#172; &#235;&#169;&#148;&#235;&#137;&#180;">
+<path d="M405.397 154.975L0 122.875L120.341 0L336.578 2.28463L405.397 154.975Z" fill="url(#pattern0_0_41)" fill-opacity="0.15"/>
+<path d="M405.397 154.975L0 122.875L120.341 0L336.578 2.28463L405.397 154.975Z" fill="url(#paint0_linear_0_41)"/>
+</g>
+<defs>
+<linearGradient id="paint0_linear_0_41" x1="0" y1="77.4873" x2="405.397" y2="77.4873" gradientUnits="userSpaceOnUse">
+<stop stop-color="white" stop-opacity="0"/>
+<stop offset="1" stop-color="#4A4A4A"/>
+</linearGradient>
+<pattern id="pattern0_0_41" patternUnits="userSpaceOnUse" patternTransform="matrix(48 0 0 48 0 0)" preserveAspectRatio="none" viewBox="0 0 48 48" width="1" height="1">
+<g id="pattern0_0_41_inner">
+<g id="&#236;&#178;&#180;&#237;&#129;&#172; &#237;&#140;&#168;&#237;&#132;&#180; &#236;&#155;&#144;&#235;&#179;&#184; &#194;&#183; 24px" clip-path="url(#clip0_0_41)">
+<rect id="&#236;&#178;&#180;&#237;&#129;&#172; &#236;&#185;&#184; &#194;&#183; &#236;&#153;&#188;&#236;&#170;&#189; &#236;&#156;&#132;" width="24" height="24" fill="white"/>
+<rect id="&#236;&#178;&#180;&#237;&#129;&#172; &#236;&#185;&#184; &#194;&#183; &#236;&#152;&#164;&#235;&#165;&#184;&#236;&#170;&#189; &#236;&#149;&#132;&#235;&#158;&#152;" x="24" y="24" width="24" height="24" fill="white"/>
+</g>
+</g>
+</pattern><clipPath id="clip0_0_41">
+<rect width="48" height="48" fill="white"/>
+</clipPath>
+</defs>
+</svg>

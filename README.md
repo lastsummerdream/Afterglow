@@ -72,3 +72,51 @@
 세계관 밖을 묻는 질문에는 'ACCESS DENIED · 접근 차단' 카드만 보여 준다.
 
 형식을 바꿀 때는 `server/worker.js`의 `SCHEMA_VERSION`을 올리고, 저장된 `schema_version`을 보고 옛 기록을 옮긴다.
+
+## 커뮤니티 · 게임 API (2026-11)
+
+새 화면(단체 단말, 1:1 대화 공간, 개인 단말, 캐릭터 스탯, 전투, 창고, 숙소, 설정, 타임라인)이 쓰는 경로. 모두 로그인 필요.
+처음 한 번 `server/migrations/0002_community.sql`을 D1 `afterglow-users`에 실행해야 한다.
+
+| 경로 | 설명 |
+| --- | --- |
+| `GET /users` | 다른 사용자 목록 `{id, name, sub, job, faction, online}` (5분 안에 요청이 있었으면 접속 중) |
+| `GET/POST /channels` | 단체 단말 채널 목록 / 만들기 `{name}` |
+| `GET/POST /channels/:id/messages` | 채널 메시지 / 보내기 `{text}` |
+| `PUT/DELETE /messages/:id` | 내 메시지 수정 `{text}` / 삭제. 단체 단말은 내용만 지우고 자리를 남겨 URIM 안내로 보이고, 1:1·DM은 바로 지운다 |
+| `GET/POST /talks` | 1:1 대화 목록 / 만들기 `{partnerId, title}` (한 사람과 여러 개) |
+| `PUT/DELETE /talks/:id` | 제목 바꾸기 `{title}` / 나가기(대화와 메시지 삭제) |
+| `GET/POST /talks/:id/messages` | 1:1 메시지 |
+| `GET /dms` | DM 목록 `{partner, unread, count, last}` (한 사람당 하나) |
+| `GET/POST /dms/:userId/messages`, `POST /dms/:userId/read` | DM 메시지, 읽음 표시 |
+| `GET/POST /posts` | 타임라인 글 (글자 수 제한 없음, 서버 최대 2만 자. 미리보기 200자는 화면에서 자름) |
+| `PUT/DELETE /posts/:id` | 내 글 수정 / 삭제 (댓글도 함께 삭제) |
+| `GET/POST /posts/:id/comments` | 댓글 / 답글 `{text, parentId?}` |
+| `PUT/DELETE /comments/:id` | 내 댓글 수정 / 삭제 (답글도 함께 삭제) |
+| `PUT /me/lines` `{lines}` | 메인 화면 캐릭터 대사 (최대 5개). `GET /me`의 `profile.lines` |
+| `GET/PUT /home` `{layout}` | 숙소 배치 (가구, 도트 캐릭터, 위치) |
+| `GET /stats?user=` | 캐릭터 스탯 (G·C·T, 레벨, 장비로 계산) |
+| `GET /inventory`, `POST /inventory/:id/equip`, `POST /inventory/:id/place`, `DELETE /inventory/:id` | 창고 |
+| `GET /battle`, `POST /battle/start`, `POST /battle/turn` `{action, text?}` | 텍스트 전투. Claude가 스탯을 보고 한 턴을 판정하고, 키가 없거나 실패하면 스탯 굴림으로 대신한다 |
+
+새 화면은 로그인하지 않았거나 서버에 닿지 못하면 '체험 모드'로 그 브라우저(localStorage) 안에서만 동작한다.
+
+## 롤플레잉 사이트 (`app/`)
+
+주소: https://lastsummerdream.github.io/Afterglow/app/
+
+터미널과 같은 주소(lastsummerdream.github.io)라 로그인 정보(`ag-token`)를 함께 쓴다. 터미널에서 로그인했으면 그대로 들어가고, 사용자·캐릭터 정보도 같은 서버에서 불러온다.
+
+| 파일 | 화면 |
+| --- | --- |
+| `index.html` | 커버 (로딩 → 진입하기 → 로그인 / 초대 코드 회원가입) |
+| `main.html` | 메인 (캐릭터, 대사, 메뉴, URIM) |
+| `group.html` · `private.html` · `dm.html` | 단체 단말 · 1:1 대화 공간 · 개인 단말 DM |
+| `stats.html` · `battle.html` · `inventory.html` · `home.html` | 캐릭터 스탯 · 텍스트 전투 · 창고 · 숙소 |
+| `settings.html` · `timeline.html` | 설정 · 타임라인 |
+
+- 로고: `app/assets/logo.png` (1000 × 440, 투명 PNG)를 넣으면 커버 가운데에 나온다.
+- 로그인하지 않고 다른 화면 주소로 들어오면 커버로 돌아간다.
+- 초대 코드는 D1 `invites` 표에 넣는다 (`server/migrations/0003_invites.sql`의 예시 참고). 워커에 `INVITE_REQUIRED=1`을 두면 코드 없이는 어디서도 가입할 수 없다.
+- 전투의 일반 공격 · 특수 공격 · 필살기 이름과 설명은 사용자 등록(캐릭터 정보)의 `attackNormal*`, `attackSpecial*`, `attackUltimate*`를 함께 쓴다.
+- 전투 공격 배율 등 임시 값: `app/assets/ag.js`의 `AG.SKILL_RULES`, `server/worker.js`의 `SKILL_RULES` (두 곳을 같이 바꾼다).
