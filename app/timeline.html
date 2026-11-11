@@ -4,6 +4,36 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>애프터 글로우 · 타임라인</title>
+<link rel="preload" href="assets/bg.jpg" as="image">
+<script>
+/* 첫 그림부터 화면 크기에 맞추고, 글꼴·배경이 준비될 때까지 진입 애니메이션을 멈춰 둔다 */
+(function () {
+  var d = document.documentElement; d.classList.add('ag-wait');
+  function fit() { var s = Math.min(innerWidth / 2560, innerHeight / 1440); d.style.setProperty('--ag-s', s); d.style.setProperty('--ag-x', (innerWidth - 2560 * s) / 2 + 'px'); d.style.setProperty('--ag-y', (innerHeight - 1440 * s) / 2 + 'px'); }
+  fit(); addEventListener('resize', fit);
+  var started = false;
+  function start() {
+    if (started) return; started = true;
+    requestAnimationFrame(function () { requestAnimationFrame(function () {
+      d.classList.remove('ag-wait'); d.classList.add('ag-intro');
+      setTimeout(function () { d.classList.remove('ag-intro'); }, 2600);
+    }); });
+  }
+  function frame() { return new Promise(function (r) { requestAnimationFrame(function () { r(); }); }); }
+  var img = new Image(); img.src = 'assets/bg.jpg';
+  var pImg = img.decode ? img.decode().catch(function () {}) : Promise.resolve();
+  var pDom = new Promise(function (r) { if (document.readyState !== 'loading') r(); else document.addEventListener('DOMContentLoaded', r); });
+  var pFont = pDom.then(frame).then(function () {
+    if (!document.fonts) return;
+    var f = ['500 20px "Noto Sans KR"', '700 20px "Noto Sans KR"', '900 20px "Noto Sans KR"', '700 20px "Passion One"'];
+    return Promise.all(f.map(function (x) { return document.fonts.load(x, '가나다 AFTERGLOW').catch(function () {}); }))
+      .then(function () { return document.fonts.ready; });
+  });
+  Promise.all([pImg, pFont]).then(start, start);
+  setTimeout(start, 2500);
+  addEventListener('pageshow', function (e) { if (e.persisted) { started = true; d.classList.remove('ag-wait', 'ag-intro'); } });
+})();
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&family=Passion+One:wght@700&display=swap" rel="stylesheet">
@@ -316,7 +346,7 @@
 </clipPath>
 </defs>
 </svg>
-<div class="L in in-left" data-r="left"><svg class="sh" viewBox="0 0 2560 1440" fill="none" aria-hidden="true"><g>
+<div class="L mo mo-lpanel" data-r="left"><svg class="sh" viewBox="0 0 2560 1440" fill="none" aria-hidden="true"><g>
 <rect y="330" width="612" height="1110" fill="url(#timeline_pattern0_83_2)" fill-opacity="0.15"/>
 <rect y="330" width="612" height="1110" fill="#000" fill-opacity="0.410"/>
 </g>
@@ -327,17 +357,17 @@
 </g>
 </g>
 </g>
-</svg></div><div class="L in in-right" data-r="right"><svg class="sh" viewBox="0 0 2560 1440" fill="none" aria-hidden="true"><g>
+</svg></div><div class="L mo mo-tcbg" data-r="right"><svg class="sh" viewBox="0 0 2560 1440" fill="none" aria-hidden="true"><g>
 <g>
 <rect x="1516" y="250" width="1044" height="1190" fill="url(#timeline_pattern1_83_2)" fill-opacity="0.15"/>
 <rect x="1516" y="250" width="1044" height="1190" fill="url(#timeline_paint1_linear_83_2)"/>
 </g>
 </g>
-</svg></div><div class="L in in-center" data-r="center"><svg class="sh" viewBox="0 0 2560 1440" fill="none" aria-hidden="true"><g filter="url(#timeline_filter5_di_83_2)">
+</svg></div><div class="L mo mo-tpanel" data-r="center"><svg class="sh" viewBox="0 0 2560 1440" fill="none" aria-hidden="true"><g filter="url(#timeline_filter5_di_83_2)">
 <path d="M684.726 312L1412.58 312L1485 312V806.716V1394H697.058L696.354 1169.8L697.058 592.284H649L697.058 515.369L684.726 312Z" fill="url(#timeline_paint2_linear_83_2)" fill-opacity="0.5" />
 <path d="M684.726 312L1412.58 312L1485 312V806.716V1394H697.058L696.354 1169.8L697.058 592.284H649L697.058 515.369L684.726 312Z" fill="url(#agVid)" opacity="0.2"/>
 </g>
-</svg></div><div class="L in in-left" data-r="left"><svg class="sh" viewBox="0 0 2560 1440" fill="none" aria-hidden="true"><g>
+</svg></div><div class="L mo mo-lpanel0" data-r="left"><svg class="sh" viewBox="0 0 2560 1440" fill="none" aria-hidden="true"><g>
 <g filter="url(#timeline_filter6_d_83_2)">
 <path d="M60 440H590L620 1087H90L60 440Z" fill="url(#timeline_paint3_linear_83_2)" fill-opacity="0.8" />
 </g>
@@ -346,7 +376,7 @@
 <path d="M301.12 1150H618.777L630.88 1241.93H313.223L301.12 1150Z" fill="url(#timeline_paint4_linear_83_2)" />
 </g>
 </g>
-</svg></div><div class="L in in-right" data-r="right"><svg class="sh" viewBox="0 0 2560 1440" fill="none" aria-hidden="true"><g>
+</svg></div><div class="L mo mo-tcsend" data-r="right"><svg class="sh" viewBox="0 0 2560 1440" fill="none" aria-hidden="true"><g>
 <g filter="url(#timeline_filter8_d_83_2)">
 <path d="M1565 1318H2415.84L2464 1398H1613.16L1565 1318Z" fill="white" fill-opacity="0.8" />
 </g>
@@ -356,7 +386,7 @@
 </g>
 </g>
 </svg></div>
-<div class="L in in-title" data-r="title" id="L-title"><p class="t s0 " style="left:167px;top:64px" >TIMELINE</p><p class="t s1 title-grad" style="left:167px;top:98px;width:978px" >타임라인</p></div><div class="L in in-left" data-r="left" id="L-left"><p class="t s2 " style="left:45px;top:348px;width:421px;height:70px" >WRITE</p><textarea class="field" id="compose" style="left:100px;top:466px;width:500px;height:600px;font-size:32px;line-height:1.5" placeholder="무슨 일이 있었나요?" aria-label="새 글"></textarea><p class="t s18 " style="left:95px;top:1099px" id="count">0자 · 타임라인에는 앞 200자까지 보여요</p><p class="t s63 c" style="left:301px;top:1176px;width:332px" >게시하기</p><button class="hb " style="left:299px;top:1150px;width:334px;height:92px;clip-path:polygon(4% 0, 100% 0, 96% 100%, 0 100%)" id="postBtn" aria-label="게시하기"></button><p class="t" style="left:45px;top:1376px;width:540px;text-align:right;font-size:24px;font-weight:500;line-height:1.5;color:#7b7676">글자 수 제한 없음, 미리 보기는 200자까지 제공.</p></div><div class="L in in-center" data-r="center" id="L-center"><div class="scroll feed fade-y" id="feed" aria-live="polite"></div></div><div class="L in in-right" data-r="right" id="L-right"><p class="t s0 " style="left:1573px;top:274px" id="cTitle">COMMENTS · 0</p><p class="t s19 " style="left:1585px;top:348px" id="cOwner">글을 골라 주세요</p><div class="scroll fade-y" id="comments" style="left:1565px;top:410px;width:920px;height:860px;padding:18px 20px 40px"></div><p class="t s18" id="replyTo" style="left:1585px;top:1280px" hidden></p><input class="field dark" id="cInput" style="left:1622px;top:1334px;width:760px;height:48px;font-size:26px" placeholder="댓글을 입력하세요" maxlength="2000" autocomplete="off" aria-label="댓글"><button class="hb circ" style="left:2426px;top:1325px;width:65px;height:65px" id="cSend" aria-label="댓글 보내기" title="댓글 보내기"></button></div>
+<div class="L mo-chars" data-r="title" id="L-title"><p class="t s0 " style="left:167px;top:64px" >TIMELINE</p><p class="t s1 title-grad" style="left:167px;top:98px;width:978px" >타임라인</p></div><div class="L mo mo-lpanel0" data-r="left" id="L-left"><p class="t s2 " style="left:45px;top:348px;width:421px;height:70px" >WRITE</p><textarea class="field" id="compose" style="left:100px;top:466px;width:500px;height:600px;font-size:32px;line-height:1.5" placeholder="무슨 일이 있었나요?" aria-label="새 글"></textarea><p class="t s18 " style="left:95px;top:1099px" id="count">0자 · 타임라인에는 앞 200자까지 보여요</p><p class="t s63 c" style="left:301px;top:1176px;width:332px" >게시하기</p><button class="hb " style="left:299px;top:1150px;width:334px;height:92px;clip-path:polygon(4% 0, 100% 0, 96% 100%, 0 100%)" id="postBtn" aria-label="게시하기"></button><p class="t" style="left:45px;top:1376px;width:540px;text-align:right;font-size:24px;font-weight:500;line-height:1.5;color:#7b7676">글자 수 제한 없음, 미리 보기는 200자까지 제공.</p></div><div class="L " data-r="center" id="L-center"><div class="scroll feed fade-y" id="feed" aria-live="polite"></div></div><div class="L " data-r="right" id="L-right"><p class="t s0 mo mo-tchead" style="left:1573px;top:274px" id="cTitle">COMMENTS · 0</p><p class="t s19 mo mo-tchead" style="left:1585px;top:348px" id="cOwner">글을 골라 주세요</p><div class="scroll fade-y mo mo-tclist" id="comments" style="left:1565px;top:410px;width:920px;height:860px;padding:18px 20px 40px"></div><p class="t s18 mo mo-tcsend" id="replyTo" style="left:1585px;top:1280px" hidden></p><input class="field dark mo mo-tcsend" id="cInput" style="left:1622px;top:1334px;width:760px;height:48px;font-size:26px" placeholder="댓글을 입력하세요" maxlength="2000" autocomplete="off" aria-label="댓글"><button class="hb circ mo mo-tcsend" style="left:2426px;top:1325px;width:65px;height:65px" id="cSend" aria-label="댓글 보내기" title="댓글 보내기"></button></div>
 <img class="abs topbar" src="assets/topbar.svg" alt="">
 <button class="top-btn refresh" data-action="refresh" aria-label="새로고침"><img src="assets/btn-refresh.svg" width="53" height="53" alt=""><span class="glyph"><svg viewBox="0 0 24 24" fill="none" stroke="#1e1e1e" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg></span><span class="tip">새로고침</span></button>
 <button class="top-btn browse" data-action="browse" aria-label="다른 캐릭터 프로필 구경가기"><img src="assets/btn-browse.svg" width="52" height="53" alt=""><span class="glyph"><svg viewBox="0 0 24 24" fill="none" stroke="#1e1e1e" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="4"/><path d="M2 21a7 7 0 0 1 14 0"/><path d="M17 4a4 4 0 0 1 0 8M22 21a7 7 0 0 0-4-6.3"/></svg></span><span class="tip">다른 캐릭터 프로필 구경가기</span></button>

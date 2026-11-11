@@ -4,6 +4,36 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>애프터 글로우 · 단체 단말</title>
+<link rel="preload" href="assets/bg.jpg" as="image">
+<script>
+/* 첫 그림부터 화면 크기에 맞추고, 글꼴·배경이 준비될 때까지 진입 애니메이션을 멈춰 둔다 */
+(function () {
+  var d = document.documentElement; d.classList.add('ag-wait');
+  function fit() { var s = Math.min(innerWidth / 2560, innerHeight / 1440); d.style.setProperty('--ag-s', s); d.style.setProperty('--ag-x', (innerWidth - 2560 * s) / 2 + 'px'); d.style.setProperty('--ag-y', (innerHeight - 1440 * s) / 2 + 'px'); }
+  fit(); addEventListener('resize', fit);
+  var started = false;
+  function start() {
+    if (started) return; started = true;
+    requestAnimationFrame(function () { requestAnimationFrame(function () {
+      d.classList.remove('ag-wait'); d.classList.add('ag-intro');
+      setTimeout(function () { d.classList.remove('ag-intro'); }, 2600);
+    }); });
+  }
+  function frame() { return new Promise(function (r) { requestAnimationFrame(function () { r(); }); }); }
+  var img = new Image(); img.src = 'assets/bg.jpg';
+  var pImg = img.decode ? img.decode().catch(function () {}) : Promise.resolve();
+  var pDom = new Promise(function (r) { if (document.readyState !== 'loading') r(); else document.addEventListener('DOMContentLoaded', r); });
+  var pFont = pDom.then(frame).then(function () {
+    if (!document.fonts) return;
+    var f = ['500 20px "Noto Sans KR"', '700 20px "Noto Sans KR"', '900 20px "Noto Sans KR"', '700 20px "Passion One"'];
+    return Promise.all(f.map(function (x) { return document.fonts.load(x, '가나다 AFTERGLOW').catch(function () {}); }))
+      .then(function () { return document.fonts.ready; });
+  });
+  Promise.all([pImg, pFont]).then(start, start);
+  setTimeout(start, 2500);
+  addEventListener('pageshow', function (e) { if (e.persisted) { started = true; d.classList.remove('ag-wait', 'ag-intro'); } });
+})();
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&family=Passion+One:wght@700&display=swap" rel="stylesheet">
@@ -300,7 +330,7 @@
 </clipPath>
 </defs>
 </svg>
-<div class="L in in-left" data-r="left"><svg class="sh" viewBox="0 0 2560 1440" fill="none" aria-hidden="true"><g>
+<div class="L mo mo-lpanel" data-r="left"><svg class="sh" viewBox="0 0 2560 1440" fill="none" aria-hidden="true"><g>
 <rect y="330" width="612" height="1110" fill="url(#group_pattern0_72_184)" fill-opacity="0.15"/>
 <rect y="330" width="612" height="1110" fill="#000" fill-opacity="0.410"/>
 </g>
@@ -317,7 +347,7 @@
 <path d="M636 367V378M636 378V389M636 378H625M636 378H647" stroke="#E6E6E6" stroke-width="8" stroke-linecap="round"/>
 </g>
 </g>
-</svg></div><div class="L in in-bottom" data-r="bottom"><svg class="sh" viewBox="0 0 2560 1440" fill="none" aria-hidden="true"><g>
+</svg></div><div class="L mo mo-input" data-r="bottom"><svg class="sh" viewBox="0 0 2560 1440" fill="none" aria-hidden="true"><g>
 <g filter="url(#group_filter6_d_72_184)">
 <path d="M720 1190H1830L1870 1310H760L720 1190Z" fill="url(#group_paint1_linear_72_184)" fill-opacity="0.8" />
 </g>
@@ -326,18 +356,18 @@
 <circle cx="1869.5" cy="1249.5" r="38.5" fill="#4B4B4B"/>
 <path d="M1850.68 1250.36L1884.9 1233.24L1872.07 1267.47L1866.72 1253.56L1850.68 1250.36Z" fill="#D9D9D9"/>
 </g>
-</svg></div><div class="L in in-right" data-r="right"><svg class="sh" viewBox="0 0 2560 1440" fill="none" aria-hidden="true"><g>
+</svg></div><div class="L mo mo-rbg" data-r="right"><svg class="sh" viewBox="0 0 2560 1440" fill="none" aria-hidden="true"><g>
 <g>
 <rect x="2000" y="250" width="560" height="1190" fill="url(#group_pattern1_72_184)" fill-opacity="0.15"/>
 <rect x="2000" y="250" width="560" height="1190" fill="url(#group_paint2_linear_72_184)"/>
 </g>
 </g>
-</svg></div><div class="L in in-center" data-r="center"><svg class="sh" viewBox="0 0 2560 1440" fill="none" aria-hidden="true"><g filter="url(#group_filter8_di_72_184)">
+</svg></div><div class="L mo mo-cpanel" data-r="center"><svg class="sh" viewBox="0 0 2560 1440" fill="none" aria-hidden="true"><g filter="url(#group_filter8_di_72_184)">
 <path d="M705 311.5L1747.5 252.5L1933.79 242.5L1916.5 706.5L1897 1160.5L721.5 1109V969.5L722.5 526.5L614.5 516L722.5 467.5L705 311.5Z" fill="url(#group_paint3_linear_72_184)" fill-opacity="0.5" />
 <path d="M705 311.5L1747.5 252.5L1933.79 242.5L1916.5 706.5L1897 1160.5L721.5 1109V969.5L722.5 526.5L614.5 516L722.5 467.5L705 311.5Z" fill="url(#agVid)" opacity="0.2"/>
 </g>
 </svg></div>
-<div class="L in in-title" data-r="title" id="L-title"><p class="t s0 " style="left:167px;top:64px" >GROUP TERMINAL</p><p class="t s1 title-grad" style="left:167px;top:98px;width:978px" >단체 단말</p></div><div class="L in in-left" data-r="left" id="L-left"><p class="t s2 " style="left:45px;top:348px;width:421px;height:70px" >CHANNELS</p><button class="hb circ" style="left:612px;top:354px;width:48px;height:48px" id="plusBtn" aria-label="새 채널 만들기" title="새 채널 만들기"></button><div class="scroll list fade-y" id="list" role="listbox"></div></div><div class="L in in-bottom" data-r="bottom" id="L-bottom"><input class="field" id="msgInput" style="left:800px;top:1214px;width:1010px;height:62px;font-size:34px;letter-spacing:-.05em" placeholder="메시지를 입력하세요" maxlength="2000" autocomplete="off"><button class="hb circ" style="left:1831px;top:1211px;width:77px;height:77px" id="sendBtn" aria-label="보내기" title="보내기"></button></div><div class="L in in-right" data-r="right" id="L-right"><p class="t s0 " style="left:2060px;top:276px" id="onlineTitle">ONLINE · 0</p><div class="scroll" id="members" style="left:2000px;top:350px;width:560px;height:900px;padding-left:60px"></div></div><div class="L in in-center" data-r="center" id="L-center"><div class="scroll msgs fade-y" id="msgs" aria-live="polite"></div></div>
+<div class="L mo-chars" data-r="title" id="L-title"><p class="t s0 " style="left:167px;top:64px" >GROUP TERMINAL</p><p class="t s1 title-grad" style="left:167px;top:98px;width:978px" >단체 단말</p></div><div class="L mo mo-lpanel" data-r="left" id="L-left"><p class="t s2 " style="left:45px;top:348px;width:421px;height:70px" >CHANNELS</p><button class="hb circ" style="left:612px;top:354px;width:48px;height:48px" id="plusBtn" aria-label="새 채널 만들기" title="새 채널 만들기"></button><div class="scroll list fade-y" id="list" role="listbox"></div></div><div class="L mo mo-input" data-r="bottom" id="L-bottom"><input class="field" id="msgInput" style="left:800px;top:1214px;width:1010px;height:62px;font-size:34px;letter-spacing:-.05em" placeholder="메시지를 입력하세요" maxlength="2000" autocomplete="off"><button class="hb circ" style="left:1831px;top:1211px;width:77px;height:77px" id="sendBtn" aria-label="보내기" title="보내기"></button></div><div class="L mo mo-rlist" data-r="right" id="L-right"><p class="t s0 " style="left:2060px;top:276px" id="onlineTitle">ONLINE · 0</p><div class="scroll" id="members" style="left:2000px;top:350px;width:560px;height:900px;padding-left:60px"></div></div><div class="L mo mo-msgs" data-r="center" id="L-center"><div class="scroll msgs fade-y" id="msgs" aria-live="polite"></div></div>
 <img class="abs topbar" src="assets/topbar.svg" alt="">
 <button class="top-btn refresh" data-action="refresh" aria-label="새로고침"><img src="assets/btn-refresh.svg" width="53" height="53" alt=""><span class="glyph"><svg viewBox="0 0 24 24" fill="none" stroke="#1e1e1e" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg></span><span class="tip">새로고침</span></button>
 <button class="top-btn browse" data-action="browse" aria-label="다른 캐릭터 프로필 구경가기"><img src="assets/btn-browse.svg" width="52" height="53" alt=""><span class="glyph"><svg viewBox="0 0 24 24" fill="none" stroke="#1e1e1e" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="4"/><path d="M2 21a7 7 0 0 1 14 0"/><path d="M17 4a4 4 0 0 1 0 8M22 21a7 7 0 0 0-4-6.3"/></svg></span><span class="tip">다른 캐릭터 프로필 구경가기</span></button>

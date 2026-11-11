@@ -17,13 +17,13 @@ img { display: block; -webkit-user-drag: none; }
 .tint { position: absolute; inset: 0; background: linear-gradient(0deg, rgba(183,183,183,.25) 0%, rgba(0,0,0,.5) 100%); }
 
 /* ── 레이어 (피그마 영역 단위) ── */
-.L { position: absolute; left: 0; top: 0; width: 2560px; height: 1440px; pointer-events: none; }
+.L { position: absolute; left: 0; top: 0; width: 0; height: 0; pointer-events: none; }  /* 크기 0: 레이어가 화면 전체를 덮지 않게 (안의 요소는 절대 좌표) */
 .L > svg.sh { position: absolute; left: 0; top: 0; width: 2560px; height: 1440px; overflow: visible; }
 .L .on { pointer-events: auto; }
 .abs { position: absolute; }
 
 /* ── 진입 애니메이션 (메인과 같은 2초 타임라인, 한 번만) ── */
-.in { animation-duration: 2s; animation-timing-function: linear; animation-fill-mode: both; }
+.in { animation-duration: 2s; animation-timing-function: linear; animation-fill-mode: backwards; }  /* 끝나면 레이어를 합친다 */
 .in-title { animation-name: aTitleY, aTitleO; }
 @keyframes aTitleY { 0%, 1.9% { translate: 0 -60px; animation-timing-function: linear(0, 0.078, 0.2737, 0.5283, 0.7893, 1.0162, 1.1837, 1.2818, 1.3134, 1.2904, 1.23, 1.1505, 1.0685, 0.9969, 0.9438, 0.9123, 0.9018, 0.9085, 0.9272, 0.952, 0.9777, 1.0003, 1.0172, 1.0273, 1.0308, 1.0288, 1.023, 1.0153, 1.0072, 1.0001, 0.9947, 0.9915, 0.9904, 0.9909, 0.9927, 0.9951, 0.9977, 0.9999, 1.0016, 1.0026, 1.003, 1.0029, 1.0023, 1.0016, 1.0008, 1, 0.9995, 0.9992, 0.9991, 0.9991, 0.9993); } 61.9%, 100% { translate: 0 0; } }
 @keyframes aTitleO { 0%, 1.9% { opacity: 0; animation-timing-function: cubic-bezier(.5,0,.5,1); } 9.4%, 100% { opacity: 1; } }
@@ -44,9 +44,9 @@ img { display: block; -webkit-user-drag: none; }
 @keyframes aBottomY { 0%, 7.7% { translate: 0 200px; opacity: 0; animation-timing-function: ease-out; } 15% { opacity: 1; } 32.7%, 100% { translate: 0 0; opacity: 1; } }
 
 /* 목록·메시지가 하나씩 들어오는 작은 애니메이션 */
-.pop { animation: aPop .45s cubic-bezier(.2,.8,.2,1) both; }
+.pop { animation: aPop .45s cubic-bezier(.2,.8,.2,1) backwards; }  /* 끝나면 레이어를 놓아 준다 */
 @keyframes aPop { from { opacity: 0; translate: 0 18px; } to { opacity: 1; translate: 0 0; } }
-.slide-in { animation: aSlide .4s cubic-bezier(.2,.8,.2,1) both; }
+.slide-in { animation: aSlide .4s cubic-bezier(.2,.8,.2,1) backwards; }
 @keyframes aSlide { from { opacity: 0; translate: -24px 0; } to { opacity: 1; translate: 0 0; } }
 
 /* ── 상단바 (메인과 같음) ── */
@@ -71,7 +71,7 @@ img { display: block; -webkit-user-drag: none; }
 .sh6 { text-shadow: 0 2px 6px rgba(0,0,0,.45); }
 
 /* ── 누를 수 있는 도형 위 투명 버튼 (도형 모양대로 밝아짐) ── */
-.hb { position: absolute; pointer-events: auto; cursor: pointer; transition: backdrop-filter .18s, translate .18s, filter .18s; display: flex; align-items: center; justify-content: center; }
+.hb { position: absolute; pointer-events: auto; cursor: pointer; transition: translate .18s; display: flex; align-items: center; justify-content: center; }
 .hb:hover { backdrop-filter: brightness(1.18); -webkit-backdrop-filter: brightness(1.18); }
 .hb:active { translate: 0 3px; backdrop-filter: brightness(.92); }
 .hb[disabled] { cursor: default; backdrop-filter: grayscale(1) brightness(.85); }
@@ -115,9 +115,9 @@ textarea.field { resize: none; line-height: 1.45; }
 .demo-chip { position: absolute; left: 1220px; top: 40px; z-index: 30; font-size: 22px; font-weight: 700; color: #e6e6e6; background: rgba(30,30,30,.7); padding: 8px 18px; border-radius: 999px; letter-spacing: .02em; pointer-events: auto; cursor: help; }
 
 /* 모달 (로그인, 선택 등) */
-.modal-back { position: absolute; inset: 0; z-index: 50; background: rgba(10,10,10,.55); display: grid; place-items: center; animation: aFade .2s both; pointer-events: auto; }
+.modal-back { position: absolute; inset: 0; z-index: 50; background: rgba(10,10,10,.55); display: grid; place-items: center; animation: aFade .2s backwards; pointer-events: auto; }
 @keyframes aFade { from { opacity: 0; } }
-.modal { width: 900px; padding: 60px 70px; border-radius: 28px; background: linear-gradient(160deg, #3a3a3a, #161616); color: #f2f2f2; box-shadow: 0 30px 80px rgba(0,0,0,.6), inset 0 2px 0 rgba(255,255,255,.12); animation: aPop .3s both; }
+.modal { width: 900px; padding: 60px 70px; border-radius: 28px; background: linear-gradient(160deg, #3a3a3a, #161616); color: #f2f2f2; box-shadow: 0 30px 80px rgba(0,0,0,.6), inset 0 2px 0 rgba(255,255,255,.12); animation: aPop .3s backwards; }
 .modal h2 { font-family: "Passion One", sans-serif; font-size: 34px; letter-spacing: .3em; color: #cfcfcf; margin-bottom: 8px; }
 .modal h3 { font-size: 52px; font-weight: 900; margin-bottom: 30px; }
 .modal p { font-size: 26px; color: #bdbdbd; line-height: 1.5; margin-bottom: 26px; }
@@ -139,3 +139,56 @@ textarea.field { resize: none; line-height: 1.45; }
 .vid { mix-blend-mode: overlay; }
 
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+
+/* >>> boot */
+/* ── 첫 화면 · 페이지 넘김 ── */
+#stage { transform: translate(var(--ag-x, 0px), var(--ag-y, 0px)) scale(var(--ag-s, 1)); }
+.wallpaper { background-image: url("bg.jpg"), url("data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAoHBwgHBgoICAgLCgoLDhgQDg0NDh0VFhEYIx8lJCIfIiEmKzcvJik0KSEiMEExNDk7Pj4+JS5ESUM8SDc9Pjv/2wBDAQoLCw4NDhwQEBw7KCIoOzs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozv/wAARCAAkAEADASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwDthaj0pws89qcl3Ee9WEuYj3qXVZXsit9i9qT7GPSr4ljI6ioVljVCMjOT3pe2D2JUe0OMqB9Ki+zBhkCrrTp6iq5nUZ56mqVUl0mQm2x2qMwAdqma4X1qJpwe9V7Ql0zBGo/7Y/Oj+1lU4LCuCGqzBSSXwKjbXJAfvGtOVdhKo+56OuqKVzkfnTTqQ67gPxrzr+3ZM8k81INZkADGTg0uWI+eR21xq04YiM4A75qA6peEg7h9K5H+2mb/AJat+VC6u5PE2PrTshc0jr11W7ZsbQfxqybuT1/WuNGouDhrgD86njvlK5NwdvemkhObOYuWZZOGPIqOH5nGeaKKOpK+AluTjoAKrg/LnNFFKW4U/hBXYHIOKUk560UVJqTwtgMcA/KetVXmkVSA7D8aKKp7Ga+Jn//Z"); background-size: cover; background-position: center; background-repeat: no-repeat; }
+html.ag-wait #stage * { animation-play-state: paused !important; }
+html.ag-wait #stage > :not(.wallpaper):not(.tint) { opacity: 0 !important; will-change: opacity; }  /* 숨긴 채로 미리 그려 둔다 */
+@view-transition { navigation: auto; }
+::view-transition-old(root), ::view-transition-new(root) { animation-duration: .32s; animation-timing-function: cubic-bezier(.4, 0, .2, 1); }
+
+/* ── 사이드바 페이지 피그마 모션 (2초 타임라인, 한 번) ── */
+.mo { animation-duration: 2s; animation-timing-function: linear; animation-fill-mode: backwards; }
+.mo-lpanel { animation-name: mo-lpanel-t; }
+@keyframes mo-lpanel-t { 0%, 1.35% { translate: -200px 0px; animation-timing-function: ease-out; } 26.35%, 100% { translate: 0 0; } }
+.mo-lpanel0 { animation-name: mo-lpanel0-t; }
+@keyframes mo-lpanel0-t { 0% { translate: -200px 0px; animation-timing-function: ease-out; } 25%, 100% { translate: 0 0; } }
+.mo-rbg { animation-name: mo-rbg-t, mo-rbg-o; }
+@keyframes mo-rbg-t { 0%, 2.482% { translate: 120px 0px; animation-timing-function: cubic-bezier(.5, 1.7, .3, 1); } 23.72%, 100% { translate: 0 0; } }
+@keyframes mo-rbg-o { 0%, 2.482% { opacity: 0; animation-timing-function: cubic-bezier(.5, 0, .5, 1); } 8.145%, 100% { opacity: 1; } }
+.mo-rlist { animation-name: mo-rlist-t, mo-rlist-o; }
+@keyframes mo-rlist-t { 0%, 2.55% { translate: 120px 0px; animation-timing-function: cubic-bezier(.5, 1.7, .3, 1); } 17.55%, 100% { translate: 0 0; } }
+@keyframes mo-rlist-o { 0%, 2.55% { opacity: 0; animation-timing-function: cubic-bezier(.5, 0, .5, 1); } 6.55%, 100% { opacity: 1; } }
+.mo-msgs { animation-name: mo-msgs-t, mo-msgs-o; }
+@keyframes mo-msgs-t { 0%, 6.35% { translate: 0px -40px; animation-timing-function: cubic-bezier(.05, .4, .5, 1); } 36.35%, 100% { translate: 0 0; } }
+@keyframes mo-msgs-o { 0%, 6.35% { opacity: 0; animation-timing-function: cubic-bezier(.5, 0, .5, 1); } 26.35%, 100% { opacity: 1; } }
+.mo-cpanel { animation-name: mo-cpanel-t, mo-cpanel-o; }
+@keyframes mo-cpanel-t { 0%, 13.202% { translate: -60px 0px; animation-timing-function: linear(0, 0.078, 0.2737, 0.5283, 0.7893, 1.0162, 1.1837, 1.2818, 1.3134, 1.2904, 1.23, 1.1505, 1.0685, 0.9969, 0.9438, 0.9123, 0.9018, 0.9085, 0.9272, 0.952, 0.9777, 1.0003, 1.0172, 1.0273, 1.0308, 1.0288, 1.023, 1.0153, 1.0072, 1.0001, 0.9947, 0.9915, 0.9904, 0.9909, 0.9927, 0.9951, 0.9977, 0.9999, 1.0016, 1.0026, 1.003, 1.0029, 1.0023, 1.0016, 1.0008, 1, 0.9995, 0.9992, 0.9991, 0.9991, 0.9993); } 73.202%, 100% { translate: 0 0; } }
+@keyframes mo-cpanel-o { 0%, 13.202% { opacity: 0; animation-timing-function: cubic-bezier(.5, 0, .5, 1); } 20.702%, 100% { opacity: 1; } }
+.mo-input { animation-name: mo-input-t, mo-input-o; }
+@keyframes mo-input-t { 0%, 13.25% { translate: 120px 0px; animation-timing-function: cubic-bezier(.5, 1.7, .3, 1); } 28.25%, 100% { translate: 0 0; } }
+@keyframes mo-input-o { 0%, 13.25% { opacity: 0; animation-timing-function: cubic-bezier(.5, 0, .5, 1); } 17.25%, 100% { opacity: 1; } }
+.mo-mine { animation-name: mo-mine-t, mo-mine-o; }
+@keyframes mo-mine-t { 0%, 13.25% { translate: -40px -40px; animation-timing-function: cubic-bezier(.05, .4, .5, 1); } 43.25%, 100% { translate: 0 0; } }
+@keyframes mo-mine-o { 0%, 13.25% { opacity: 0; animation-timing-function: cubic-bezier(.5, 0, .5, 1); } 33.25%, 100% { opacity: 1; } }
+.mo-tpanel { animation-name: mo-tpanel-t, mo-tpanel-o; }
+@keyframes mo-tpanel-t { 0%, 10.05% { translate: -60px 0px; animation-timing-function: linear(0, 0.078, 0.2737, 0.5283, 0.7893, 1.0162, 1.1837, 1.2818, 1.3134, 1.2904, 1.23, 1.1505, 1.0685, 0.9969, 0.9438, 0.9123, 0.9018, 0.9085, 0.9272, 0.952, 0.9777, 1.0003, 1.0172, 1.0273, 1.0308, 1.0288, 1.023, 1.0153, 1.0072, 1.0001, 0.9947, 0.9915, 0.9904, 0.9909, 0.9927, 0.9951, 0.9977, 0.9999, 1.0016, 1.0026, 1.003, 1.0029, 1.0023, 1.0016, 1.0008, 1, 0.9995, 0.9992, 0.9991, 0.9991, 0.9993); } 70.05%, 100% { translate: 0 0; } }
+@keyframes mo-tpanel-o { 0%, 10.05% { opacity: 0; animation-timing-function: cubic-bezier(.5, 0, .5, 1); } 17.55%, 100% { opacity: 1; } }
+.mo-tcbg { animation-name: mo-tcbg-t, mo-tcbg-o; }
+@keyframes mo-tcbg-t { 0%, 17.482% { translate: 120px 0px; animation-timing-function: cubic-bezier(.5, 1.7, .3, 1); } 38.72%, 100% { translate: 0 0; } }
+@keyframes mo-tcbg-o { 0%, 17.482% { opacity: 0; animation-timing-function: cubic-bezier(.5, 0, .5, 1); } 23.145%, 100% { opacity: 1; } }
+.mo-tchead { animation-name: mo-tchead-t, mo-tchead-o; }
+@keyframes mo-tchead-t { 0%, 17.55% { translate: 120px 0px; animation-timing-function: cubic-bezier(.5, 1.7, .3, 1); } 32.55%, 100% { translate: 0 0; } }
+@keyframes mo-tchead-o { 0%, 17.55% { opacity: 0; animation-timing-function: cubic-bezier(.5, 0, .5, 1); } 21.55%, 100% { opacity: 1; } }
+.mo-tclist { animation-name: mo-tclist-t, mo-tclist-o; }
+@keyframes mo-tclist-t { 0%, 16.22% { translate: 120px 0px; animation-timing-function: cubic-bezier(.05, .4, .5, 1); } 46.22%, 100% { translate: 0 0; } }
+@keyframes mo-tclist-o { 0%, 16.22% { opacity: 0; animation-timing-function: cubic-bezier(.5, 0, .5, 1); } 23.72%, 100% { opacity: 1; } }
+.mo-tcsend { animation-name: mo-tcsend-t, mo-tcsend-o; }
+@keyframes mo-tcsend-t { 0%, 16.22% { translate: 120px 0px; animation-timing-function: cubic-bezier(.5, 1.7, .3, 1); } 31.22%, 100% { translate: 0 0; } }
+@keyframes mo-tcsend-o { 0%, 16.22% { opacity: 0; animation-timing-function: cubic-bezier(.5, 0, .5, 1); } 20.22%, 100% { opacity: 1; } }
+.ag-intro .msgs .msg.me .bub { animation: 2s linear backwards mo-mine-t, 2s linear backwards mo-mine-o; }
+.ch { display: inline-block; white-space: pre; animation: mo-ch var(--cd) cubic-bezier(0, 0, .58, 1) var(--cl) backwards; }
+@keyframes mo-ch { 0% { translate: 0 -40px; opacity: 0; } 45% { opacity: 1; } 100% { translate: 0 0; opacity: 1; } }
+/* <<< boot */

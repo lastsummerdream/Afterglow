@@ -4,6 +4,38 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>애프터 글로우 · 메인</title>
+<!-- >>> boot -->
+<link rel="preload" href="assets/bg.jpg" as="image">
+<script>
+/* 첫 그림부터 화면 크기에 맞추고, 글꼴·배경이 준비될 때까지 진입 애니메이션을 멈춰 둔다 */
+(function () {
+  var d = document.documentElement; d.classList.add('ag-wait');
+  function fit() { var s = Math.min(innerWidth / 2560, innerHeight / 1440); d.style.setProperty('--ag-s', s); d.style.setProperty('--ag-x', (innerWidth - 2560 * s) / 2 + 'px'); d.style.setProperty('--ag-y', (innerHeight - 1440 * s) / 2 + 'px'); }
+  fit(); addEventListener('resize', fit);
+  var started = false;
+  function start() {
+    if (started) return; started = true;
+    requestAnimationFrame(function () { requestAnimationFrame(function () {
+      d.classList.remove('ag-wait'); d.classList.add('ag-intro');
+      setTimeout(function () { d.classList.remove('ag-intro'); }, 2600);
+    }); });
+  }
+  function frame() { return new Promise(function (r) { requestAnimationFrame(function () { r(); }); }); }
+  var img = new Image(); img.src = 'assets/bg.jpg';
+  var pImg = img.decode ? img.decode().catch(function () {}) : Promise.resolve();
+  var pDom = new Promise(function (r) { if (document.readyState !== 'loading') r(); else document.addEventListener('DOMContentLoaded', r); });
+  var pFont = pDom.then(frame).then(function () {
+    if (!document.fonts) return;
+    var f = ['500 20px "Noto Sans KR"', '700 20px "Noto Sans KR"', '900 20px "Noto Sans KR"', '700 20px "Passion One"'];
+    return Promise.all(f.map(function (x) { return document.fonts.load(x, '가나다 AFTERGLOW').catch(function () {}); }))
+      .then(function () { return document.fonts.ready; });
+  });
+  Promise.all([pImg, pFont]).then(start, start);
+  setTimeout(start, 2500);
+  addEventListener('pageshow', function (e) { if (e.persisted) { started = true; d.classList.remove('ag-wait', 'ag-intro'); } });
+})();
+</script>
+<!-- <<< boot -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@500;700;900&family=Passion+One:wght@700&family=Palanquin+Dark:wght@700&display=swap" rel="stylesheet">
@@ -37,7 +69,7 @@
   .rw > div { flex: none; position: relative; }
 
   /* ── 진입 애니메이션 (피그마 모션: 2초 타임라인, 한 번만 재생) ── */
-  .in { animation-duration: 2s; animation-timing-function: linear; animation-fill-mode: both; }
+  .in { animation-duration: 2s; animation-timing-function: linear; animation-fill-mode: backwards; }  /* 끝나면 레이어를 합친다 */
   .in-urim { animation-name: urimY, urimO; }
   @keyframes urimY { 0%, 37.6% { translate: 0 -60px; animation-timing-function: linear(0, 0.078, 0.2737, 0.5283, 0.7893, 1.0162, 1.1837, 1.2818, 1.3134, 1.2904, 1.23, 1.1505, 1.0685, 0.9969, 0.9438, 0.9123, 0.9018, 0.9085, 0.9272, 0.952, 0.9777, 1.0003, 1.0172, 1.0273, 1.0308, 1.0288, 1.023, 1.0153, 1.0072, 1.0001, 0.9947, 0.9915, 0.9904, 0.9909, 0.9927, 0.9951, 0.9977, 0.9999, 1.0016, 1.0026, 1.003, 1.0029, 1.0023, 1.0016, 1.0008, 1, 0.9995, 0.9992, 0.9991, 0.9991, 0.9993); } 97.6%, 100% { translate: 0 0; } }
   @keyframes urimO { 0%, 37.6% { opacity: 0; animation-timing-function: cubic-bezier(.5,0,.5,1); } 45.1%, 100% { opacity: 1; } }
@@ -131,7 +163,7 @@
   .nameplate { left: 85px; top: 16px; white-space: nowrap; pointer-events: none; color: #fff; font-size: 40px; font-weight: 700; letter-spacing: -1.6px; }
 
   /* 메뉴 (같은 data-m 끼리 호버 시 함께 움직임) */
-  .layer { position: absolute; left: 0; top: 0; width: 2560px; height: 1440px; pointer-events: none; }
+  .layer { position: absolute; left: 0; top: 0; width: 0; height: 0; pointer-events: none; }  /* 크기 0: 레이어가 화면 전체를 덮지 않게 */
   .mbox { position: absolute; left: 0; top: 0; transform-origin: 0 0; mask-repeat: no-repeat; -webkit-mask-repeat: no-repeat; mask-mode: alpha; }
   .mbox > img, .mbox > p { position: absolute; left: 0; top: 0; transform-origin: 0 0; }
   .mbox > p { white-space: nowrap; }
@@ -143,7 +175,7 @@
   .sub { font-family: "Passion One", sans-serif; font-weight: 700; white-space: nowrap; }
   .tiny { font-family: "Palanquin Dark", sans-serif; font-weight: 700; white-space: nowrap; }
   .hit { position: absolute; left: 0; top: 0; width: 2560px; height: 1440px; overflow: visible; pointer-events: none; }
-  .hit polygon { pointer-events: auto; cursor: pointer; fill: transparent; outline: none; }
+  .hit polygon { pointer-events: all; cursor: pointer; fill: none; outline: none; }  /* 칠하지 않아 따로 그려지지 않게 */
   .hit polygon:focus-visible { stroke: #fff; stroke-width: 6; }
 
   /* 사이드바 */
@@ -198,11 +230,21 @@
   .page-toast.show { opacity: 1; transform: translate(-50%, 0); }
 
   @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+
+/* >>> boot */
+/* ── 첫 화면 · 페이지 넘김 ── */
+#stage { transform: translate(var(--ag-x, 0px), var(--ag-y, 0px)) scale(var(--ag-s, 1)); }
+.wallpaper { background-image: url("assets/bg.jpg"), url("data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAoHBwgHBgoICAgLCgoLDhgQDg0NDh0VFhEYIx8lJCIfIiEmKzcvJik0KSEiMEExNDk7Pj4+JS5ESUM8SDc9Pjv/2wBDAQoLCw4NDhwQEBw7KCIoOzs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozv/wAARCAAkAEADASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwDthaj0pws89qcl3Ee9WEuYj3qXVZXsit9i9qT7GPSr4ljI6ioVljVCMjOT3pe2D2JUe0OMqB9Ki+zBhkCrrTp6iq5nUZ56mqVUl0mQm2x2qMwAdqma4X1qJpwe9V7Ql0zBGo/7Y/Oj+1lU4LCuCGqzBSSXwKjbXJAfvGtOVdhKo+56OuqKVzkfnTTqQ67gPxrzr+3ZM8k81INZkADGTg0uWI+eR21xq04YiM4A75qA6peEg7h9K5H+2mb/AJat+VC6u5PE2PrTshc0jr11W7ZsbQfxqybuT1/WuNGouDhrgD86njvlK5NwdvemkhObOYuWZZOGPIqOH5nGeaKKOpK+AluTjoAKrg/LnNFFKW4U/hBXYHIOKUk560UVJqTwtgMcA/KetVXmkVSA7D8aKKp7Ga+Jn//Z"); background-size: cover; background-position: center; background-repeat: no-repeat; }
+html.ag-wait #stage * { animation-play-state: paused !important; }
+html.ag-wait #stage > :not(.wallpaper):not(.tint) { opacity: 0 !important; will-change: opacity; }  /* 숨긴 채로 미리 그려 둔다 */
+@view-transition { navigation: auto; }
+::view-transition-old(root), ::view-transition-new(root) { animation-duration: .32s; animation-timing-function: cubic-bezier(.4, 0, .2, 1); }
+/* <<< boot */
 </style>
 </head>
 <body>
 <main id="stage" aria-label="메인 화면">
-  <div class="wallpaper" id="wallpaper" hidden></div><div class="tint" hidden id="tint"></div>
+  <div class="wallpaper" id="wallpaper"></div><div class="tint" id="tint"></div>
 
   <!-- 상단바 -->
   <img class="abs topbar" src="assets/topbar.svg" alt="">
@@ -538,7 +580,10 @@ if (window.AG) {
   if (!CONFIG.images.length) AG.illust.get().then(url => { if (url && !images.length) { images.push(url); imgIdx = 0; setImage(url); } }).catch(() => {});
 }
 
-/* 사이드 메뉴 */
+/* 사이드 메뉴 · 뒤로 가기로 돌아오면 URIM 표시로 되돌림 */
+addEventListener('pageshow', e => {
+  if (e.persisted) document.querySelectorAll('.side-btn').forEach(x => x.classList.toggle('active', x.dataset.side === 'urim'));
+});
 document.querySelectorAll('.side-btn').forEach(b => b.addEventListener('click', () => {
   const k = b.dataset.side;
   document.querySelectorAll('.side-btn').forEach(x => x.classList.toggle('active', x === b));

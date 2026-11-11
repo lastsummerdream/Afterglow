@@ -22,7 +22,53 @@ AG.PAGES = {
 };
 
 /* ── 화면 ── */
+/* 제목 글자를 한 글자씩 나눠 피그마처럼 차례로 내려오게 한다 (500ms 안에, 글자 수에 맞춰 간격 조절) */
+AG.splitChars = function () {
+  const grads = [];
+  document.querySelectorAll('.mo-chars p.t').forEach(p => {
+    if (p.dataset.split) return;
+    const chars = [...p.textContent];
+    const step = 500 / (chars.length + 1);
+    p.dataset.split = '1';
+    p.setAttribute('aria-label', p.textContent);
+    p.textContent = '';
+    chars.forEach((c, i) => {
+      const s = document.createElement('span');
+      s.className = 'ch'; s.textContent = c; s.setAttribute('aria-hidden', 'true');
+      s.style.setProperty('--cd', (step * 2).toFixed(1) + 'ms');
+      s.style.setProperty('--cl', (27 + step * i).toFixed(1) + 'ms');
+      p.appendChild(s);
+    });
+    if (p.classList.contains('title-grad')) grads.push(p);
+  });
+  // 그라데이션 글자: 글자마다 같은 그라데이션을 제자리에 맞춰 깐다
+  const paint = () => grads.forEach(p => {
+    const w = p.offsetWidth;
+    p.style.background = 'none';
+    p.querySelectorAll('.ch').forEach(s => {
+      s.style.cssText += `;background-image:linear-gradient(90deg,#f2f2f2 19.231%,#1e1e1e 100%);background-size:${w}px 100%;background-position:${-s.offsetLeft}px 0;-webkit-background-clip:text;background-clip:text;color:transparent`;
+    });
+  });
+  paint();
+  if (document.fonts) document.fonts.ready.then(paint);
+};
+
+/* 도형 레이어를 화면 전체(2560×1440)가 아니라 그림이 있는 곳만큼만 잡는다 → 그리는 면적·메모리 감소 */
+AG.cropLayers = function () {
+  document.querySelectorAll('.L > svg.sh').forEach(svg => {
+    let b; try { b = svg.getBBox(); } catch { return; }
+    if (!b || !b.width || !b.height) return;
+    const m = 60;   // 그림자·흐림이 번지는 여유
+    const x = Math.floor(b.x - m), y = Math.floor(b.y - m);
+    const w = Math.ceil(b.x + b.width + m) - x, h = Math.ceil(b.y + b.height + m) - y;
+    svg.setAttribute('viewBox', `${x} ${y} ${w} ${h}`);
+    svg.style.left = x + 'px'; svg.style.top = y + 'px'; svg.style.width = w + 'px'; svg.style.height = h + 'px';
+  });
+};
+
 AG.boot = function (opts = {}) {
+  AG.splitChars();
+  AG.cropLayers();
   const stage = document.getElementById('stage');
   const fit = () => {
     const s = Math.min(innerWidth / 2560, innerHeight / 1440);
