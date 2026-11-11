@@ -55,6 +55,10 @@
 | `echoAbility` | 잔향 능력 설명 |
 | `job`, `faction` | 직업, 소속 |
 | `appearance`, `personality`, `background`, `secret`, `notes` | 서술 |
+| `attackStyle`, `attackStyle2` | 공격 스타일과 보조 스타일 (선택). `근접`, `사격`, `투척`, `의체`, `잔향`, `기계`, `지원`. `잔향`은 잔향이 있을 때만 |
+| `attackNormalName`, `attackNormal` | 일반 공격 이름(40자)과 서술(600자) |
+| `attackSpecialName`, `attackSpecial` | 특수 공격 이름(40자)과 서술(800자) |
+| `attackUltimateName`, `attackUltimate` | 필살기 이름(40자)과 서술(1000자) |
 
 ### 프로필 사진
 

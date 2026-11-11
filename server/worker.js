@@ -41,6 +41,8 @@ const AVATAR_MAX = 200000; // 프로필 사진 data URL 최대 길이 (정사각
 const ORIGINS = ["TB-01","TB-02","TB-03","TB-04","TB-05","TB-06","TB-07","TB-08","TB-09","TB-10","TB-11","TB-12","OPH","SEIR","NOD"];
 const SPECIES = ["human","later","mixed","uc"];
 const ECHO = ["없음","방출형","조형형","강화형","간섭형","감응형"];
+// 공격 스타일: 앞으로 만들 전투 사이트에서 그대로 쓴다
+const STYLES = ["근접","사격","투척","의체","잔향","기계","지원"];
 
 // 글자 수 상한
 const CHARACTER_SCHEMA = {
@@ -51,6 +53,10 @@ const CHARACTER_SCHEMA = {
   echoType: "enum", echoAbility: 120,
   job: 40, faction: 40,
   appearance: 1200, personality: 1200, background: 2400, secret: 600, notes: 1200,
+  attackStyle: "enum", attackStyle2: "enum",
+  attackNormalName: 40, attackNormal: 600,
+  attackSpecialName: 40, attackSpecial: 800,
+  attackUltimateName: 40, attackUltimate: 1000,
 };
 
 export default {
@@ -314,6 +320,12 @@ function validateCharacter(d) {
     else if (out.echoType === "없음") out.echoAbility = "";
   }
   if (out.species === "later" && !out.lineage) return { error: "required", field: "lineage" };
+  if (out.attackStyle && !STYLES.includes(out.attackStyle)) return { error: "enum", field: "attackStyle" };
+  if (out.attackStyle2 && !STYLES.includes(out.attackStyle2)) return { error: "enum", field: "attackStyle2" };
+  if (!out.attackStyle) out.attackStyle2 = "";
+  if (out.attackStyle2 === out.attackStyle) out.attackStyle2 = "";
+  // 잔향이 없으면 잔향 공격 스타일을 고를 수 없다
+  if (out.echoType === "없음" && (out.attackStyle === "잔향" || out.attackStyle2 === "잔향")) return { error: "no_echo", field: out.attackStyle === "잔향" ? "attackStyle" : "attackStyle2" };
   return { data: out };
 }
 
@@ -345,6 +357,7 @@ function nText(s) {
   for (let i = 0; i < s.length && out.length < 50; i += 1900) out.push({ type: "text", text: { content: s.slice(i, i + 1900) } });
   return { rich_text: out };
 }
+function atk(name, desc) { name = name || ""; desc = desc || ""; return name && desc ? "「" + name + "」 " + desc : name ? "「" + name + "」" : desc; }
 function nSelect(v) { return { select: v ? { name: v } : null }; }
 function nDate(ms) { return { date: ms ? { start: new Date(ms).toISOString() } : null }; }
 function nNum(v) { return { number: v == null || v === "" || isNaN(v) ? null : Number(v) }; }
@@ -376,6 +389,8 @@ async function syncNotion(env, userId, gone) {
         "직업": nText(d.job), "소속": nText(d.faction),
         "사진": { checkbox: !!(c && c.avatar) },
         "외형": nText(d.appearance), "성격": nText(d.personality), "배경": nText(d.background), "비밀": nText(d.secret), "메모": nText(d.notes),
+        "공격 스타일": nSelect(d.attackStyle || null), "보조 스타일": nSelect(d.attackStyle2 || null),
+        "일반 공격": nText(atk(d.attackNormalName, d.attackNormal)), "특수 공격": nText(atk(d.attackSpecialName, d.attackSpecial)), "필살기": nText(atk(d.attackUltimateName, d.attackUltimate)),
       };
     }
     const q = await notion(env, "POST", "/databases/" + dbId + "/query", { filter: { property: "계정 ID", rich_text: { equals: userId } }, page_size: 1 });

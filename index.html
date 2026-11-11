@@ -1523,10 +1523,11 @@ a.icon{text-decoration:none;color:inherit}
   var TS=['T0 · 무감염','T1 · 잠복','T2 · 발현','T3 · 진행','T4 · 말기'];
   var ECHO=[['없음','없음'],['방출형','방출형 · 열, 빛, 충격파'],['조형형','조형형 · 결정 칼날, 갑각, 가시'],['강화형','강화형 · 근력, 반응, 감각'],['간섭형','간섭형 · 코어, 의체, 기계'],['감응형','감응형 · 광맥, 폭풍, 신호']];
   var TIERS=[['Tier 0','시날 스파이어'],['Tier 1','상층 갑판'],['Tier 2','중층 갑판'],['Tier 3','하층 화물칸'],['Tier 4','검역 갑판'],['하선','광야']];
-  var LABEL={name:'이름',nameEn:'영문 이름',age:'나이',gender:'성별',origin:'출신',originDetail:'출신 세부',species:'종족',lineage:'혈통',G:'혈통 지수 G',C:'신용 지수 C',T:'결정화 단계 T',echoType:'잔향 갈래',echoAbility:'잔향 능력',job:'직업',faction:'소속',appearance:'외형',personality:'성격',background:'배경',secret:'비밀',notes:'메모'};
+  var LABEL={name:'이름',nameEn:'영문 이름',age:'나이',gender:'성별',origin:'출신',originDetail:'출신 세부',species:'종족',lineage:'혈통',G:'혈통 지수 G',C:'신용 지수 C',T:'결정화 단계 T',echoType:'잔향 갈래',echoAbility:'잔향 능력',job:'직업',faction:'소속',appearance:'외형',personality:'성격',background:'배경',secret:'비밀',notes:'메모',attackStyle:'공격 스타일',attackStyle2:'보조 스타일',attackNormalName:'일반 공격 이름',attackNormal:'일반 공격',attackSpecialName:'특수 공격 이름',attackSpecial:'특수 공격',attackUltimateName:'필살기 이름',attackUltimate:'필살기'};
+  var STYLES=[['근접','근접 · 칼날, 둔기, 맨손'],['사격','사격 · 총기, 석궁, 저격'],['투척','투척 · 단검, 폭약, 결정 파편'],['의체','의체 · 내장 무기, 강화 의수'],['잔향','잔향 · 능력 자체로 싸운다'],['기계','기계 · 드론, 포탑, 원격 장비'],['지원','지원 · 치료, 교란, 정찰']];
   var ERR={bad_avatar:'사진을 저장하지 못했어요. 다른 사진으로 해 주세요.',bad_username:'아이디는 영문, 숫자, 밑줄(_)로 4~20자예요.',short_password:'비밀번호는 8자 이상이어야 해요.',long_password:'비밀번호는 72자 이하로 정해 주세요.',username_taken:'이미 쓰이는 아이디예요.',wrong_login:'아이디나 비밀번호가 맞지 않아요.',wrong_password:'비밀번호가 맞지 않아요.',rate_limited:'시도가 너무 많아요. 잠시 뒤 다시 해 주세요.',too_many_characters:'캐릭터는 한 계정에 하나만 등록할 수 있어요.',not_found:'기록을 찾지 못했어요. 새로고침해 주세요.',server_error:'서버에서 문제가 생겼어요. 잠시 뒤 다시 해 주세요.',server_not_ready:'등록 서버가 아직 준비되지 않았어요.'};
   function jo(w,a,b){w=String(w);var c=w.charCodeAt(w.length-1);if(c<0xAC00||c>0xD7A3)return w+b;return w+((c-0xAC00)%28?a:b);}
-  var REASON={required:function(l){return jo(l,'을','를')+' 입력해 주세요.';},range:function(l){return l+'의 값이 범위를 벗어났어요.';},too_long:function(l){return jo(l,'이','가')+' 너무 길어요.';},type:function(l){return l+'의 형식이 맞지 않아요.';},enum:function(l){return jo(l,'을','를')+' 목록에서 골라 주세요.';}};
+  var REASON={no_echo:function(){return '잔향이 없는 캐릭터는 잔향 스타일을 고를 수 없어요.';},required:function(l){return jo(l,'을','를')+' 입력해 주세요.';},range:function(l){return l+'의 값이 범위를 벗어났어요.';},too_long:function(l){return jo(l,'이','가')+' 너무 길어요.';},type:function(l){return l+'의 형식이 맞지 않아요.';},enum:function(l){return jo(l,'을','를')+' 목록에서 골라 주세요.';}};
 
   function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
   function ro(w){w=String(w);var c=w.charCodeAt(w.length-1);if(c<0xAC00||c>0xD7A3)return w+'(으)로';var j=(c-0xAC00)%28;return w+(j===0||j===8?'로':'으로');}
@@ -1586,6 +1587,7 @@ a.icon{text-decoration:none;color:inherit}
     a.push(d.species==='later'&&d.lineage?d.lineage+' 레이터':SNAME[d.species]||'');
     if(d.species!=='uc'&&d.T!=null)a.push('T'+d.T);
     if(d.echoType&&d.echoType!=='없음')a.push(d.echoType);
+    if(d.attackStyle)a.push(d.attackStyle+(d.attackStyle2?'·'+d.attackStyle2:''));
     return a.filter(Boolean).join(' · ');
   }
   function renderMe(){
@@ -1738,6 +1740,17 @@ a.icon{text-decoration:none;color:inherit}
        '<label class="fld" data-f="echoType"><span>갈래</span><select name="echoType">'+opt(ECHO,d.echoType||'없음')+'</select></label>'+
        inp('echoAbility','능력',d.echoAbility,120,'예: 팔의 결정을 칼날로 키운다')+
        '</div><p class="rgnote" id="rg-enote"></p></div>';
+    h+='<div class="group" id="rg-atk"><div class="ghead">전투</div><div class="glist">'+
+       '<div class="fld3 two"><label class="fld" data-f="attackStyle"><span>공격 스타일</span><select name="attackStyle"><option value="">고르기</option>'+opt(STYLES.map(function(x){return[x[0],x[0]];}),d.attackStyle)+'</select></label>'+
+       '<label class="fld" data-f="attackStyle2"><span>보조 스타일</span><select name="attackStyle2"><option value="">없음</option>'+opt(STYLES.map(function(x){return[x[0],x[0]];}),d.attackStyle2)+'</select></label></div>'+
+       '</div><p class="rgnote" id="rg-anote">주로 싸우는 방식을 고르고, 필요하면 보조 스타일을 하나 더 골라요.</p></div>';
+    [['Normal','일반 공격',600,'예: 결정 날 베기','평소에 쓰는 공격이에요. 무엇으로, 어떻게 싸우는지 적어요.'],
+     ['Special','특수 공격',800,'예: 역류하는 칼날','조건이 있거나 대가가 따르는 기술이에요. 준비 시간, 횟수 제한, 결정이 자라는 정도 같은 것을 적어요.'],
+     ['Ultimate','필살기',1000,'예: 범람','단 한 번의 결정타예요. 쓰고 나면 무엇을 잃는지도 적어 두세요.']].forEach(function(a){
+      h+='<div class="group"><div class="ghead">'+a[1]+'</div><div class="glist">'+
+         inp('attack'+a[0]+'Name','기술 이름',d['attack'+a[0]+'Name'],40,a[3])+
+         area('attack'+a[0],'서술',d['attack'+a[0]],a[2],a[4])+'</div></div>';
+    });
     h+='<div class="group"><div class="ghead">일과 소속</div><div class="glist">'+
        inp('job','직업',d.job,40,'예: 궤도 정비공')+inp('faction','소속',d.faction,40,'예: 흰 늑대, 무소속')+'</div></div>';
     h+='<div class="group"><div class="ghead">서술</div><div class="glist">'+
@@ -1759,7 +1772,7 @@ a.icon{text-decoration:none;color:inherit}
     form.name.addEventListener('input',function(){if(!curAv())paintAv(null,form.name.value);});
     [].forEach.call(form.querySelectorAll('textarea'),function(t){var n=t.parentNode.querySelector('.cnt');var u=function(){n.textContent=t.value.length+' / '+t.maxLength;};t.addEventListener('input',u);u();});
     form.species.addEventListener('change',function(){fillG(form.species.value,form.G.value);syncSheet();});
-    ['origin','G','C','T','echoType'].forEach(function(n){form[n].addEventListener('change',syncSheet);});
+    ['origin','G','C','T','echoType','attackStyle','attackStyle2'].forEach(function(n){form[n].addEventListener('change',syncSheet);});
     var act=$('rg-act');if(act)act.onclick=function(){if(busy)return;busy=true;req('PUT','/me/active',{id:editing}).then(function(r){busy=false;if(!r.ok){setMsg($('rg-cmsg'),errText(r));return;}me=r.data;act.remove();setMsg($('rg-cmsg'),'URIM 대화 캐릭터로 지정했어요.',true);renderMe();announce();});};
     var del=$('rg-cdel');if(del)del.onclick=function(){
       if(busy)return;
@@ -1784,6 +1797,12 @@ a.icon{text-decoration:none;color:inherit}
     var T=form.T.value===''?null:+form.T.value,et=form.echoType,ea=form.echoAbility,en=$('rg-enote');
     var noEcho=T===0;et.disabled=noEcho;ea.disabled=noEcho||et.value==='없음';
     if(noEcho)et.value='없음';
+    var echoNone=uc||noEcho||et.value==='없음',s1=form.attackStyle,s2=form.attackStyle2;
+    [s1,s2].forEach(function(sel){var o=sel.querySelector('option[value="잔향"]');o.disabled=echoNone;o.textContent=echoNone?'잔향 (잔향 필요)':'잔향';if(echoNone&&sel.value==='잔향')sel.value='';});
+    s2.disabled=!s1.value;if(!s1.value||s2.value===s1.value)s2.value='';
+    [].forEach.call(s2.options,function(o){if(o.value)o.hidden=o.value===s1.value;});
+    var SD={};STYLES.forEach(function(x){SD[x[0]]=x[1];});
+    $('rg-anote').textContent=s1.value?SD[s1.value]+(s2.value?' / 보조 '+SD[s2.value]:''):'주로 싸우는 방식을 고르고, 필요하면 보조 스타일을 하나 더 골라요.'+(echoNone?' 잔향 스타일은 잔향이 있어야 고를 수 있어요.':'');
     en.textContent=noEcho?'T0 무감염자에게는 잔향이 나타나지 않아요.':T===1?'T1은 본인도 모르게 새어 나오는 정도예요.':T>=2?'쓸 때마다 결정이 자라요.':'';
     var G=+form.G.value,C=+form.C.value,sum=$('rg-sum');
     if(!G||!C||T==null){sum.innerHTML='G, C, T를 고르면 명부 점수와 거주 등급을 계산해요.';return;}

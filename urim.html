@@ -1248,11 +1248,13 @@ if(typeof module!=='undefined')module.exports=URIM;
       rows.push(['잔향',d.echoType&&d.echoType!=='없음'?d.echoType+(d.echoAbility?' · '+d.echoAbility:''):'없음','']);
     }
     if(d.job||d.faction)rows.push(['직업',d.job||'-',d.faction?'소속 · '+d.faction:'']);
+    if(d.attackStyle)rows.push(['전투',d.attackStyle+(d.attackStyle2?' · 보조 '+d.attackStyle2:''),[d.attackNormalName,d.attackSpecialName,d.attackUltimateName].filter(Boolean).map(function(n){return'「'+n+'」';}).join(' ')]);
     return rows;
   }
   function whoText(d){
     var L=whoRows(d).map(function(r){return r[0]+': '+r[1]+(r[2]?' ('+r[2]+')':'');});
     [['appearance','외형'],['personality','성격'],['background','배경'],['notes','메모']].forEach(function(f){if(d[f[0]])L.push(f[1]+': '+d[f[0]].replace(/\s+/g,' '));});
+    [['Normal','일반 공격'],['Special','특수 공격'],['Ultimate','필살기']].forEach(function(a){var n=d['attack'+a[0]+'Name'],x=d['attack'+a[0]];if(n||x)L.push(a[1]+': '+(n?'「'+n+'」 ':'')+(x||'').replace(/\s+/g,' '));});
     if(d.secret)L.push('[비밀] '+d.secret.replace(/\s+/g,' '));
     return L.join('\n');
   }
