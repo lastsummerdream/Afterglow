@@ -119,17 +119,17 @@
 
 .c { text-align: center; }
 #compose::placeholder { color: #bdbdbd; }
-.feed { left: 711px; top: 348px; width: 760px; height: 1001px; padding: 16px 30px 40px 14px; }
-.post { position: relative; padding: 0 0 56px 104px; cursor: pointer; border-radius: 4px; transition: background .2s; }
-.post .ava { position: absolute; left: 0; top: 0; width: 70px; height: 70px; border-radius: 35px; overflow: hidden; background: rgba(255,255,255,.18); box-shadow: inset 0 0 0 2px rgba(0,0,0,.06); display: grid; place-items: center; font-weight: 900; font-size: 30px; color: rgba(30,30,30,.45); }
+.feed { left: 738px; top: 348px; width: 817px; height: 1001px; padding: 15px 20px 40px 0; }
+.post { position: relative; padding: 1px 0 56px 118px; cursor: pointer; border-radius: 4px; transition: background .2s; }
+.post .ava { position: absolute; left: 0; top: 0; width: 82px; height: 70px; border-radius: 0; overflow: hidden; background: rgba(255,255,255,.85); box-shadow: inset 0 0 0 2px rgba(0,0,0,.06); display: grid; place-items: center; font-weight: 900; font-size: 30px; color: rgba(30,30,30,.45); }
 .post .ava img { width: 100%; height: 100%; object-fit: cover; }
-.post::before { content: ""; position: absolute; left: 86px; top: 0; bottom: 56px; width: 8px; background: #1e1e1e; transform: scaleY(0); transform-origin: top; transition: transform .3s cubic-bezier(.2,.8,.2,1); }
+.post::before { content: ""; position: absolute; left: 100px; top: 0; bottom: 56px; width: 8px; background: #1e1e1e; transform: scaleY(0); transform-origin: top; transition: transform .3s cubic-bezier(.2,.8,.2,1); }
 .post:hover:not(.detail)::before { transform: scaleY(1); }
-.post::after { content: ""; position: absolute; left: 104px; right: 0; bottom: 22px; height: 2px; background: rgba(30,30,30,.12); }
+.post::after { content: ""; position: absolute; left: 118px; right: 0; bottom: 22px; height: 2px; background: rgba(30,30,30,.12); }
 .post .hd { display: flex; align-items: baseline; gap: 14px; height: 38px; }
 .post .nm { font-size: 32px; font-weight: 700; color: #1e1e1e; white-space: nowrap; }
 .post .sb { font-size: 22px; font-weight: 500; color: #5a5a5a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.post .bd { margin-top: 16px; padding-left: 10px; width: 582px; font-size: 28px; font-weight: 500; line-height: 1.25; color: #1e1e1e; white-space: pre-wrap; word-break: normal; overflow-wrap: anywhere; }
+.post .bd { margin-top: 16px; padding-left: 10px; width: 620px; font-size: 28px; font-weight: 500; line-height: 1.25; color: #1e1e1e; white-space: pre-wrap; word-break: normal; overflow-wrap: anywhere; }
 .post .more { display: inline-block; margin: 14px 0 0 7px; font-size: 24px; font-weight: 700; color: #3a3a3a; }
 .post .ft { margin-top: 12px; font-size: 22px; font-weight: 700; color: #5a5a5a; }
 .post .edit-box { font-size: 28px; }
@@ -141,8 +141,8 @@
 .cm .bd { margin-top: 6px; max-width: 800px; font-size: 24px; font-weight: 500; line-height: 1.5; color: #e6e6e6; white-space: pre-wrap; word-break: keep-all; overflow-wrap: anywhere; }
 .cm .rp { margin-top: 6px; font-size: 20px; font-weight: 700; color: #c7c7c7; }
 .cm .rp:hover { color: #fff; text-decoration: underline; }
-.cm.lv1 { margin-left: 44px; } .cm.lv2 { margin-left: 88px; }
-.cm.lv1::before, .cm.lv2::before { content: "↳"; position: absolute; left: -44px; top: -2px; font-size: 26px; font-weight: 700; color: #c7c7c7; }
+.cm.lv1 { margin-left: 31px; } .cm.lv2 { margin-left: 62px; }
+.cm.lv1::before, .cm.lv2::before { content: "↳"; position: absolute; left: -31px; top: -2px; font-size: 26px; font-weight: 700; color: #c7c7c7; }
 .cm .edit-box { font-size: 24px; background: rgba(255,255,255,.9); }
 .cm .acts button { font-size: 18px; padding: 4px 12px; }
 #comments .empty { color: #c7c7c7; font-size: 24px; padding-top: 30px; }
@@ -152,7 +152,7 @@
 .post.detail { cursor: default; padding-top: 4px; }
 .post.detail:hover { background: none; }
 .post.detail::after { display: none; }
-.post.detail .back { display: block; margin: 0 0 30px -104px; font-size: 24px; font-weight: 700; color: #3a3a3a; padding: 6px 0; }
+.post.detail .back { display: block; margin: 0 0 30px -118px; font-size: 24px; font-weight: 700; color: #3a3a3a; padding: 6px 0; }
 .post.detail .back:hover { color: #1e1e1e; text-decoration: underline; }
 .post.detail .bd { font-size: 30px; line-height: 1.5; }
 .post.detail .ft { margin-top: 30px; }
@@ -168,125 +168,125 @@
 .cm .bd { margin-top: 6px; font-size: 24px; font-weight: 500; line-height: 1.5; color: #e6e6e6; white-space: pre-wrap; word-break: keep-all; overflow-wrap: anywhere; }
 .cm .rp { margin-top: 6px; font-size: 20px; font-weight: 700; color: #c7c7c7; }
 .cm .rp:hover { color: #fff; text-decoration: underline; }
-.cm.lv1 { margin-left: 44px; } .cm.lv2 { margin-left: 88px; }
-.cm.lv1::before, .cm.lv2::before { content: "↳"; position: absolute; left: -44px; top: -2px; font-size: 26px; font-weight: 700; color: #c7c7c7; }
+.cm.lv1 { margin-left: 31px; } .cm.lv2 { margin-left: 62px; }
+.cm.lv1::before, .cm.lv2::before { content: "↳"; position: absolute; left: -31px; top: -2px; font-size: 26px; font-weight: 700; color: #c7c7c7; }
 .cm .edit-box { font-size: 24px; background: rgba(255,255,255,.9); }
 .cm .acts button { font-size: 18px; padding: 4px 12px; }
 #comments .empty { color: #c7c7c7; font-size: 24px; padding-top: 30px; }
 #replyTo button { margin-left: 12px; color: #ff9d9d; font-weight: 700; }
 
 /* ── 본문 글자 70% ── */
-:is(.L[data-r="center"], .L[data-r="bottom"]) .field { font-size: 21.0px; }
-:is(.L[data-r="center"], .L[data-r="bottom"]) .acts button { font-size: 15.4px; }
-:is(.L[data-r="center"], .L[data-r="bottom"]) .edit-box { font-size: 21.0px; }
-:is(.L[data-r="center"], .L[data-r="bottom"]) .edit-row button { font-size: 15.4px; }
-:is(.L[data-r="center"], .L[data-r="bottom"]) .edited { font-size: 14.0px; }
-:is(.L[data-r="center"], .L[data-r="bottom"]) .confirm { font-size: 15.4px; }
-:is(.L[data-r="center"], .L[data-r="bottom"]) .sact { font-size: 22.4px; translate: 0 5.8px; }
-:is(.L[data-r="center"], .L[data-r="bottom"]) .s0 { font-size: 19.6px; line-height: 27.3px; translate: 0 5.0px; }
-:is(.L[data-r="center"], .L[data-r="bottom"]) .s1 { font-size: 77.0px; line-height: 80.5px; translate: 0 19.8px; }
-:is(.L[data-r="center"], .L[data-r="bottom"]) .s2 { font-size: 44.8px; line-height: 49.0px; translate: 0 11.5px; }
-:is(.L[data-r="center"], .L[data-r="bottom"]) .s3 { font-size: 26.6px; translate: 0 6.8px; }
-:is(.L[data-r="center"], .L[data-r="bottom"]) .s4 { font-size: 16.8px; translate: 0 4.3px; }
-:is(.L[data-r="center"], .L[data-r="bottom"]) .s5 { font-size: 26.6px; translate: 0 6.8px; }
-:is(.L[data-r="center"], .L[data-r="bottom"]) .s6 { font-size: 16.8px; translate: 0 4.3px; }
-:is(.L[data-r="center"], .L[data-r="bottom"]) .s7 { font-size: 23.8px; line-height: 23.8px; translate: 0 6.1px; }
-:is(.L[data-r="center"], .L[data-r="bottom"]) .s8 { font-size: 23.8px; translate: 0 6.1px; }
-:is(.L[data-r="center"], .L[data-r="bottom"]) .s9 { font-size: 15.4px; translate: 0 4.0px; }
-:is(.L[data-r="center"], .L[data-r="bottom"]) .s10 { font-size: 15.4px; translate: 0 4.0px; }
-:is(.L[data-r="center"], .L[data-r="bottom"]) .s11 { font-size: 22.4px; translate: 0 5.8px; }
-:is(.L[data-r="center"], .L[data-r="bottom"]) .s12 { font-size: 15.4px; translate: 0 4.0px; }
-:is(.L[data-r="center"], .L[data-r="bottom"]) .s13 { font-size: 22.4px; line-height: 23.8px; translate: 0 5.8px; }
-:is(.L[data-r="center"], .L[data-r="bottom"]) .s14 { font-size: 22.4px; line-height: 23.8px; translate: 0 5.8px; }
-:is(.L[data-r="center"], .L[data-r="bottom"]) .s15 { font-size: 15.4px; translate: 0 4.0px; }
-:is(.L[data-r="center"], .L[data-r="bottom"]) .s18 { font-size: 15.4px; translate: 0 4.0px; }
-:is(.L[data-r="center"], .L[data-r="bottom"]) .s19 { font-size: 21.0px; translate: 0 5.4px; }
-:is(.L[data-r="center"], .L[data-r="bottom"]) .s20 { font-size: 21.0px; translate: 0 5.4px; }
-:is(.L[data-r="center"], .L[data-r="bottom"]) .s21 { font-size: 15.4px; translate: 0 4.0px; }
-:is(.L[data-r="center"], .L[data-r="bottom"]) .s23 { font-size: 16.8px; line-height: 30.8px; translate: 0 4.3px; }
-:is(.L[data-r="center"], .L[data-r="bottom"]) .s24 { font-size: 21.0px; translate: 0 5.4px; }
-:is(.L[data-r="center"], .L[data-r="bottom"]) .s25 { font-size: 21.0px; translate: 0 5.4px; }
-:is(.L[data-r="center"], .L[data-r="bottom"]) .s26 { font-size: 30.8px; translate: 0 7.9px; }
-:is(.L[data-r="center"], .L[data-r="bottom"]) .s27 { font-size: 26.6px; translate: 0 6.8px; }
-:is(.L[data-r="center"], .L[data-r="bottom"]) .s28 { font-size: 30.8px; translate: 0 7.9px; }
-:is(.L[data-r="center"], .L[data-r="bottom"]) .s29 { font-size: 26.6px; translate: 0 6.8px; }
-:is(.L[data-r="center"], .L[data-r="bottom"]) .s30 { font-size: 21.0px; translate: 0 5.4px; }
-:is(.L[data-r="center"], .L[data-r="bottom"]) .s31 { font-size: 33.6px; translate: 0 8.6px; }
-:is(.L[data-r="center"], .L[data-r="bottom"]) .s32 { font-size: 16.8px; translate: 0 4.3px; }
-:is(.L[data-r="center"], .L[data-r="bottom"]) .s33 { font-size: 23.8px; translate: 0 6.1px; }
-:is(.L[data-r="center"], .L[data-r="bottom"]) .s34 { font-size: 19.6px; line-height: 27.3px; translate: 0 5.0px; }
-:is(.L[data-r="center"], .L[data-r="bottom"]) .s35 { font-size: 39.2px; translate: 0 10.1px; }
-:is(.L[data-r="center"], .L[data-r="bottom"]) .s36 { font-size: 16.8px; translate: 0 4.3px; }
-:is(.L[data-r="center"], .L[data-r="bottom"]) .s37 { font-size: 19.6px; translate: 0 5.0px; }
-:is(.L[data-r="center"], .L[data-r="bottom"]) .s38 { font-size: 50.4px; translate: 0 13.0px; }
-:is(.L[data-r="center"], .L[data-r="bottom"]) .s39 { font-size: 15.4px; translate: 0 4.0px; }
-:is(.L[data-r="center"], .L[data-r="bottom"]) .s40 { font-size: 19.6px; translate: 0 5.0px; }
-:is(.L[data-r="center"], .L[data-r="bottom"]) .s41 { font-size: 28.0px; translate: 0 7.2px; }
-:is(.L[data-r="center"], .L[data-r="bottom"]) .s42 { font-size: 18.2px; translate: 0 4.7px; }
-:is(.L[data-r="center"], .L[data-r="bottom"]) .s43 { font-size: 16.8px; translate: 0 4.3px; }
-:is(.L[data-r="center"], .L[data-r="bottom"]) .s44 { font-size: 33.6px; translate: 0 8.6px; }
-:is(.L[data-r="center"], .L[data-r="bottom"]) .s45 { font-size: 28.0px; translate: 0 7.2px; }
-:is(.L[data-r="center"], .L[data-r="bottom"]) .s46 { font-size: 15.4px; translate: 0 4.0px; }
-:is(.L[data-r="center"], .L[data-r="bottom"]) .s47 { font-size: 28.0px; translate: 0 7.2px; }
-:is(.L[data-r="center"], .L[data-r="bottom"]) .s48 { font-size: 15.4px; translate: 0 4.0px; }
-:is(.L[data-r="center"], .L[data-r="bottom"]) .s49 { font-size: 22.4px; translate: 0 5.8px; }
-:is(.L[data-r="center"], .L[data-r="bottom"]) .s50 { font-size: 16.8px; translate: 0 4.3px; }
-:is(.L[data-r="center"], .L[data-r="bottom"]) .s51 { font-size: 19.6px; line-height: 27.3px; translate: 0 5.0px; }
-:is(.L[data-r="center"], .L[data-r="bottom"]) .s52 { font-size: 21.0px; translate: 0 5.4px; }
-:is(.L[data-r="center"], .L[data-r="bottom"]) .s53 { font-size: 22.4px; translate: 0 5.8px; }
-:is(.L[data-r="center"], .L[data-r="bottom"]) .s54 { font-size: 21.0px; translate: 0 5.4px; }
-:is(.L[data-r="center"], .L[data-r="bottom"]) .s55 { font-size: 22.4px; translate: 0 5.8px; }
-:is(.L[data-r="center"], .L[data-r="bottom"]) .s56 { font-size: 26.6px; translate: 0 6.8px; }
-:is(.L[data-r="center"], .L[data-r="bottom"]) .s57 { font-size: 18.2px; translate: 0 4.7px; }
-:is(.L[data-r="center"], .L[data-r="bottom"]) .s58 { font-size: 15.4px; translate: 0 4.0px; }
-:is(.L[data-r="center"], .L[data-r="bottom"]) .s59 { font-size: 19.6px; line-height: 27.3px; translate: 0 5.0px; }
-:is(.L[data-r="center"], .L[data-r="bottom"]) .s60 { font-size: 36.4px; translate: 0 9.4px; }
-:is(.L[data-r="center"], .L[data-r="bottom"]) .s61 { font-size: 18.2px; translate: 0 4.7px; }
-:is(.L[data-r="center"], .L[data-r="bottom"]) .s62 { font-size: 19.6px; translate: 0 5.0px; }
-:is(.L[data-r="center"], .L[data-r="bottom"]) .s63 { font-size: 21.0px; translate: 0 5.4px; }
-:is(.L[data-r="center"], .L[data-r="bottom"]) .s64 { font-size: 18.2px; translate: 0 4.7px; }
-:is(.L[data-r="center"], .L[data-r="bottom"]) .s65 { font-size: 25.2px; translate: 0 6.5px; }
-:is(.L[data-r="center"], .L[data-r="bottom"]) .s66 { font-size: 25.2px; translate: 0 6.5px; }
-:is(.L[data-r="center"], .L[data-r="bottom"]) .s67 { font-size: 15.4px; translate: 0 4.0px; }
-:is(.L[data-r="center"], .L[data-r="bottom"]) .s68 { font-size: 16.8px; translate: 0 4.3px; }
-:is(.L[data-r="center"], .L[data-r="bottom"]) .s69 { font-size: 22.4px; translate: 0 5.8px; }
-:is(.L[data-r="center"], .L[data-r="bottom"]) .s70 { font-size: 15.4px; translate: 0 4.0px; }
-:is(.L[data-r="center"], .L[data-r="bottom"]) .s71 { font-size: 16.8px; translate: 0 4.3px; }
-:is(.L[data-r="center"], .L[data-r="bottom"]) .s72 { font-size: 16.8px; translate: 0 4.3px; }
-:is(.L[data-r="center"], .L[data-r="bottom"]) .s73 { font-size: 21.0px; translate: 0 5.4px; }
-:is(.L[data-r="center"], .L[data-r="bottom"]) .s74 { font-size: 15.4px; translate: 0 4.0px; }
-:is(.L[data-r="center"], .L[data-r="bottom"]) .s75 { font-size: 16.8px; translate: 0 4.3px; }
-:is(.L[data-r="center"], .L[data-r="bottom"]) .s76 { font-size: 16.8px; translate: 0 4.3px; }
-:is(.L[data-r="center"], .L[data-r="bottom"]) .s77 { font-size: 30.8px; translate: 0 7.9px; }
-:is(.L[data-r="center"], .L[data-r="bottom"]) .s78 { font-size: 19.6px; translate: 0 5.0px; }
-:is(.L[data-r="center"], .L[data-r="bottom"]) .post .ava { font-size: 21.0px; }
-:is(.L[data-r="center"], .L[data-r="bottom"]) .post .nm { font-size: 22.4px; }
-:is(.L[data-r="center"], .L[data-r="bottom"]) .post .sb { font-size: 15.4px; }
-:is(.L[data-r="center"], .L[data-r="bottom"]) .post .bd { font-size: 19.6px; }
-:is(.L[data-r="center"], .L[data-r="bottom"]) .post .more { font-size: 16.8px; }
-:is(.L[data-r="center"], .L[data-r="bottom"]) .post .ft { font-size: 15.4px; }
-:is(.L[data-r="center"], .L[data-r="bottom"]) .post .edit-box { font-size: 19.6px; }
-:is(.L[data-r="center"], .L[data-r="bottom"]) .feed .empty { font-size: 21.0px; }
-:is(.L[data-r="center"], .L[data-r="bottom"]) .cm .nm { font-size: 18.2px; }
-:is(.L[data-r="center"], .L[data-r="bottom"]) .cm .tm { font-size: 14.0px; }
-:is(.L[data-r="center"], .L[data-r="bottom"]) .cm .bd { font-size: 16.8px; }
-:is(.L[data-r="center"], .L[data-r="bottom"]) .cm .rp { font-size: 14.0px; }
-:is(.L[data-r="center"], .L[data-r="bottom"]) .cm.lv1::before, :is(.L[data-r="center"], .L[data-r="bottom"]) .cm.lv2::before { font-size: 18.2px; }
-:is(.L[data-r="center"], .L[data-r="bottom"]) .cm .edit-box { font-size: 16.8px; }
-:is(.L[data-r="center"], .L[data-r="bottom"]) .cm .acts button { font-size: 12.6px; }
-:is(.L[data-r="center"], .L[data-r="bottom"]) #comments .empty { font-size: 16.8px; }
-:is(.L[data-r="center"], .L[data-r="bottom"]) .post.detail .back { font-size: 16.8px; }
-:is(.L[data-r="center"], .L[data-r="bottom"]) .post.detail .bd { font-size: 21.0px; }
-:is(.L[data-r="center"], .L[data-r="bottom"]) .post .edit-box { font-size: 21.0px; }
-:is(.L[data-r="center"], .L[data-r="bottom"]) .feed .empty { font-size: 21.0px; }
-:is(.L[data-r="center"], .L[data-r="bottom"]) .cm .nm { font-size: 18.2px; }
-:is(.L[data-r="center"], .L[data-r="bottom"]) .cm .tm { font-size: 14.0px; }
-:is(.L[data-r="center"], .L[data-r="bottom"]) .cm .bd { font-size: 16.8px; }
-:is(.L[data-r="center"], .L[data-r="bottom"]) .cm .rp { font-size: 14.0px; }
-:is(.L[data-r="center"], .L[data-r="bottom"]) .cm.lv1::before, :is(.L[data-r="center"], .L[data-r="bottom"]) .cm.lv2::before { font-size: 18.2px; }
-:is(.L[data-r="center"], .L[data-r="bottom"]) .cm .edit-box { font-size: 16.8px; }
-:is(.L[data-r="center"], .L[data-r="bottom"]) .cm .acts button { font-size: 12.6px; }
-:is(.L[data-r="center"], .L[data-r="bottom"]) #comments .empty { font-size: 16.8px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .field { font-size: 21.0px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .acts button { font-size: 15.4px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .edit-box { font-size: 21.0px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .edit-row button { font-size: 15.4px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .edited { font-size: 14.0px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .confirm { font-size: 15.4px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .sact { font-size: 22.4px; translate: 0 5.8px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s0 { font-size: 19.6px; line-height: 27.3px; translate: 0 5.0px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s1 { font-size: 77.0px; line-height: 80.5px; translate: 0 19.8px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s2 { font-size: 44.8px; line-height: 49.0px; translate: 0 11.5px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s3 { font-size: 26.6px; translate: 0 6.8px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s4 { font-size: 16.8px; translate: 0 4.3px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s5 { font-size: 26.6px; translate: 0 6.8px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s6 { font-size: 16.8px; translate: 0 4.3px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s7 { font-size: 23.8px; line-height: 23.8px; translate: 0 6.1px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s8 { font-size: 23.8px; translate: 0 6.1px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s9 { font-size: 15.4px; translate: 0 4.0px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s10 { font-size: 15.4px; translate: 0 4.0px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s11 { font-size: 22.4px; translate: 0 5.8px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s12 { font-size: 15.4px; translate: 0 4.0px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s13 { font-size: 22.4px; line-height: 23.8px; translate: 0 5.8px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s14 { font-size: 22.4px; line-height: 23.8px; translate: 0 5.8px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s15 { font-size: 15.4px; translate: 0 4.0px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s18 { font-size: 15.4px; translate: 0 4.0px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s19 { font-size: 21.0px; translate: 0 5.4px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s20 { font-size: 21.0px; translate: 0 5.4px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s21 { font-size: 15.4px; translate: 0 4.0px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s23 { font-size: 16.8px; line-height: 30.8px; translate: 0 4.3px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s24 { font-size: 21.0px; translate: 0 5.4px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s25 { font-size: 21.0px; translate: 0 5.4px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s26 { font-size: 30.8px; translate: 0 7.9px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s27 { font-size: 26.6px; translate: 0 6.8px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s28 { font-size: 30.8px; translate: 0 7.9px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s29 { font-size: 26.6px; translate: 0 6.8px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s30 { font-size: 21.0px; translate: 0 5.4px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s31 { font-size: 33.6px; translate: 0 8.6px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s32 { font-size: 16.8px; translate: 0 4.3px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s33 { font-size: 23.8px; translate: 0 6.1px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s34 { font-size: 19.6px; line-height: 27.3px; translate: 0 5.0px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s35 { font-size: 39.2px; translate: 0 10.1px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s36 { font-size: 16.8px; translate: 0 4.3px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s37 { font-size: 19.6px; translate: 0 5.0px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s38 { font-size: 50.4px; translate: 0 13.0px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s39 { font-size: 15.4px; translate: 0 4.0px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s40 { font-size: 19.6px; translate: 0 5.0px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s41 { font-size: 28.0px; translate: 0 7.2px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s42 { font-size: 18.2px; translate: 0 4.7px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s43 { font-size: 16.8px; translate: 0 4.3px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s44 { font-size: 33.6px; translate: 0 8.6px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s45 { font-size: 28.0px; translate: 0 7.2px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s46 { font-size: 15.4px; translate: 0 4.0px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s47 { font-size: 28.0px; translate: 0 7.2px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s48 { font-size: 15.4px; translate: 0 4.0px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s49 { font-size: 22.4px; translate: 0 5.8px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s50 { font-size: 16.8px; translate: 0 4.3px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s51 { font-size: 19.6px; line-height: 27.3px; translate: 0 5.0px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s52 { font-size: 21.0px; translate: 0 5.4px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s53 { font-size: 22.4px; translate: 0 5.8px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s54 { font-size: 21.0px; translate: 0 5.4px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s55 { font-size: 22.4px; translate: 0 5.8px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s56 { font-size: 26.6px; translate: 0 6.8px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s57 { font-size: 18.2px; translate: 0 4.7px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s58 { font-size: 15.4px; translate: 0 4.0px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s59 { font-size: 19.6px; line-height: 27.3px; translate: 0 5.0px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s60 { font-size: 36.4px; translate: 0 9.4px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s61 { font-size: 18.2px; translate: 0 4.7px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s62 { font-size: 19.6px; translate: 0 5.0px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s63 { font-size: 21.0px; translate: 0 5.4px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s64 { font-size: 18.2px; translate: 0 4.7px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s65 { font-size: 25.2px; translate: 0 6.5px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s66 { font-size: 25.2px; translate: 0 6.5px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s67 { font-size: 15.4px; translate: 0 4.0px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s68 { font-size: 16.8px; translate: 0 4.3px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s69 { font-size: 22.4px; translate: 0 5.8px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s70 { font-size: 15.4px; translate: 0 4.0px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s71 { font-size: 16.8px; translate: 0 4.3px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s72 { font-size: 16.8px; translate: 0 4.3px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s73 { font-size: 21.0px; translate: 0 5.4px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s74 { font-size: 15.4px; translate: 0 4.0px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s75 { font-size: 16.8px; translate: 0 4.3px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s76 { font-size: 16.8px; translate: 0 4.3px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s77 { font-size: 30.8px; translate: 0 7.9px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s78 { font-size: 19.6px; translate: 0 5.0px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .post .ava { font-size: 21.0px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .post .nm { font-size: 22.4px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .post .sb { font-size: 15.4px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .post .bd { font-size: 19.6px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .post .more { font-size: 16.8px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .post .ft { font-size: 15.4px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .post .edit-box { font-size: 19.6px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .feed .empty { font-size: 21.0px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .cm .nm { font-size: 18.2px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .cm .tm { font-size: 14.0px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .cm .bd { font-size: 16.8px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .cm .rp { font-size: 14.0px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .cm.lv1::before, :is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .cm.lv2::before { font-size: 18.2px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .cm .edit-box { font-size: 16.8px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .cm .acts button { font-size: 12.6px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) #comments .empty { font-size: 16.8px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .post.detail .back { font-size: 16.8px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .post.detail .bd { font-size: 21.0px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .post .edit-box { font-size: 21.0px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .feed .empty { font-size: 21.0px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .cm .nm { font-size: 18.2px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .cm .tm { font-size: 14.0px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .cm .bd { font-size: 16.8px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .cm .rp { font-size: 14.0px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .cm.lv1::before, :is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .cm.lv2::before { font-size: 18.2px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .cm .edit-box { font-size: 16.8px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .cm .acts button { font-size: 12.6px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) #comments .empty { font-size: 16.8px; }
 </style>
 </head>
 <body>
@@ -459,46 +459,46 @@
 </defs>
 </svg>
 <div class="L mo mo-lpanel" data-r="left"><svg class="sh" viewBox="0 0 2560 1440" fill="none" aria-hidden="true"><g>
-<rect y="330" width="612" height="1110" fill="url(#timeline_pattern0_83_2)" fill-opacity="0.15"/>
-<rect y="330" width="612" height="1110" fill="#000" fill-opacity="0.410"/>
+<g transform="matrix(0.97712 0 0 1.00991 -14.000 -14.270)"><rect y="330" width="612" height="1110" fill="url(#timeline_pattern0_83_2)" fill-opacity="0.15"/></g>
+<g transform="matrix(0.97712 0 0 1.00991 -14.000 -14.270)"><rect y="330" width="612" height="1110" fill="#000" fill-opacity="0.410"/></g>
 </g>
 <g>
 <g>
-<g filter="url(#timeline_filter4_d_83_2)">
-<path d="M-506 294H604L644 414H-466L-506 294Z" fill="url(#timeline_paint0_linear_83_2)" />
-</g>
+<g transform="matrix(0.83913 0 0 0.70000 70.600 88.200)"><g filter="url(#timeline_filter4_d_83_2)">
+<path d="M-506 294H604L644 414H-466L-506 294Z" fill="url(#timeline_paint0_linear_83_2)"/>
+</g></g>
 </g>
 </g>
 </svg></div><div class="L mo mo-tcbg" data-r="right"><svg class="sh" viewBox="0 0 2560 1440" fill="none" aria-hidden="true"><g>
 <g>
-<rect x="1516" y="250" width="1044" height="1190" fill="url(#timeline_pattern1_83_2)" fill-opacity="0.15"/>
-<rect x="1516" y="250" width="1044" height="1190" fill="url(#timeline_paint1_linear_83_2)"/>
+<g transform="matrix(0.80268 0 0 1.00000 505.134 0.000)"><rect x="1516" y="250" width="1044" height="1190" fill="url(#timeline_pattern1_83_2)" fill-opacity="0.15"/></g>
+<g transform="matrix(0.80268 0 0 1.00000 505.134 0.000)"><rect x="1516" y="250" width="1044" height="1190" fill="url(#timeline_paint1_linear_83_2)"/></g>
 </g>
 </g>
-</svg></div><div class="L mo mo-tpanel" data-r="center"><svg class="sh" viewBox="0 0 2560 1440" fill="none" aria-hidden="true"><g filter="url(#timeline_filter5_di_83_2)">
-<path d="M684.726 312L1412.58 312L1485 312V806.716V1394H697.058L696.354 1169.8L697.058 592.284H649L697.058 515.369L684.726 312Z" fill="url(#timeline_paint2_linear_83_2)" fill-opacity="0.5" />
+</svg></div><div class="L mo mo-tpanel" data-r="center"><svg class="sh" viewBox="0 0 2560 1440" fill="none" aria-hidden="true"><g transform="matrix(1.16507 0 0 1.00000 -107.132 0.000)"><g filter="url(#timeline_filter5_di_83_2)">
+<path d="M684.726 312L1412.58 312L1485 312V806.716V1394H697.058L696.354 1169.8L697.058 592.284H649L697.058 515.369L684.726 312Z" fill="url(#timeline_paint2_linear_83_2)" fill-opacity="0.5"/>
 <path d="M684.726 312L1412.58 312L1485 312V806.716V1394H697.058L696.354 1169.8L697.058 592.284H649L697.058 515.369L684.726 312Z" fill="url(#agVid)" opacity="0.2"/>
-</g>
+</g></g>
 </svg></div><div class="L mo mo-lpanel0" data-r="left"><svg class="sh" viewBox="0 0 2560 1440" fill="none" aria-hidden="true"><g>
-<g filter="url(#timeline_filter6_d_83_2)">
-<path d="M60 440H590L620 1087H90L60 440Z" fill="url(#timeline_paint3_linear_83_2)" fill-opacity="0.8" />
-</g>
-<g filter="url(#timeline_filter7_d_83_2)">
-<path d="M301.12 1150H618.777L630.88 1241.93H313.223L301.12 1150Z" fill="url(#timeline_pattern2_83_2)" fill-opacity="0.15" />
-<path d="M301.12 1150H618.777L630.88 1241.93H313.223L301.12 1150Z" fill="url(#timeline_paint4_linear_83_2)" />
-</g>
+<g transform="matrix(0.98750 0 0 0.80216 -23.250 43.048)"><g filter="url(#timeline_filter6_d_83_2)">
+<path d="M60 440H590L620 1087H90L60 440Z" fill="url(#timeline_paint3_linear_83_2)" fill-opacity="0.8"/>
+</g></g>
+<g transform="matrix(1.00073 0 0 0.69618 -27.339 165.391)"><g filter="url(#timeline_filter7_d_83_2)">
+<path d="M301.12 1150H618.777L630.88 1241.93H313.223L301.12 1150Z" fill="url(#timeline_pattern2_83_2)" fill-opacity="0.15"/>
+<path d="M301.12 1150H618.777L630.88 1241.93H313.223L301.12 1150Z" fill="url(#timeline_paint4_linear_83_2)"/>
+</g></g>
 </g>
 </svg></div><div class="L mo mo-tcsend" data-r="right"><svg class="sh" viewBox="0 0 2560 1440" fill="none" aria-hidden="true"><g>
-<g filter="url(#timeline_filter8_d_83_2)">
-<path d="M1565 1318H2415.84L2464 1398H1613.16L1565 1318Z" fill="white" fill-opacity="0.8" />
-</g>
-<g filter="url(#timeline_filter9_i_83_2)">
+<g transform="matrix(0.69967 0 0 0.70000 709.022 370.400)"><g filter="url(#timeline_filter8_d_83_2)">
+<path d="M1565 1318H2415.84L2464 1398H1613.16L1565 1318Z" fill="white" fill-opacity="0.8"/>
+</g></g>
+<g transform="matrix(0.70769 0 0 0.70769 690.138 360.308)"><g filter="url(#timeline_filter9_i_83_2)">
 <circle cx="2458.5" cy="1357.5" r="32.5" fill="#4B4B4B"/>
 <path d="M2442.61 1358.22L2471.5 1343.78L2460.67 1372.67L2456.15 1360.93L2442.61 1358.22Z" fill="#D9D9D9"/>
-</g>
+</g></g>
 </g>
 </svg></div>
-<div class="L mo-chars" data-r="title" id="L-title"><p class="t s0 " style="left:167px;top:64px" >TIMELINE</p><p class="t s1 title-grad" style="left:167px;top:98px;width:978px" >타임라인</p></div><div class="L mo mo-lpanel0" data-r="left" id="L-left"><p class="t s2 " style="left:45px;top:348px;width:421px;height:70px" >WRITE</p><textarea class="field" id="compose" style="left:100px;top:466px;width:500px;height:600px;font-size:32px;line-height:1.5" placeholder="무슨 일이 있었나요?" aria-label="새 글"></textarea><p class="t s18 " style="left:95px;top:1099px" id="count">0자 · 타임라인에는 앞 200자까지 보여요</p><p class="t s63 c" style="left:301px;top:1176px;width:332px" >게시하기</p><button class="hb " style="left:299px;top:1150px;width:334px;height:92px;clip-path:polygon(4% 0, 100% 0, 96% 100%, 0 100%)" id="postBtn" aria-label="게시하기"></button><p class="t" style="left:45px;top:1376px;width:540px;text-align:right;font-size:24px;font-weight:500;line-height:1.5;color:#7b7676">글자 수 제한 없음, 미리 보기는 200자까지 제공.</p></div><div class="L " data-r="center" id="L-center"><div class="scroll feed fade-y" id="feed" aria-live="polite"></div></div><div class="L " data-r="right" id="L-right"><p class="t s0 mo mo-tchead" style="left:1573px;top:274px" id="cTitle">COMMENTS · 0</p><p class="t s19 mo mo-tchead" style="left:1585px;top:348px" id="cOwner">글을 골라 주세요</p><div class="scroll fade-y mo mo-tclist" id="comments" style="left:1565px;top:410px;width:920px;height:860px;padding:18px 20px 40px"></div><p class="t s18 mo mo-tcsend" id="replyTo" style="left:1585px;top:1280px" hidden></p><input class="field dark mo mo-tcsend" id="cInput" style="left:1622px;top:1334px;width:760px;height:48px;font-size:26px" placeholder="댓글을 입력하세요" maxlength="2000" autocomplete="off" aria-label="댓글"><button class="hb circ mo mo-tcsend" style="left:2426px;top:1325px;width:65px;height:65px" id="cSend" aria-label="댓글 보내기" title="댓글 보내기"></button></div>
+<div class="L mo-chars" data-r="title" id="L-title"><p class="t s0 " style="left:167px;top:64px" >TIMELINE</p><p class="t s1 title-grad" style="left:167px;top:98px;width:978px" >타임라인</p></div><div class="L mo mo-lpanel0" data-r="left" id="L-left"><p class="t s2 " style="left:108px;top:320.5px" >WRITE</p><textarea class="field" id="compose" style="left:70px;top:412px;width:490px;height:486px;font-size:22.4px;line-height:1.5" placeholder="무슨 일이 있었나요?" aria-label="새 글"></textarea><p class="t s18 " style="left:70px;top:923.0px" id="count">0자 · 타임라인에는 앞 200자까지 보여요</p><p class="t s63 c" style="left:274px;top:979.6px;width:330px" >게시하기</p><button class="hb " style="left:274px;top:966px;width:330px;height:64px;clip-path:polygon(4% 0, 100% 0, 96% 100%, 0 100%)" id="postBtn" aria-label="게시하기"></button><p class="t" style="left:21px;top:1051px;width:568px;text-align:right;font-size:16.8px;font-weight:500;line-height:1.5;color:#7b7676">글자 수 제한 없음, 미리 보기는 200자까지 제공.</p></div><div class="L " data-r="center" id="L-center"><div class="scroll feed fade-y" id="feed" aria-live="polite"></div></div><div class="L " data-r="right" id="L-right"><p class="t s0 mo mo-tchead" style="left:1768px;top:262.0px" id="cTitle">COMMENTS · 0</p><p class="t s19 mo mo-tchead" style="left:1787px;top:323.6px" id="cOwner">글을 골라 주세요</p><div class="scroll fade-y mo mo-tclist" id="comments" style="left:1767px;top:368px;width:705px;height:890px;padding:16px 20px 30px"></div><p class="t s18 mo mo-tcsend" id="replyTo" style="left:1787px;top:1262px" hidden></p><input class="field dark mo mo-tcsend" id="cInput" style="left:1844px;top:1299px;width:540px;height:44px;font-size:18.2px" placeholder="댓글을 입력하세요" maxlength="2000" autocomplete="off" aria-label="댓글"><button class="hb circ mo mo-tcsend" style="left:2407px;top:1298px;width:46px;height:46px" id="cSend" aria-label="댓글 보내기" title="댓글 보내기"></button></div>
 <img class="abs topbar" src="assets/topbar.svg" alt="">
 <button class="top-btn refresh" data-action="refresh" aria-label="새로고침"><img src="assets/btn-refresh.svg" width="53" height="53" alt=""><span class="glyph"><svg viewBox="0 0 24 24" fill="none" stroke="#1e1e1e" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg></span><span class="tip">새로고침</span></button>
 <button class="top-btn browse" data-action="browse" aria-label="다른 캐릭터 프로필 구경가기"><img src="assets/btn-browse.svg" width="52" height="53" alt=""><span class="glyph"><svg viewBox="0 0 24 24" fill="none" stroke="#1e1e1e" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="4"/><path d="M2 21a7 7 0 0 1 14 0"/><path d="M17 4a4 4 0 0 1 0 8M22 21a7 7 0 0 0-4-6.3"/></svg></span><span class="tip">다른 캐릭터 프로필 구경가기</span></button>

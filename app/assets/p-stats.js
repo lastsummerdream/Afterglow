@@ -32,9 +32,9 @@ AG.boot();
   /* 전투 스탯 (막대는 진입 애니메이션 뒤에 차오름) */
   $('lv').textContent = `Lv. ${s.level}`;
   $('expTxt').textContent = `EXP ${s.exp} / ${s.expMax}`;
-  const W = 720, max = s.statMax || 80;
+  const W = 655, max = s.statMax || 80;
   const fill = (id, v, full, width) => requestAnimationFrame(() => { $(id).style.width = Math.max(0, Math.min(1, v / full)) * width + 'px'; });
-  fill('expBar', s.exp, s.expMax, 520);
+  fill('expBar', s.exp, s.expMax, 473);
   for (const k of ['hp', 'atk', 'def', 'spd', 'echo']) {
     const v = typeof s[k] === 'number' ? s[k] : 0;
     $('v-' + k).textContent = v;
@@ -43,6 +43,12 @@ AG.boot();
   const ei = s.echoInfo || {};
   $('echoTitle').textContent = ei.type ? `ECHO · ${ei.type}` : 'ECHO · 잔향';
   $('echoDesc').textContent = ei.desc || '잔향이 아직 깨어나지 않았어요.';
+  // 기본공격 · 특수공격 · 필살기 설명 (설정에서 적은 내용)
+  const sk = s.skills || {};
+  const skTxt = (k, none) => { const v = sk[k] || {}; return v.name ? (v.desc ? `${v.name} — ${v.desc}` : v.name) : (v.desc || none); };
+  $('atkN').textContent = skTxt('normal', '일반 공격');
+  $('atkS').textContent = skTxt('special', '아직 정하지 않았어요');
+  $('atkU').textContent = skTxt('ultimate', '아직 정하지 않았어요');
   const eq = s.equipment || {};
   const labels = { weapon: '무기', armor: '방어구', acc1: '장신구', acc2: '장신구' };
   for (const k in labels) {

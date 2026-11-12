@@ -493,7 +493,6 @@ const ENEMIES = [
   { name: "변이 수집자", hp: 160, atk: 30, def: 18, spd: 34, state: "경계 상태", loot: [
     { name: "녹슨 갈고리", rarity: "RARE", kind: "무기", slot: "weapon", desc: "변이 수집자에게서 얻었다. 끝이 무뎌졌지만 아직 쓸 만하다.\n공격 +6 · 민첩 -2" },
     { name: "수집자 가면", rarity: "RARE", kind: "방어구", slot: "armor", desc: "변이 수집자가 쓰던 가면. 숨이 조금 답답하다.\n방어 +5" },
-    { name: "정화 앰플", rarity: "RARE", kind: "소모품", desc: "몸에 쌓인 잔향 찌꺼기를 씻어 낸다.\n오염도를 20 감소시킨다." },
     { name: "잔광 결정", rarity: "EPIC", kind: "재료", desc: "희미하게 빛나는 결정." }] },
   { name: "잔향 들개", hp: 110, atk: 26, def: 12, spd: 48, state: "굶주림", loot: [
     { name: "들개 이빨 목걸이", rarity: "COMMON", kind: "장신구", slot: "acc", desc: "민첩 +2" },
@@ -736,9 +735,8 @@ async function community(request, env, user, path, cors, later) {
       if (!eff) return bad("쓸 수 있는 아이템이 아니에요");
       const s = await statsOf(DB, user.id, now);
       if (eff.heal && s.hp >= s.hpMax) return bad("체력이 이미 가득해요");
-      if (eff.purify && s.taint <= 0) return bad("오염도가 이미 0이에요");
       await DB.prepare("DELETE FROM items WHERE id = ?").bind(it.id).run();
-      await saveVitals(DB, user.id, { hp: eff.heal ? Math.min(s.hpMax, s.hp + eff.heal) : null, echo: eff.echo ? s.echoLeft + eff.echo : null, taintAdd: eff.purify ? -eff.purify : 0 }, now);
+      await saveVitals(DB, user.id, { hp: eff.heal ? Math.min(s.hpMax, s.hp + eff.heal) : null, echo: eff.echo ? s.echoLeft + eff.echo : null }, now);
       const row = await DB.prepare("SELECT state FROM battles WHERE user_id = ?").bind(user.id).first();   // 진행 중인 전투가 있으면 같이 맞춘다
       const b = row && safeParse(row.state);
       if (b && !b.over) { const s2 = await statsOf(DB, user.id, now); b.me.hp = s2.hp; b.me.echo = s2.echoLeft; b.me.taint = s2.taintTier; await saveBattle(DB, user.id, b, now); }
@@ -811,12 +809,8 @@ async function community(request, env, user, path, cors, later) {
     if (used && used.echo) b.me.echo = (b.me.echo || 0) + used.echo;
     b.enemy.hp = Math.max(0, b.enemy.hp - dmg);
     b.me.hp = Math.max(0, Math.min(b.me.hpMax, b.me.hp - taken + heal));
-    const echoSpent = action === "echo" && (b.me.echo || 0) > 0;
     if (action === "echo") b.me.echo = Math.max(0, (b.me.echo || 0) - 1);
-    {
-      const g = await saveVitals(DB, user.id, { hp: b.me.hp, echo: b.me.echo, taintAdd: (echoSpent ? TAINT_ECHO : 0) + (b.me.hp <= 0 ? TAINT_LOSE : 0) - (used && used.purify ? used.purify : 0) }, now);
-      b.me.taint = taintTier(g.taint);
-    }
+    await saveVitals(DB, user.id, { hp: b.me.hp, echo: b.me.echo }, now);
     if (out.enemyState) b.enemy.state = String(out.enemyState).slice(0, 20);
     b.log.push({ kind: "turn", label: T, text: String(out.narration || "…").slice(0, 400) });
     if (action === "run" && out.escaped) { b.over = true; b.result = "run"; b.log.push({ kind: "urim", text: "무사히 빠져나왔어요. 다음에 다시 도전해요." }); }
@@ -888,7 +882,6 @@ function battleUse(desc) {
   const d = String(desc || ""); let m;
   if ((m = d.match(/체력을?\s*(\d+)\s*회복/))) return { heal: Number(m[1]), label: `체력 ${m[1]} 회복` };
   if ((m = d.match(/잔향\s*\+(\d+)\s*\(전투 1회\)/))) return { echo: 1, label: "잔향 사용 +1" };
-  if ((m = d.match(/오염도?를?\s*(\d+)\s*(?:감소|정화|낮)/))) return { purify: Number(m[1]), label: `오염도 ${m[1]} 감소` };
   return null;
 }
 function person(row, now) {
@@ -940,14 +933,11 @@ async function saveBattle(DB, uid, b, now) {
   await DB.prepare("INSERT INTO battles (user_id, state, updated_at) VALUES (?, ?, ?) ON CONFLICT(user_id) DO UPDATE SET state = excluded.state, updated_at = excluded.updated_at").bind(uid, JSON.stringify(b), now).run();
 }
 const expMax = lv => 600 + lv * 60;
-// 오염도(임시값): 0~100점, 20점마다 한 단계(T0~T5). 잔향을 쓰면 +10, 쓰러지면 +15, 정화 아이템으로 낮춘다.
-const TAINT_MAX = 100, TAINT_ECHO = 10, TAINT_LOSE = 15;
-const taintTier = t => "T" + Math.min(5, Math.floor((t || 0) / 20));
+// 오염도: 캐릭터 등록 정보의 LCS 지수(T)를 그대로 쓴다
 async function saveVitals(DB, uid, v, now) {
   const pr = await profile(DB, uid); const game = pr.game || {};
   if (v.hp != null) game.hpCur = Math.max(0, Math.round(v.hp));
   if (v.echo != null) game.echoCur = clampInt(v.echo, 0, 9);
-  if (v.taintAdd) game.taint = clampInt((game.taint || 0) + v.taintAdd, 0, TAINT_MAX);
   await saveProfile(DB, uid, { game }, now);
   return game;
 }
@@ -976,11 +966,10 @@ async function statsOf(DB, uid, now) {
   const echoMax = T || 0;
   const hpCur = game.hpCur == null ? st.hp : clampInt(game.hpCur, 0, st.hp);
   const echoLeft = game.echoCur == null ? echoMax : clampInt(game.echoCur, 0, 9);
-  const taint = clampInt(game.taint || 0, 0, TAINT_MAX);
   const ECHO_DESC = { 방출형: "잔향을 바깥으로 내보내 직접 타격한다. 잔향 공격 피해에 보너스.", 조형형: "잔향으로 형체를 빚는다. 방어와 아이템 효과에 보너스.", 강화형: "잔향으로 몸을 끌어올린다. 공격과 체력에 보너스.", 간섭형: "상대의 잔향을 흐트러뜨린다. 상대 행동을 늦춘다.", 감응형: "주변 잔향의 흐름을 읽고 짧게 앞날을 본다. 전투에서 회피와 선제 행동에 보너스." };
   const et = d.echoType && d.echoType !== "없음" ? d.echoType : null;
   return {
-    name: d.name || row.username, level, exp, expMax: expMax(level), hp: hpCur, hpMax: st.hp, echoLeft, echoMax, taint, taintMax: TAINT_MAX, taintTier: taintTier(taint), atk: st.atk, def: st.def, spd: st.spd, echo: st.echo, statMax: 80,
+    name: d.name || row.username, level, exp, expMax: expMax(level), hp: hpCur, hpMax: st.hp, echoLeft, echoMax, taintTier: "T" + (T ?? 0), atk: st.atk, def: st.def, spd: st.spd, echo: st.echo, statMax: 80,
     registry: { nameEn: d.nameEn || "", ageGender: [d.age, d.gender].filter(Boolean).join(" · "), origin: [d.origin, d.originDetail].filter(Boolean).join(" · "), species: SPECIES_KO[d.species] || "", lineage: d.lineage || "", job: [d.job, d.faction].filter(Boolean).join(" · ") },
     G, Gmax: d.species === "human" ? 5 : 3, C, Cmax: 5, T, Tmax: 4,
     echoInfo: { type: et || "", desc: et ? `${et} — ${d.echoAbility || ECHO_DESC[et]}` : "잔향이 아직 깨어나지 않았어요." },

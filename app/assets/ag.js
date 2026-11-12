@@ -322,7 +322,6 @@ AG.battleUse = it => {
   const d = String((it && it.desc) || ''); let m;
   if ((m = d.match(/체력을?\s*(\d+)\s*회복/))) return { heal: +m[1], label: `체력 ${m[1]} 회복` };
   if ((m = d.match(/잔향\s*\+(\d+)\s*\(전투 1회\)/))) return { echo: 1, label: '잔향 사용 +1' };
-  if ((m = d.match(/오염도?를?\s*(\d+)\s*(?:감소|정화|낮)/))) return { purify: +m[1], label: `오염도 ${m[1]} 감소` };
   return null;
 };
 
@@ -570,8 +569,8 @@ const Dm = {
     read: uid => { const d = db(); if (d.dms[uid]) { d.dms[uid].unread = 0; save(); } return wait({ ok: true }); },
   },
   stats: () => { const d = db(); const s = d.stats; const c = d.character || {};
-    if (s.echoLeft == null) s.echoLeft = 2; if (s.taint == null) s.taint = 0;
-    const r = { ...s, echoMax: 2, taintMax: 100, taintTier: demoTier(s.taint), name: meName(), registry: { ...s.registry, ...(c.origin ? { origin: c.origin } : {}), ...(c.species ? { species: AG.SPECIES[c.species] || c.species } : {}) },
+    if (s.echoLeft == null) s.echoLeft = 2;
+    const r = { ...s, echoMax: 2, taintTier: demoTier(), name: meName(), registry: { ...s.registry, ...(c.origin ? { origin: c.origin } : {}), ...(c.species ? { species: AG.SPECIES[c.species] || c.species } : {}) },
       equipment: Object.fromEntries(Object.entries(s.equipment).map(([k, v]) => [k, v && d.inventory.find(i => i.id === v)?.name || null])), skills: demoSkills() };
     return wait(r); },
   inventory: {
@@ -586,12 +585,10 @@ const Dm = {
     use: id => { const d = db(); const s = d.stats; const it = d.inventory.find(i => i.id === id); const eff = AG.battleUse(it);
       if (!it || !eff) return fail('쓸 수 있는 아이템이 아니에요');
       if (eff.heal && s.hp >= s.hpMax) return fail('체력이 이미 가득해요');
-      if (eff.purify && !(s.taint > 0)) return fail('오염도가 이미 0이에요');
       d.inventory = d.inventory.filter(i => i !== it);
       if (eff.heal) s.hp = Math.min(s.hpMax, s.hp + eff.heal);
       if (eff.echo) s.echoLeft = Math.min(9, (s.echoLeft ?? 2) + eff.echo);
-      if (eff.purify) s.taint = Math.max(0, (s.taint || 0) - eff.purify);
-      if (d.battle && !d.battle.over) { d.battle.me.hp = s.hp; d.battle.me.echo = s.echoLeft; d.battle.me.taint = demoTier(s.taint); }
+      if (d.battle && !d.battle.over) { d.battle.me.hp = s.hp; d.battle.me.echo = s.echoLeft; d.battle.me.taint = demoTier(); }
       save(); return wait({ ok: true, label: eff.label }); },
     discard: id => { const d = db(); d.inventory = d.inventory.filter(i => i.id !== id); d.home.items = d.home.items.filter(h => h.invId !== id); for (const k in d.stats.equipment) if (d.stats.equipment[k] === id) d.stats.equipment[k] = null; save(); return wait({ ok: true }); },
   },
@@ -624,8 +621,7 @@ const Dm = {
       // 체력 · 잔향 · 오염도는 전투가 끝나도 그대로 남는다
       const S = d.stats, M = d.battle.me;
       S.hp = M.hp; S.echoLeft = M.echo;
-      S.taint = Math.max(0, Math.min(100, (S.taint || 0) + (action === 'echo' && echoBefore > 0 ? 10 : 0) + (M.hp <= 0 ? 15 : 0) - (used && used.purify ? used.purify : 0)));
-      M.taint = demoTier(S.taint);
+      M.taint = demoTier();
       save(); return wait(d.battle, 700); },
   },
   posts: {
@@ -643,14 +639,14 @@ const Dm = {
 /* 체험 모드 전투: 스탯으로 굴리는 간단한 판정 (서버 모드에서는 Claude가 판정) */
 const ENEMIES = [
   { name: '변이 수집자', hp: 160, atk: 30, def: 18, spd: 34, state: '경계 상태', loot: [{ name: '녹슨 갈고리', rarity: 'RARE', kind: '무기', slot: 'weapon', desc: '변이 수집자에게서 얻었다. 끝이 무뎌졌지만 아직 쓸 만하다.\n공격 +6 · 민첩 -2' }, { name: '잔광 결정', rarity: 'EPIC', kind: '재료', desc: '희미하게 빛나는 결정.' }] },
-  { name: '잔향 들개', hp: 110, atk: 26, def: 12, spd: 48, state: '굶주림', loot: [{ name: '들개 이빨 목걸이', rarity: 'COMMON', kind: '장신구', slot: 'acc', desc: '민첩 +2' }, { name: '붕대', rarity: 'COMMON', kind: '소모품', desc: '전투 중 체력을 30 회복한다.' }, { name: '정화 앰플', rarity: 'RARE', kind: '소모품', desc: '몸에 쌓인 잔향 찌꺼기를 씻어 낸다.\n오염도를 20 감소시킨다.' }] },
+  { name: '잔향 들개', hp: 110, atk: 26, def: 12, spd: 48, state: '굶주림', loot: [{ name: '들개 이빨 목걸이', rarity: 'COMMON', kind: '장신구', slot: 'acc', desc: '민첩 +2' }, { name: '붕대', rarity: 'COMMON', kind: '소모품', desc: '전투 중 체력을 30 회복한다.' }] },
   { name: '무너진 감시 드론', hp: 140, atk: 34, def: 26, spd: 20, state: '오작동', loot: [{ name: '깨진 단말', rarity: 'COMMON', kind: '꾸미기', deco: true, desc: '화면이 갈라진 오래된 단말.' }] },
 ];
-const demoTier = t => 'T' + Math.min(5, Math.floor((t || 0) / 20));
+const demoTier = () => { const d = db(); const t = (d.character && d.character.T) ?? d.stats.T; return 'T' + (t ?? 0); };   // 오염도 = 캐릭터의 LCS 지수(T)
 function newBattle() {
   const e = ENEMIES[Math.floor(Math.random() * ENEMIES.length)];
   const s = db().stats;
-  return { id: rid('b'), turn: 1, over: false, result: null, me: { name: meName(), hp: s.hp, hpMax: s.hpMax, echo: s.echoLeft ?? 2, taint: demoTier(s.taint) },
+  return { id: rid('b'), turn: 1, over: false, result: null, me: { name: meName(), hp: s.hp, hpMax: s.hpMax, echo: s.echoLeft ?? 2, taint: demoTier() },
     enemy: { name: e.name, hp: e.hp, hpMax: e.hp, atk: e.atk, def: e.def, spd: e.spd, state: e.state, lootTable: e.loot },
     log: [{ kind: 'urim', text: `${e.name}이(가) 나타났어요. 행동을 고르거나 직접 입력해 주세요.` }] };
 }
@@ -668,7 +664,6 @@ function demoTurn(b, s, action, text, used, skill) {
     line = '도망치려 했지만 길이 막혔다.';
   } else if (act === 'item') {
     if (used && used.heal) { const before = M.hp; M.hp = Math.min(M.hpMax, M.hp + used.heal); line = `${AG.j(used.name, '을', '를')} 썼다 — 체력 ${M.hp - before} 회복.`; }
-    else if (used && used.purify) line = `${AG.j(used.name, '을', '를')} 썼다 — 오염도 ${used.purify} 감소.`;
     else if (used && used.echo) { M.echo += used.echo; line = `${AG.j(used.name, '이', '가')} 희미하게 빛났다. 잔향이 다시 차오른다 — 잔향 사용 +${used.echo}.`; }
     else line = '아이템을 꺼내려다 멈췄다.';
   } else if (act === 'guard') {

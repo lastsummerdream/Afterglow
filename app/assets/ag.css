@@ -199,8 +199,8 @@ html.ag-wait #stage > :not(.wallpaper):not(.tint) { opacity: 0 !important; will-
 .L[data-r="tabs"] { transform-origin: 1280px 64px; }
 [data-pg="group"] .L[data-r="left"], [data-pg="private"] .L[data-r="left"], [data-pg="dm"] .L[data-r="left"], [data-pg="timeline"] .L[data-r="left"] { scale: var(--u); transform-origin: 0 294px; }
 [data-pg="group"] .L[data-r="right"], [data-pg="private"] .L[data-r="right"], [data-pg="dm"] .L[data-r="right"], [data-pg="timeline"] .L[data-r="right"], [data-pg="stats"] .L[data-r="right"], [data-pg="home"] .L[data-r="right"], [data-pg="settings"] .L[data-r="right"] { scale: var(--u); transform-origin: 2560px 250px; }
-[data-pg="timeline"] .L.mo-tcsend[data-r="right"] { transform-origin: 2560px 1440px; }   /* 댓글 입력 바탕: 아래쪽 */
-[data-pg="timeline"] #L-right .mo-tcsend { margin-top: 510.0px; }   /* 댓글 입력·보내기: 아래쪽 */
+[data-pg="stats"] .L[data-r="right"], [data-pg="settings"] .L[data-r="right"], [data-pg="timeline"] .L[data-r="left"], [data-pg="timeline"] .L[data-r="right"] { scale: 1; }
+[data-pg="settings"] .L[data-r="left"], [data-pg="settings"] .L[data-r="center"] { left: 93px; }   /* 설정: 카드 두 장을 오른쪽으로 */
 .topbar { transform-origin: 510.18px -22.8px; }
 .top-btn.refresh { transform-origin: 225px -37px; } .top-btn.browse { transform-origin: 160px -37px; } .top-btn.back { transform-origin: 96px -37px; }
 .demo-chip { transform-origin: 60px -40px; }
