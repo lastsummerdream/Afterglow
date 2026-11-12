@@ -237,6 +237,26 @@
 .zoom-panel b { width: 70px; text-align: right; font-weight: 900; }
 .zoom-panel button { height: 46px; padding: 0 20px; border-radius: 23px; background: rgba(255,255,255,.14); color: #fff; font-size: 20px; font-weight: 700; white-space: nowrap; }
 .zoom-panel button:hover { background: rgba(255,255,255,.26); }
+/* ── 모바일(세로): 폭 720 캔버스. 위에서부터 URIM · 레벨 / 일러스트(+사이드 메뉴) / 대사창 / 메인 메뉴 ── */
+html.m .play, html.m .canvas { width: 720px; height: var(--mh); }
+html.m .urim { left: 20px; top: 100px; scale: .66; transform-origin: 0 0; }
+html.m .urim-line { font-size: 36px; }
+html.m .namegrp { display: none; }
+html.m .lvl { left: 262px; top: 164px; scale: .74; transform-origin: 0 0; }
+html.m .chargrp { left: 110px; top: 300px; scale: .5; transform-origin: 0 0; }
+html.m .sidegrp { left: -84px; top: 118px; scale: .68; transform-origin: 0 0; }
+html.m .sidegrp > img { display: none; }
+html.m .side-btn .txt { font-size: 30px; }
+html.m .optgrp { left: 392px; top: calc(var(--mh) - 760px); scale: .9; transform-origin: 0 0; }
+html.m .zoom-panel { left: auto; right: 0; width: 470px; }
+html.m .dlggrp { left: 4px; top: calc(var(--mh) - 660px); scale: .62; transform-origin: 0 0; }
+html.m .dialogue .line { font-size: 44px; line-height: 1.4; }
+html.m .nameplate { font-size: 40px; }
+html.m .layer, html.m .hit { scale: .58; transform-origin: 0 0; left: calc(40px - 1606px * .58); top: calc(var(--mh) - 446px - 637px * .58); }
+html.m .side-btn .tip, html.m .opt .tip { display: none; }
+html.m.visit .vinfo { left: 20px; top: calc(var(--mh) - 600px); width: 680px; scale: 1; padding: 34px 70px 36px; }
+html.m.visit .dlggrp { top: calc(var(--mh) - 800px); }
+html.m.visit .chargrp { top: 150px; }
 /* 다른 캐릭터 구경 (main.html?visit=…): 메뉴를 감추고 간단한 정보만 */
 .vinfo { display: none; }
 .visit .layer, .visit .hit, .visit .sidegrp, .visit .optgrp, .visit .lvl, .visit .urim, .visit .char-hint b { display: none !important; }
@@ -454,6 +474,7 @@ html.ag-wait #stage > :not(.wallpaper):not(.tint) { opacity: 0 !important; will-
 </main>
 <audio id="bgm" loop></audio>
 
+<link rel="stylesheet" href="assets/ag-m.css">
 <script src="assets/ag.js"></script>
 <script>
 /* ─────────────────────────────────────────────
@@ -478,6 +499,7 @@ const MENU_NAMES = {
 /* 스테이지 스케일 */
 const stage = document.getElementById('stage');
 function fit() {
+  if (window.AG && AG.fitStage) return AG.fitStage(stage);   // 모바일(세로)이면 세로 캔버스로
   const s = Math.min(innerWidth / 2560, innerHeight / 1440);
   stage.style.transform = `translate(${(innerWidth - 2560 * s) / 2}px, ${(innerHeight - 1440 * s) / 2}px) scale(${s})`;
 }

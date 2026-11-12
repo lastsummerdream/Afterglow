@@ -92,16 +92,72 @@ AG.stretchSides = function () {
   });
 };
 
+/* ── 모바일(세로) 화면 ──
+   폭 720 단위의 세로 캔버스를 쓴다. 가운데 본문은 화면에 맞게 다시 배치하고(ag-m.css),
+   좌우 패널은 피그마 모양 그대로 서랍처럼 꺼내 본다. */
+AG.M_PAGES = { index: {}, main: {},
+  group: { drawers: { left: '채널', right: '접속' }, mid: '대화', fit: ['center'] },
+  private: { drawers: { left: '대화 목록', right: '정보' }, mid: '대화', fit: ['center'] },
+  dm: { drawers: { left: '연락처', right: '프로필' }, mid: '신호', fit: ['center'] } };
+AG.page = (location.pathname.split('/').pop() || 'index.html').replace(/\.html$/, '') || 'index';
+AG.M = !!AG.M_PAGES[AG.page] && innerWidth < innerHeight && innerWidth <= 820;
+if (AG.M) document.documentElement.classList.add('m', 'm-' + AG.page);
+{ const w0 = innerWidth; addEventListener('resize', () => { if (Math.abs(innerWidth - w0) > 120) location.reload(); }); }   // 화면을 돌리면 배치를 새로
+AG.fitStage = function (stage) {
+  if (!AG.M) {
+    const s = Math.min(innerWidth / 2560, innerHeight / 1440);
+    AG.scale = s;
+    stage.style.transform = `translate(${(innerWidth - 2560 * s) / 2}px, ${(innerHeight - 1440 * s) / 2}px) scale(${s})`;
+    return;
+  }
+  const vv = window.visualViewport, w = vv ? vv.width : innerWidth, h = vv ? vv.height : innerHeight;   // 키보드가 올라오면 그만큼 줄어든다
+  const s = w / 720; AG.scale = s; AG.mh = h / s;
+  document.documentElement.style.setProperty('--mh', AG.mh + 'px');
+  stage.style.width = '720px'; stage.style.height = AG.mh + 'px';
+  stage.style.transform = `translate(0px, ${vv ? vv.offsetTop : 0}px) scale(${s})`;
+  AG.mobileLayout && AG.mobileLayout();
+};
+if (AG.M) { const st = document.getElementById('stage'); if (st) { document.documentElement.style.setProperty('--mh0', innerHeight / (innerWidth / 720) + 'px'); AG.fitStage(st); addEventListener('resize', () => AG.fitStage(st)); } }
+if (AG.M && window.visualViewport) { const f = () => { const st = document.getElementById('stage'); st && AG.fitStage(st); }; visualViewport.addEventListener('resize', f); visualViewport.addEventListener('scroll', f); }
+AG.mobileSetup = function () {
+  const cfg = AG.M_PAGES[AG.page] || {}, stage = document.getElementById('stage'), root = document.documentElement;
+  const box = r => { const svg = document.querySelector(`#stage .L[data-r="${r}"]:not([id]) > svg.sh`); try { const b = svg.getBBox(); if (!b.width) return null; const x = Math.max(0, b.x), y = Math.max(0, b.y); return { x, y, width: Math.min(2560, b.x + b.width) - x, height: Math.min(1440, b.y + b.height) - y }; } catch { return null; } };   // 화면 밖으로 나간 부분은 뺀다
+  const src = {}; [...Object.keys(cfg.drawers || {}), ...(cfg.fit || [])].forEach(r => src[r] = box(r));
+  AG.mobileLayout = () => {
+    for (const r of Object.keys(cfg.drawers || {})) {   // 서랍: 패널을 원래 크기로 화면 가운데 위쪽에
+      const b = src[r]; if (!b) continue;
+      const k = Math.min(1, 700 / b.width, (AG.mh - 150 - 124) / b.height), tx = (720 - b.width * k) / 2 - b.x * k, ty = 150 - b.y * k;
+      document.querySelectorAll(`#stage .L[data-r="${r}"]`).forEach(L => L.style.transform = `translate(${tx}px, ${ty}px) scale(${k})`);
+    }
+    for (const r of cfg.fit || []) {   // 본문 바탕: 모양을 화면 크기에 맞게 늘린다 (내용은 CSS로 배치)
+      const b = src[r]; if (!b) continue;
+      const x = 14, y = 196, w = 692, h = AG.mh - y - 250;
+      document.querySelectorAll(`#stage .L[data-r="${r}"]:not([id])`).forEach(L => L.style.transform = `translate(${x - b.x * w / b.width}px, ${y - b.y * h / b.height}px) scale(${w / b.width}, ${h / b.height})`);
+    }
+  };
+  if (cfg.drawers) {
+    const nav = document.createElement('nav'); nav.className = 'm-nav';
+    const items = Object.entries(cfg.drawers); const mid = [null, cfg.mid || '본문'];
+    const order = items.length > 1 ? [items[0], mid, ...items.slice(1)] : [mid, ...items];
+    nav.innerHTML = order.map(([r, l]) => `<button type="button" data-d="${r || ''}">${AG.esc(l)}</button>`).join('');
+    const back = document.createElement('div'); back.className = 'm-back';
+    stage.append(back, nav);
+    const set = r => { r ? root.setAttribute('data-drawer', r) : root.removeAttribute('data-drawer'); nav.querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.d === (r || ''))); };
+    nav.addEventListener('click', e => { const b = e.target.closest('button'); if (b) set(b.dataset.d === root.getAttribute('data-drawer') ? null : b.dataset.d || null); });
+    back.addEventListener('click', () => set(null));
+    document.querySelectorAll('#stage .L[data-r="left"] .scroll').forEach(el => el.addEventListener('click', e => { if (e.target.closest('button, .row')) setTimeout(() => set(null), 150); }));   // 목록에서 고르면 본문으로
+    set(null);
+  }
+  AG.mobileLayout();
+};
+
 AG.boot = function (opts = {}) {
   AG.splitChars();
   AG.stretchSides();
   AG.cropLayers();
   const stage = document.getElementById('stage');
-  const fit = () => {
-    const s = Math.min(innerWidth / 2560, innerHeight / 1440);
-    AG.scale = s;
-    stage.style.transform = `translate(${(innerWidth - 2560 * s) / 2}px, ${(innerHeight - 1440 * s) / 2}px) scale(${s})`;
-  };
+  const fit = () => AG.fitStage(stage);
+  if (AG.M) AG.mobileSetup();
   addEventListener('resize', fit); fit();
   const q = s => document.querySelector(s);
   q('[data-action="home"]')?.addEventListener('click', () => { location.href = AG.PAGES.main; });
