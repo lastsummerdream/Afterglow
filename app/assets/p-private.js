@@ -1,4 +1,4 @@
-/* 1:1 대화 공간 · 개인채팅 (한 사람과 여러 대화) */
+/* 개인 연락망 · 개인채팅 (한 사람과 여러 대화) */
 AG.boot();
 (function () {
   const $ = s => document.getElementById(s);

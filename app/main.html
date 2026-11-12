@@ -239,6 +239,20 @@ html.ag-wait #stage * { animation-play-state: paused !important; }
 html.ag-wait #stage > :not(.wallpaper):not(.tint) { opacity: 0 !important; will-change: opacity; }  /* 숨긴 채로 미리 그려 둔다 */
 @view-transition { navigation: auto; }
 ::view-transition-old(root), ::view-transition-new(root) { animation-duration: .32s; animation-timing-function: cubic-bezier(.4, 0, .2, 1); }
+
+/* ── UI 70% (메인) ── */
+:root { --u: 0.7; }
+.play { top: 0; height: 1440px; } .canvas { top: 0; }
+.urim, .topbar, .top-btn, .chargrp, .dlggrp, .optgrp, .sidegrp, .namegrp, .layer, .hit, .demo-chip, .page-toast, .modal { scale: var(--u); }
+.urim { transform-origin: -167px -75px; }
+.topbar { transform-origin: 510.18px -22.8px; }
+.top-btn.refresh { transform-origin: 225px -37px; } .top-btn.browse { transform-origin: 160px -37px; } .top-btn.back { transform-origin: 96px -37px; }
+.namegrp { transform-origin: 975px -157px; }
+.sidegrp { transform-origin: 158px 667.16px; }
+.chargrp { transform-origin: 612px 1295px; } .dlggrp { transform-origin: 693px 329px; } .optgrp { transform-origin: -265px 386px; }   /* 캐릭터 묶음: (950, 1440) 기준 */
+.layer, .hit { transform-origin: 2560px 1440px; }
+.demo-chip { transform-origin: 60px -40px; }
+.page-toast { transform-origin: 50% -150px; }
 /* <<< boot */
 </style>
 </head>
@@ -323,10 +337,10 @@ html.ag-wait #stage > :not(.wallpaper):not(.tint) { opacity: 0 !important; will-
           <img class="ico" src="assets/icon-group.svg" style="left:57.78px;top:24.74px;width:66.5px;height:63.5px" alt="">
           <span class="txt" style="left:91px;top:92px">단체<br>단말</span>
         </button>
-        <button class="side-btn" data-side="private" style="top:759.16px" aria-label="1:1 대화 공간">
+        <button class="side-btn" data-side="private" style="top:759.16px" aria-label="개인 연락망">
           <img class="disc" src="assets/side-disc.svg" alt="">
           <img class="ico" src="assets/icon-private.svg" style="left:58.78px;top:24.74px;width:65.5px;height:51.5px" alt="">
-          <span class="txt" style="left:91.5px;top:86px">1:1<br>대화 공간</span>
+          <span class="txt" style="left:91.5px;top:86px">개인<br>연락망</span>
         </button>
         <button class="side-btn" data-side="timeline" style="top:1010.16px" aria-label="타임라인">
           <img class="disc" src="assets/side-disc.svg" alt="">
@@ -392,7 +406,7 @@ const CONFIG = {
 };
 const MENU_NAMES = {
   battle: '전투 진입', home: '숙소', inventory: '창고', dm: '개인 단말', settings: '설정', timeline: '타임라인',
-  urim: 'URIM', group: '단체 단말', private: '1:1 대화 공간', browse: '다른 캐릭터 프로필'
+  urim: 'URIM', group: '단체 단말', private: '개인 연락망', browse: '다른 캐릭터 프로필'
 };
 
 /* 스테이지 스케일 */

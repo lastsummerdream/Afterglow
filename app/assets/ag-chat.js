@@ -1,4 +1,4 @@
-/* 채팅 3종(단체 단말 · 1:1 대화 공간 · 개인 단말) 공통 엔진 */
+/* 채팅 3종(단체 단말 · 개인 연락망 · 개인 단말) 공통 엔진 */
 (function () {
 'use strict';
 const $ = s => document.querySelector(s);
