@@ -55,7 +55,7 @@ const STYLES = ["근접","사격","투척","의체","잔향","기계","지원"];
 
 // 글자 수 상한
 const CHARACTER_SCHEMA = {
-  name: 30, nameEn: 40, age: 20, gender: 20,
+  name: 30, nameEn: 40, age: 20, gender: 20, height: 20,
   origin: "enum", originDetail: 40,
   species: "enum", lineage: 30,
   G: "int", C: "int", T: "int",
@@ -164,6 +164,10 @@ export default {
         const b = await body(request);
         const v = validateCharacter(b && b.data);
         if (v.error) return json({ error: "invalid_character", field: v.field, reason: v.error }, 400, cors);
+        if (b.data.height === undefined) {   // 키 칸이 없는 화면에서 저장해도 지워지지 않게
+          const o = await env.DB.prepare("SELECT data FROM characters WHERE id = ? AND user_id = ?").bind(m[1], user.id).first();
+          if (o) v.data.height = safeParse(o.data).height || "";
+        }
         let r;
         if (b.avatar === undefined) {
           r = await env.DB.prepare("UPDATE characters SET name = ?, schema_version = ?, data = ?, updated_at = ? WHERE id = ? AND user_id = ?")
@@ -411,7 +415,7 @@ async function syncNotion(env, userId, gone) {
         "가입": nDate(u.created_at),
         "마지막 로그인": nDate(u.last_login_at),
         "정보 수정": nDate(c ? c.updated_at : u.created_at),
-        "캐릭터": nText(d.name), "영문 이름": nText(d.nameEn), "나이": nText(d.age), "성별": nText(d.gender),
+        "캐릭터": nText(d.name), "영문 이름": nText(d.nameEn), "나이": nText(d.age), "성별": nText(d.gender), "키": nText(d.height),
         "출신": nSelect(ORIGIN_LABEL[d.origin] || null), "출신 세부": nText(d.originDetail),
         "종족": nSelect(SPECIES_LABEL[d.species] || null), "혈통": nText(d.lineage),
         "G": nNum(d.G), "C": nNum(d.C), "T": nNum(d.T), "명부 점수": nNum(hasM ? d.G + d.C - d.T : null),
@@ -680,6 +684,23 @@ async function community(request, env, user, path, cors, later) {
       await DB.batch([...gone].map(id => DB.prepare("DELETE FROM comments WHERE id = ?").bind(id)));
       return ok({ ok: true });
     }
+  }
+
+  /* ── 다른 캐릭터 구경 (공개 프로필 · 전신 일러스트) ── */
+  if (path === "/me/illust" && M === "PUT") {
+    const b = await body(request); const v = b && b.illust;
+    if (v != null && !(typeof v === "string" && v.length <= 1600000 && /^data:image\/(webp|png|jpeg);base64,[A-Za-z0-9+\/=]+$/.test(v))) return bad("bad_image");
+    await DB.prepare("INSERT INTO profiles (user_id, lines, illust, updated_at) VALUES (?, '[]', ?, ?) ON CONFLICT(user_id) DO UPDATE SET illust = excluded.illust, updated_at = excluded.updated_at").bind(user.id, v || null, now).run();
+    return ok({ ok: true });
+  }
+  if ((m = path.match(/^\/people\/([\w-]+)(\/illust)?$/)) && M === "GET") {
+    const id = m[1] === "me" ? user.id : m[1];
+    if (m[2]) { const r = await DB.prepare("SELECT illust FROM profiles WHERE user_id = ?").bind(id).first(); return ok({ illust: (r && r.illust) || null }); }
+    const row = await DB.prepare("SELECT u.id, u.username, u.last_seen, c.data, c.avatar FROM users u LEFT JOIN characters c ON c.id = u.active_character_id WHERE u.id = ?").bind(id).first();
+    if (!row) return bad("not_found", 404);
+    const d = row.data ? safeParse(row.data) : {}; delete d.secret;   // 비밀 칸은 본인만 본다
+    const pr = await DB.prepare("SELECT lines, game, illust IS NOT NULL AS has FROM profiles WHERE user_id = ?").bind(id).first();
+    return ok({ ...person(row, now), avatar: row.avatar || null, lines: pr ? safeParse(pr.lines || "[]") : [], level: (pr && pr.game && safeParse(pr.game).level) || 1, hasIllust: !!(pr && pr.has), data: d });
   }
 
   /* ── 메인 대사 · 숙소 ── */

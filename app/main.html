@@ -231,6 +231,21 @@
 
   @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
 
+/* 다른 캐릭터 구경 (main.html?visit=…): 메뉴를 감추고 간단한 정보만 */
+.vinfo { display: none; }
+.visit .layer, .visit .hit, .visit .sidegrp, .visit .optgrp, .visit .lvl, .visit .urim, .visit .char-hint b { display: none !important; }
+.visit .vinfo { display: block; position: absolute; left: 1800px; top: 372px; width: 720px; padding: 44px 96px 48px 84px; box-sizing: border-box; color: #f2f2f2; z-index: 30;
+  filter: drop-shadow(0 18px 26px rgba(0,0,0,.4)); animation: vIn .6s cubic-bezier(.2,.8,.2,1) .5s backwards; }
+@keyframes vIn { from { opacity: 0; translate: 60px 0; } }
+.vinfo::before { content: ""; position: absolute; inset: 0; z-index: -1; clip-path: polygon(0 0, calc(100% - 52px) 0, 100% 100%, 52px 100%);
+  background: repeating-conic-gradient(rgba(0,0,0,.16) 0 25%, transparent 0 50%) 0 0 / 34px 34px, linear-gradient(90deg, rgba(10,10,10,.92), rgba(74,74,74,.88)); }
+.vinfo h2 { font-family: "Passion One", sans-serif; font-weight: 400; font-size: 22px; letter-spacing: .32em; color: #bdbdbd; margin-bottom: 18px; }
+.vinfo dl { display: grid; grid-template-columns: 110px 1fr; gap: 12px 20px; font-size: 25px; line-height: 1.45; margin-bottom: 30px; }
+.vinfo dt { color: #a9a9a9; font-weight: 700; } .vinfo dd { color: #fff; font-weight: 700; word-break: keep-all; overflow-wrap: anywhere; }
+.vinfo button { position: relative; display: block; width: 100%; height: 66px; margin-top: 12px; font-size: 23px; font-weight: 900; color: #fff; text-align: center; transition: translate .18s, filter .18s; }
+.vinfo button::before { content: ""; position: absolute; inset: 0; z-index: -1; clip-path: polygon(0 0, calc(100% - 16px) 0, 100% 100%, 16px 100%); background: linear-gradient(92deg, rgba(255,255,255,.08), rgba(123,123,123,.55) 50%, #171717); }
+.vinfo button:hover { translate: 8px 0; filter: brightness(1.35); }
+.vinfo button.main::before { background: linear-gradient(92deg, #8a8a8a, #2a2a2a); }
 /* >>> boot */
 /* ── 첫 화면 · 페이지 넘김 ── */
 #stage { transform: translate(var(--ag-x, 0px), var(--ag-y, 0px)) scale(var(--ag-s, 1)); }
@@ -243,6 +258,7 @@ html.ag-wait #stage > :not(.wallpaper):not(.tint) { opacity: 0 !important; will-
 /* ── 메인: 피그마 배치 (URIM · 이름 · 상단바 70%, 나머지는 피그마에서 정한 크기·위치) ── */
 :root { --u: 0.7; }
 .play { top: 0; height: 1440px; } .canvas { top: 0; }
+.top-btn, .urim { z-index: 40; }   /* 캔버스가 화면 전체를 덮으므로 상단 버튼은 그 위에 */
 .urim, .topbar, .top-btn, .namegrp, .demo-chip, .page-toast, .side-btn { scale: var(--u); }
 .urim { transform-origin: 0 0; }
 .topbar { transform-origin: 510.18px -22.8px; }
@@ -417,6 +433,13 @@ html.ag-wait #stage > :not(.wallpaper):not(.tint) { opacity: 0 !important; will-
     </div>
   </section>
 
+  <aside class="vinfo" id="vinfo" aria-label="캐릭터 정보">
+    <h2>VISITING</h2>
+    <dl id="vRows"><dt>불러오는 중…</dt><dd></dd></dl>
+    <button class="main" id="vMore" type="button">프로필 자세하게 보기</button>
+    <button id="vOther" type="button">다른 캐릭터 보기</button>
+    <button id="vHome" type="button">내 화면으로</button>
+  </aside>
   <div class="page-toast" id="pageToast" role="status"></div>
 </main>
 <audio id="bgm" loop></audio>
@@ -426,6 +449,8 @@ html.ag-wait #stage > :not(.wallpaper):not(.tint) { opacity: 0 !important; will-
 /* ─────────────────────────────────────────────
    여기만 고치면 됩니다
    ───────────────────────────────────────────── */
+const VISIT = new URLSearchParams(location.search).get('visit');   // 다른 캐릭터를 구경하는 중이면 그 사람의 id
+if (VISIT) document.documentElement.classList.add('visit');
 const CONFIG = {
   name: '캐릭터 이름',
   images: [],       // 전신 일러 목록. 예: ['images/char-1.png', 'images/char-2.png']
@@ -616,7 +641,24 @@ if (CONFIG.lines.length) setTimeout(() => say(CONFIG.lines[0]), 500);   // 대�
 
 
 /* 설정에서 저장한 이름 · 대사 · 전신 일러스트 (체험 모드는 이 브라우저, 로그인하면 서버) */
-if (window.AG) {
+if (window.AG && VISIT) {
+  const hint = document.getElementById('charHint'), rows = document.getElementById('vRows');
+  hint.innerHTML = '';
+  document.getElementById('vOther').onclick = () => AG.browse();
+  document.getElementById('vHome').onclick = () => location.href = 'main.html';
+  AG.people.get(VISIT).then(p => {
+    const d = p.data || {};
+    CONFIG.name = p.name; document.getElementById('charName').textContent = p.name; document.getElementById('nameplate').textContent = p.name;
+    document.title = p.name + ' · AFTERGLOW';
+    const brief = [['직업', d.job], ['소속', d.faction], ['출신', d.origin], ['종족', AG.SPECIES[d.species] || d.species], ['키', d.height]];
+    rows.innerHTML = brief.map(([k, v]) => `<dt>${k}</dt><dd>${AG.esc(v && v !== '—' ? v : '—')}</dd>`).join('');
+    document.getElementById('vMore').onclick = () => AG.profileSheet(p);
+    CONFIG.lines = (p.lines || []).slice(0, 5); idx = 0;
+    if (CONFIG.lines.length) setTimeout(() => say(CONFIG.lines[0]), 600);
+    if (p.hasIllust) AG.people.illust(VISIT).then(r => { if (r && r.illust) { images = [r.illust]; imgIdx = 0; setImage(r.illust); } }).catch(() => {});
+    else hint.innerHTML = '아직 전신 일러스트를<br>올리지 않았어요';
+  }).catch(() => { rows.innerHTML = '<dt>—</dt><dd>캐릭터를 찾지 못했어요</dd>'; document.getElementById('vMore').hidden = true; });
+} else if (window.AG) {
   AG.me().then(me => {
     if (!me) return;
     if (me.name && me.name !== '캐릭터 이름') { CONFIG.name = me.name; document.getElementById('charName').textContent = me.name; document.getElementById('nameplate').textContent = me.name; }
@@ -648,7 +690,7 @@ document.querySelectorAll('.side-btn').forEach(b => b.addEventListener('click', 
 
 /* 상단바 */
 document.querySelector('[data-action="refresh"]').addEventListener('click', () => location.reload());
-document.querySelector('[data-action="browse"]').addEventListener('click', () => go('browse'));
+document.querySelector('[data-action="browse"]').addEventListener('click', () => window.AG ? AG.browse() : go('browse'));
 document.querySelector('[data-action="back"]').addEventListener('click', () => {
   if (history.length > 1) history.back(); else toast('이전 페이지가 없어요');
 });

@@ -56,7 +56,7 @@ CREATE TABLE IF NOT EXISTS posts (id TEXT PRIMARY KEY, user_id TEXT NOT NULL, te
 CREATE INDEX IF NOT EXISTS posts_time ON posts(created_at);
 CREATE TABLE IF NOT EXISTS comments (id TEXT PRIMARY KEY, post_id TEXT NOT NULL, parent_id TEXT, user_id TEXT NOT NULL, text TEXT NOT NULL, created_at INTEGER NOT NULL, edited_at INTEGER);
 CREATE INDEX IF NOT EXISTS comments_post ON comments(post_id, created_at);
-CREATE TABLE IF NOT EXISTS profiles (user_id TEXT PRIMARY KEY, lines TEXT, home TEXT, game TEXT, updated_at INTEGER);
+CREATE TABLE IF NOT EXISTS profiles (user_id TEXT PRIMARY KEY, lines TEXT, home TEXT, game TEXT, illust TEXT, updated_at INTEGER);
 CREATE TABLE IF NOT EXISTS items (id TEXT PRIMARY KEY, user_id TEXT NOT NULL, name TEXT NOT NULL, rarity TEXT, kind TEXT, source TEXT, descr TEXT, slot TEXT, deco INTEGER DEFAULT 0, img TEXT, created_at INTEGER NOT NULL);
 CREATE INDEX IF NOT EXISTS items_user ON items(user_id);
 CREATE TABLE IF NOT EXISTS battles (user_id TEXT PRIMARY KEY, state TEXT NOT NULL, updated_at INTEGER);

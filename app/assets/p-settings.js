@@ -72,10 +72,10 @@ AG.boot();
   $('illuBtn').onclick = () => $('pickIllu').click();
   $('pickIllu').onchange = async e => {
     const f = e.target.files[0]; e.target.value = ''; if (!f) return;
-    try { await AG.illust.set(f); AG.toast('전신 일러스트를 바꿨어요 · 메인 화면과 스탯에 보여요'); } catch (err) { AG.toast('이 브라우저에 저장하지 못했어요'); }
+    try { await AG.illust.set(f); AG.toast('전신 일러스트를 바꿨어요 · 구경 온 사람에게도 보여요', 2600); } catch (err) { AG.toast(err && err.message === 'too_long' ? '이미지가 너무 커요. 더 작은 파일로 해 주세요' : '이 기기에는 저장했지만 서버에 올리지 못했어요', 2800); }
   };
   $('detailBtn').onclick = () => {
-    const F = [['nameEn', '영문 이름', 40], ['age', '나이', 20], ['gender', '성별', 20], ['job', '직업', 40], ['faction', '소속', 40], ['echoAbility', '잔향 능력', 120]];
+    const F = [['nameEn', '영문 이름', 40], ['age', '나이', 20], ['gender', '성별', 20], ['height', '키', 20], ['job', '직업', 40], ['faction', '소속', 40], ['echoAbility', '잔향 능력', 120]];
     const T = [['appearance', '외형', 1200], ['personality', '성격', 1200]];
     const SK = [['attackNormalName', '일반 공격 이름', 40, 'input'], ['attackNormal', '일반 공격 설명', 600, 'area'], ['attackSpecialName', '특수 공격 이름', 40, 'input'], ['attackSpecial', '특수 공격 설명', 800, 'area'], ['attackUltimateName', '필살기 이름', 40, 'input'], ['attackUltimate', '필살기 설명', 1000, 'area']];
     const echo = ['없음', '방출형', '조형형', '강화형', '간섭형', '감응형'];

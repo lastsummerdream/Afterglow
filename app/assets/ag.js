@@ -105,7 +105,7 @@ AG.boot = function (opts = {}) {
   addEventListener('resize', fit); fit();
   const q = s => document.querySelector(s);
   q('[data-action="refresh"]')?.addEventListener('click', () => location.reload());
-  q('[data-action="browse"]')?.addEventListener('click', () => AG.toast('다른 캐릭터 프로필 구경가기 · 준비 중이에요'));
+  q('[data-action="browse"]')?.addEventListener('click', () => AG.browse());
   q('[data-action="back"]')?.addEventListener('click', () => {
     if (history.length > 1 && document.referrer) history.back(); else location.href = AG.PAGES.main;
   });
@@ -269,16 +269,46 @@ function idb() {
     r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error);
   });
 }
-AG.illust = {
+const idbIllust = {
   async get() {
     const d = await idb();
-    return new Promise(res => { const q = d.transaction('files').objectStore('files').get('illust'); q.onsuccess = () => res(q.result ? URL.createObjectURL(q.result) : null); q.onerror = () => res(null); });
+    return new Promise(res => { const q = d.transaction('files').objectStore('files').get('illust'); q.onsuccess = () => res(q.result || null); q.onerror = () => res(null); });
   },
   async set(blob) {
     const d = await idb();
     return new Promise((res, rej) => { const t = d.transaction('files', 'readwrite'); blob ? t.objectStore('files').put(blob, 'illust') : t.objectStore('files').delete('illust'); t.oncomplete = res; t.onerror = () => rej(t.error); });
   },
 };
+/* 전신 일러스트: 이 브라우저에 두고, 다른 사람이 구경할 수 있게 서버에도 올린다 */
+AG.illust = {
+  async get() {
+    const b = await idbIllust.get().catch(() => null);
+    if (b) return URL.createObjectURL(b);
+    try { const r = await AG.people.illust('me'); return (r && r.illust) || null; } catch { return null; }   // 다른 기기에서 올린 일러스트
+  },
+  async set(file) {
+    await idbIllust.set(file);
+    await impl.illustPut(file ? await AG.fitImage(file) : null);
+  },
+};
+/* 비율을 지키며 줄이기 (투명 배경 유지, 서버에 올릴 수 있는 크기로) */
+AG.fitImage = (file, maxW = 1200, maxH = 1600, max = 1500000) => new Promise((res, rej) => {
+  const img = new Image(); const url = URL.createObjectURL(file);
+  img.onload = () => {
+    URL.revokeObjectURL(url);
+    let k = Math.min(1, maxW / img.width, maxH / img.height);
+    for (let n = 0; n < 6; n++, k *= .8) {
+      const c = document.createElement('canvas'); c.width = Math.max(1, Math.round(img.width * k)); c.height = Math.max(1, Math.round(img.height * k));
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+      for (const q of [.9, .8, .65]) { const d = c.toDataURL('image/webp', q); if (d.startsWith('data:image/webp') && d.length <= max) return res(d); }
+      const png = c.toDataURL('image/png'); if (png.length <= max) return res(png);   // webp를 못 만드는 브라우저
+    }
+    rej(new Error('too_long'));
+  };
+  img.onerror = () => { URL.revokeObjectURL(url); rej(new Error('bad_image')); };
+  img.src = url;
+});
+
 /* 정사각형으로 잘라 줄이기 (프로필 사진 320px) */
 AG.squareImage = (file, size = 320, max = 190000) => new Promise((res, rej) => {
   const img = new Image(); const url = URL.createObjectURL(file);
@@ -366,6 +396,8 @@ const S = {
     return { id: j.user.id, username: j.user.username, character: c, name: c ? c.name : j.user.username, avatar: c && c.avatar, lines: j.profile?.lines || [], raw: j };
   },
   users: () => call('GET', '/users'),
+  people: { get: id => call('GET', `/people/${id}`), illust: id => call('GET', `/people/${id}/illust`) },
+  illustPut: illust => call('PUT', '/me/illust', { illust }),
   channels: {
     list: () => call('GET', '/channels'),
     create: name => call('POST', '/channels', { name }),
@@ -555,6 +587,15 @@ const Dm = {
       character: { data: { name: meName(), origin: c.origin || 'TB-03', species: c.species || 'human', ...c } }, lines: d.lines.slice(), demo: true };
   },
   users: () => wait(Object.values(db().users).filter(u => u.id !== 'me').map(u => ({ ...u }))),
+  people: {
+    get: id => { const u = db().users[id]; if (!u) return fail('not_found');
+      const [o, sp] = String(u.sub || '').split(' · '); const species = Object.keys(AG.SPECIES).find(k => AG.SPECIES[k] === sp) || 'human';
+      return wait({ ...u, avatar: null, level: 3, hasIllust: false, lines: ['어, 구경 왔어?', '여긴 체험 모드라 보여 줄 게 많지 않아.', '로그인하면 진짜 사람들을 만날 수 있어.'],
+        data: { name: u.name, nameEn: '', age: '20대', gender: '', height: '170cm', origin: o || 'TB-03', originDetail: '', species, lineage: '', G: 4, C: 3, T: 1, echoType: '감응형', echoAbility: '광맥의 떨림을 읽는다', job: u.job, faction: u.faction,
+          appearance: '체험 모드의 예시 캐릭터예요.', personality: '말수가 적지만 부탁은 잘 들어준다.', background: '', notes: '', attackStyle: '근접', attackStyle2: '' } }); },
+    illust: () => wait({ illust: null }),
+  },
+  illustPut: () => wait({ ok: true }),
   channels: {
     list: () => wait(db().channels.map(c => ({ id: c.id, name: c.name, members: c.members, last: lastOf(c.msgs) }))),
     create: name => { const c = { id: rid('c'), name, members: 1, msgs: [] }; db().channels.push(c); save(); return wait({ id: c.id, name, members: 1, last: null }); },
@@ -815,7 +856,7 @@ Object.assign(Dm, {
 
 const impl = AG.mode === 'server' ? S : Dm;
 Object.assign(AG, {
-  me: () => impl.me(), users: () => impl.users(), channels: impl.channels, msg: impl.msg, talks: impl.talks, dms: impl.dms,
+  me: () => impl.me(), users: () => impl.users(), people: impl.people, channels: impl.channels, msg: impl.msg, talks: impl.talks, dms: impl.dms,
   stats: (...a) => impl.stats(...a), inventory: impl.inventory, home: impl.home, lines: impl.lines, character: impl.character,
   account: impl.account, battle: impl.battle, posts: impl.posts, story: impl.story, party: impl.party,
 });
@@ -833,3 +874,75 @@ async function rawAuth(path, username, password, invite) {
 /* 서버 모드에서만 주기적으로 새 내용을 가져옴 */
 AG.poll = (fn, ms = 4000) => { if (AG.mode !== 'server') return () => {}; const h = setInterval(() => { if (!document.hidden) fn(); }, ms); return () => clearInterval(h); };
 })();
+
+/* ── 다른 캐릭터 구경: 어느 화면에서나 쓰는 팝업 (스타일을 직접 갖고 다닌다) ── */
+AG.sheet = function (html, cls = '') {
+  if (!document.getElementById('bwCss')) {
+    const st = document.createElement('style'); st.id = 'bwCss';
+    st.textContent = `.bw-back{position:absolute;inset:0;z-index:60;display:grid;place-items:center;background:rgba(10,10,10,.6);pointer-events:auto;animation:bwIn .2s backwards}
+@keyframes bwIn{from{opacity:0}}@keyframes bwUp{from{opacity:0;translate:0 26px}}
+.bw{position:relative;width:1120px;max-height:1180px;display:flex;flex-direction:column;padding:56px 110px 50px;box-sizing:border-box;color:#f2f2f2;font-family:"Noto Sans KR",sans-serif;filter:drop-shadow(0 26px 40px rgba(0,0,0,.5));animation:bwUp .32s cubic-bezier(.2,.8,.2,1) backwards}
+.bw.wide{width:1500px}
+.bw::before{content:"";position:absolute;inset:0;z-index:-1;clip-path:polygon(0 0,calc(100% - 56px) 0,100% 100%,56px 100%);background:repeating-conic-gradient(rgba(0,0,0,.16) 0 25%,transparent 0 50%) 0 0/34px 34px,linear-gradient(90deg,rgba(10,10,10,.96),rgba(74,74,74,.94))}
+.bw h2{font-family:"Passion One",sans-serif;font-weight:400;font-size:24px;letter-spacing:.32em;color:#bdbdbd;margin:0 0 4px}
+.bw h3{font-size:42px;font-weight:900;margin:0 0 22px;width:fit-content;background:linear-gradient(180deg,#f2f2f2,#8c8c8c);-webkit-background-clip:text;background-clip:text;color:transparent}
+.bw .bw-list{flex:1;min-height:0;overflow-y:auto;padding-right:14px;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.3) transparent}
+.bw .bw-row{position:relative;display:flex;align-items:center;gap:22px;width:100%;height:92px;padding:0 40px;margin-bottom:10px;box-sizing:border-box;text-align:left;color:#fff;font:inherit;border:0;background:none;cursor:pointer;transition:translate .18s,filter .18s}
+.bw .bw-row::before{content:"";position:absolute;inset:0;z-index:-1;clip-path:polygon(0 0,calc(100% - 20px) 0,100% 100%,20px 100%);background:linear-gradient(92deg,rgba(255,255,255,.05),rgba(123,123,123,.5) 55%,rgba(23,23,23,.9))}
+.bw .bw-row:hover{translate:10px 0;filter:brightness(1.35)}
+.bw .bw-ic{flex:none;width:58px;height:58px;display:grid;place-items:center;font-size:26px;font-weight:900;background:rgba(255,255,255,.14)}
+.bw .bw-tx{flex:1;min-width:0}.bw .bw-tx b{display:block;font-size:28px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bw .bw-tx small{display:block;font-size:19px;color:#b9b9b9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bw .bw-on{flex:none;font-size:18px;font-weight:700;color:#9a9a9a}.bw .bw-on.on{color:#cfe5a8}
+.bw .bw-empty{padding:60px 0;text-align:center;font-size:24px;color:#b5b5b5;line-height:1.6}
+.bw .bw-btns{display:flex;gap:16px;margin-top:26px}
+.bw .bw-btn{position:relative;height:72px;padding:0 54px;font:inherit;font-size:24px;font-weight:900;color:#fff;border:0;background:none;cursor:pointer;transition:filter .18s}
+.bw .bw-btn::before{content:"";position:absolute;inset:0;z-index:-1;clip-path:polygon(0 0,calc(100% - 18px) 0,100% 100%,18px 100%);background:linear-gradient(92deg,#5a5a5a,#171717)}
+.bw .bw-btn:hover{filter:brightness(1.4)}
+.bw input.bw-q{width:100%;height:64px;margin-bottom:16px;padding:0 26px;box-sizing:border-box;font:inherit;font-size:24px;color:#fff;background:rgba(255,255,255,.09);border:0;outline:0}
+.bw dl{display:grid;grid-template-columns:200px 1fr;gap:12px 26px;margin:0 0 26px;font-size:24px;line-height:1.55}
+.bw dt{color:#a9a9a9;font-weight:700}.bw dd{margin:0;color:#f0f0f0;white-space:pre-wrap;word-break:keep-all;overflow-wrap:anywhere}
+.bw h4{font-family:"Passion One",sans-serif;font-weight:400;font-size:20px;letter-spacing:.3em;color:#9f9f9f;margin:8px 0 14px;padding-bottom:8px;border-bottom:2px solid rgba(255,255,255,.14)}`;
+    document.head.appendChild(st);
+  }
+  const back = document.createElement('div'); back.className = 'bw-back';
+  back.innerHTML = `<div class="bw ${cls}" role="dialog" aria-modal="true">${html}</div>`;
+  document.getElementById('stage').appendChild(back);
+  const close = () => { back.remove(); removeEventListener('keydown', esc); };
+  const esc = e => { if (e.key === 'Escape') close(); };
+  addEventListener('keydown', esc);
+  back.addEventListener('pointerdown', e => { if (e.target === back) close(); });
+  return { el: back.firstElementChild, close };
+};
+/* 캐릭터 고르기 → 그 캐릭터의 화면으로 */
+AG.browse = async function () {
+  const m = AG.sheet(`<h2>VISIT</h2><h3>누구를 보러 갈까요?</h3><input class="bw-q" placeholder="이름 · 직업 · 소속으로 찾기" aria-label="캐릭터 찾기"><div class="bw-list"><p class="bw-empty">불러오는 중…</p></div><div class="bw-btns"><button class="bw-btn" data-x type="button">닫기</button></div>`);
+  m.el.querySelector('[data-x]').onclick = m.close;
+  const box = m.el.querySelector('.bw-list'), q = m.el.querySelector('.bw-q');
+  let users = [];
+  const draw = () => {
+    const k = q.value.trim().toLowerCase();
+    const l = users.filter(u => !k || [u.name, u.sub, u.job, u.faction].join(' ').toLowerCase().includes(k));
+    box.innerHTML = l.map(u => `<button class="bw-row" data-id="${AG.esc(u.id)}" type="button"><span class="bw-ic">${AG.esc(Array.from(u.name || '?')[0])}</span><span class="bw-tx"><b>${AG.esc(u.name)}</b><small>${AG.esc([u.sub, u.faction && u.faction !== '—' ? u.faction : ''].filter(Boolean).join(' · '))}</small></span><span class="bw-on${u.online ? ' on' : ''}">${u.online ? '접속 중' : ''}</span></button>`).join('')
+      || `<p class="bw-empty">${users.length ? '찾는 캐릭터가 없어요.' : '아직 다른 캐릭터가 없어요.'}</p>`;
+    box.querySelectorAll('[data-id]').forEach(b => b.onclick = () => location.href = AG.PAGES.main + '?visit=' + encodeURIComponent(b.dataset.id));
+  };
+  q.addEventListener('input', draw);
+  try { users = await AG.users(); draw(); } catch (e) { box.innerHTML = `<p class="bw-empty">${AG.esc(AG.errMsg(e))}</p>`; }
+};
+/* 공개 프로필 자세히 (비밀 칸은 서버가 보내지 않는다) */
+AG.profileSheet = function (p) {
+  const d = p.data || {}, e = AG.esc;
+  const row = (k, v) => v || v === 0 ? `<dt>${k}</dt><dd>${e(v)}</dd>` : '';
+  const sec = (t, rows) => rows.join('') ? `<h4>${t}</h4><dl>${rows.join('')}</dl>` : '';
+  const atk = (n, t) => [n, t].filter(Boolean).join(' — ');
+  const m = AG.sheet(`<h2>PROFILE</h2><h3>${e(d.name || p.name)}</h3><div class="bw-list">
+    ${sec('BASIC', [row('영문 이름', d.nameEn), row('나이', d.age), row('성별', d.gender), row('키', d.height), row('직업', d.job), row('소속', d.faction)])}
+    ${sec('ORIGIN', [row('출신', [d.origin, d.originDetail].filter(Boolean).join(' · ')), row('종족', AG.SPECIES[d.species] || d.species), row('혈통', d.lineage), d.G != null ? row('지수', `G ${d.G} · C ${d.C} · T ${d.T}`) : ''])}
+    ${sec('ECHO', [row('잔향 갈래', d.echoType), row('잔향 능력', d.echoAbility)])}
+    ${sec('CHARACTER', [row('외형', d.appearance), row('성격', d.personality), row('배경', d.background), row('메모', d.notes)])}
+    ${sec('COMBAT', [row('공격 스타일', [d.attackStyle, d.attackStyle2].filter(Boolean).join(' · ')), row('일반 공격', atk(d.attackNormalName, d.attackNormal)), row('특수 공격', atk(d.attackSpecialName, d.attackSpecial)), row('필살기', atk(d.attackUltimateName, d.attackUltimate))])}
+    </div><div class="bw-btns"><button class="bw-btn" data-x type="button">닫기</button></div>`, 'wide');
+  m.el.querySelector('[data-x]').onclick = m.close;
+  return m;
+};
