@@ -240,17 +240,17 @@ html.ag-wait #stage > :not(.wallpaper):not(.tint) { opacity: 0 !important; will-
 @view-transition { navigation: auto; }
 ::view-transition-old(root), ::view-transition-new(root) { animation-duration: .32s; animation-timing-function: cubic-bezier(.4, 0, .2, 1); }
 
-/* ── UI 70% (메인) ── */
+/* ── UI 70% (메인: 캐릭터·대사창은 그대로, 사이드바·메뉴·이름·URIM만 축소) ── */
 :root { --u: 0.7; }
-.play { top: 0; height: 1440px; } .canvas { top: 0; }
-.urim, .topbar, .top-btn, .chargrp, .dlggrp, .optgrp, .sidegrp, .namegrp, .layer, .hit, .demo-chip, .page-toast, .modal { scale: var(--u); }
-.urim { transform-origin: -167px -75px; }
+.urim, .topbar, .top-btn, .namegrp, .layer, .hit, .demo-chip, .page-toast, .side-btn { scale: var(--u); }
+.urim { transform-origin: 0 0; }
 .topbar { transform-origin: 510.18px -22.8px; }
 .top-btn.refresh { transform-origin: 225px -37px; } .top-btn.browse { transform-origin: 160px -37px; } .top-btn.back { transform-origin: 96px -37px; }
-.namegrp { transform-origin: 975px -157px; }
-.sidegrp { transform-origin: 158px 667.16px; }
-.chargrp { transform-origin: 612px 1295px; } .dlggrp { transform-origin: 693px 329px; } .optgrp { transform-origin: -265px 386px; }   /* 캐릭터 묶음: (950, 1440) 기준 */
-.layer, .hit { transform-origin: 2560px 1440px; }
+.namegrp { transform-origin: 975px 0; }
+.layer, .hit { transform-origin: 2560px 910px; }   /* 메뉴: 오른쪽, 예전 세로 중심 */
+.sidegrp > img { scale: var(--u) 1; transform-origin: 158px 0; }   /* 사이드바 판: 폭만 줄이고 세로는 그대로 */
+.side-btn { transform-origin: -42px 50%; }
+.char-hint { font-size: 23.8px; } .char-hint b { font-size: 30.8px; } .dialogue .line { font-size: 28.0px; } .nameplate { font-size: 28.0px; translate: 0 7.2px; }   /* 본문 글자 70% */   /* 버튼: 예전 높이 그대로, 왼쪽에 붙여 축소 */
 .demo-chip { transform-origin: 60px -40px; }
 .page-toast { transform-origin: 50% -150px; }
 /* <<< boot */

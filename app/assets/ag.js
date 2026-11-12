@@ -66,8 +66,34 @@ AG.cropLayers = function () {
   });
 };
 
+/* 70%로 줄인 좌우 패널: 바탕과 목록을 화면 아래까지 세로로 늘린다 */
+AG.stretchSides = function () {
+  document.querySelectorAll('#stage .L[data-r="left"], #stage .L[data-r="right"]').forEach(L => {
+    const cs = getComputedStyle(L), sc = parseFloat(cs.scale);
+    if (!(sc < 1)) return;
+    const ay = parseFloat(cs.transformOrigin.split(' ')[1]);
+    if (!(ay < 1000)) return;                      // 아래쪽에 붙인 것은 제외
+    const bottom = y => ay + (y - ay) / sc;        // 화면 y → 레이어 안 좌표
+    const walk = g => {
+      const kids = [...g.children].filter(c => !/^(defs|title|desc)$/i.test(c.tagName));
+      if (g.tagName.toLowerCase() === 'g' && kids.length > 1) { kids.forEach(walk); return; }   // 묶음은 풀어서 바탕만 늘린다
+      let b; try { b = g.getBBox(); } catch { return; }
+      if (b.height > 600 && b.y + b.height >= 1400) {
+        const k = (bottom(1440) - b.y) / (1440 - b.y);
+        g.setAttribute('transform', `translate(0 ${b.y}) scale(1 ${k}) translate(0 ${-b.y})`);
+      }
+    };
+    L.querySelectorAll(':scope > svg.sh > *').forEach(walk);
+    L.querySelectorAll('.scroll').forEach(el => {
+      const want = bottom(el.id === 'comments' ? 1330 : 1410) - el.offsetTop;
+      if (want > el.offsetHeight) el.style.height = want + 'px';
+    });
+  });
+};
+
 AG.boot = function (opts = {}) {
   AG.splitChars();
+  AG.stretchSides();
   AG.cropLayers();
   const stage = document.getElementById('stage');
   const fit = () => {

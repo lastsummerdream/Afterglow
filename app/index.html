@@ -43,8 +43,8 @@
 #stage.panel-open .cv { filter: blur(12px); opacity: .35; pointer-events: none; }
 .dim { position: absolute; inset: 0; background: rgba(0,0,0,.5); opacity: 0; pointer-events: none; transition: opacity .35s; }
 #stage.panel-open .dim { opacity: 1; pointer-events: auto; }
-.panel { visibility: hidden; opacity: 0; scale: calc(var(--u) * .97); transform-origin: 1280px 720px; transition: opacity .3s, scale .35s cubic-bezier(.2,.8,.2,1), visibility 0s .35s; }
-.panel.show { visibility: visible; opacity: 1; scale: var(--u); transition: opacity .3s, scale .35s cubic-bezier(.2,.8,.2,1), visibility 0s; }
+.panel { visibility: hidden; opacity: 0; scale: calc(var(--u) * .97) !important; transform-origin: 1280px 720px; transition: opacity .3s, scale .35s cubic-bezier(.2,.8,.2,1), visibility 0s .35s; }
+.panel.show { visibility: visible; opacity: 1; scale: var(--u) !important; transition: opacity .3s, scale .35s cubic-bezier(.2,.8,.2,1), visibility 0s; }
 .panel .t { pointer-events: none; } .panel button.t { pointer-events: auto; }
 .panel button.t:hover { text-decoration: underline; color: #1e1e1e !important; }
 #logoImg { position: absolute; left: 780px; top: 290px; width: 1000px; height: 440px; object-fit: contain; }

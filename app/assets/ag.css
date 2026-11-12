@@ -192,22 +192,22 @@ html.ag-wait #stage > :not(.wallpaper):not(.tint) { opacity: 0 !important; will-
 .ch { display: inline-block; white-space: pre; animation: mo-ch var(--cd) cubic-bezier(0, 0, .58, 1) var(--cl) backwards; }
 @keyframes mo-ch { 0% { translate: 0 -40px; opacity: 0; } 45% { opacity: 1; } 100% { translate: 0 0; opacity: 1; } }
 
-/* ── UI 70% (화면은 그대로, UI만 축소) ── */
+/* ── UI 70% (본문은 그대로, 제목·탭·상단바·좌우 패널만 축소) ── */
 :root { --u: 0.7; }
-.L, .topbar, .top-btn, .demo-chip, .page-toast, .modal { scale: var(--u); }
-.L[data-r="title"] { transform-origin: 0 0; }
-.L[data-r="tabs"] { transform-origin: 1280px 0; }
-.L[data-r="left"], .L[data-r="center"], .L[data-r="bottom"] { transform-origin: 1280px 1440px; }
-.L[data-r="right"] { transform-origin: 2560px 1440px; }
-[data-pg="group"] .L[data-r="left"], [data-pg="private"] .L[data-r="left"], [data-pg="dm"] .L[data-r="left"], [data-pg="timeline"] .L[data-r="left"] { transform-origin: 0 1440px; }
-[data-pg="battle"] .L[data-r="right"], [data-pg="inventory"] .L[data-r="right"] { transform-origin: 1280px 1440px; }
-[data-pg="battle"] .L[data-r="title"]:not(#L-title) { transform-origin: 1280px 0; }   /* TURN 탭 */
+.topbar, .top-btn, .demo-chip, .page-toast, .L[data-r="title"], .L[data-r="tabs"] { scale: var(--u); }
+.L[data-r="title"] { transform-origin: 167px 64px; }
+.L[data-r="tabs"] { transform-origin: 1280px 64px; }
+[data-pg="group"] .L[data-r="left"], [data-pg="private"] .L[data-r="left"], [data-pg="dm"] .L[data-r="left"], [data-pg="timeline"] .L[data-r="left"] { scale: var(--u); transform-origin: 0 294px; }
+[data-pg="group"] .L[data-r="right"], [data-pg="private"] .L[data-r="right"], [data-pg="dm"] .L[data-r="right"], [data-pg="timeline"] .L[data-r="right"], [data-pg="stats"] .L[data-r="right"], [data-pg="home"] .L[data-r="right"], [data-pg="settings"] .L[data-r="right"] { scale: var(--u); transform-origin: 2560px 250px; }
+[data-pg="battle"] .L[data-r="title"]:not(#L-title) { transform-origin: 1280px 64px; }   /* TURN 탭 */
 [data-pg="battle"] #turn { translate: 548.57px 0; }
+[data-pg="timeline"] .L.mo-tcsend[data-r="right"] { transform-origin: 2560px 1440px; }   /* 댓글 입력 바탕: 아래쪽 */
+[data-pg="timeline"] #L-right .mo-tcsend { margin-top: 510.0px; }   /* 댓글 입력·보내기: 아래쪽 */
 .topbar { transform-origin: 510.18px -22.8px; }
 .top-btn.refresh { transform-origin: 225px -37px; } .top-btn.browse { transform-origin: 160px -37px; } .top-btn.back { transform-origin: 96px -37px; }
 .demo-chip { transform-origin: 60px -40px; }
 .page-toast { transform-origin: 50% -150px; }
 /* 커버 */
-.L.cv, .L.panel { transform-origin: 1280px 720px; }
+.L.cv, .L.panel { scale: var(--u); transform-origin: 1280px 720px; }
 .L.cv.in-bottom { transform-origin: 1280px 1440px; }
 /* <<< boot */
