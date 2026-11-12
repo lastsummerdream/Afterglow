@@ -126,15 +126,17 @@
 .row .sub { left: 112px; top: 72px; width: 470px; overflow: hidden; text-overflow: ellipsis; }
 .row:not(.active):hover .ttl, .row:not(.active):hover .sub { translate: 8px 0; color: #e6e6e6; }
 .badge { position: absolute; left: 530px; top: 38px; width: 44px; height: 44px; border-radius: 50%; background: #b24545; box-shadow: 0 3px 6px rgba(0,0,0,.3); }
-.msgs { left: 905px; top: 356px; width: 965px; height: 732px; padding: 5px 9px 30px 18px; }
-.msg { position: relative; margin-bottom: 118px; }
-.msg .hd { display: flex; align-items: baseline; gap: 16px; height: 38px; }
-.msg .bd { margin-top: 10px; width: 900px; white-space: pre-wrap; word-break: keep-all; overflow-wrap: anywhere; }
-.msg.me { margin-bottom: 49px; }
-.msg.me .tm { display: block; text-align: right; height: 26px; }
-.msg.me .bub { position: relative; width: 740px; margin-left: auto; margin-right: -9px; }
-.msg.me .bub svg { position: absolute; left: -11px; top: -10px; width: 765px; height: calc(100% + 24px); overflow: visible; }
-.msg.me .bd { position: relative; width: 640px; margin: 0 0 0 auto; padding: 57px 99px 35px 0; box-sizing: content-box; text-align: right; color: #fff; }
+.msgs { left: 684px; top: 340px; width: 1338px; height: 748px; padding: 13px 20px 30px 0; }
+.msg { position: relative; margin-bottom: 100px; padding: 8px 0 0 132px; min-height: 88px; }
+.msg .av { position: absolute; left: 0; top: 0; width: 88px; height: 88px; background: #fff; overflow: hidden; display: grid; place-items: center; color: #8a8a8a; font-weight: 900; font-size: 34px; }
+.msg .av img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.msg .hd { display: flex; align-items: baseline; gap: 42px; height: 38px; }
+.msg .bd { margin-top: 10px; width: 1135px; white-space: pre-wrap; word-break: keep-all; overflow-wrap: anywhere; }
+.msg.me { margin-bottom: 40px; padding: 0; min-height: 0; }
+.msg.me .tm { display: block; text-align: right; height: 22px; padding-right: 3px; }
+.msg.me .bub { position: relative; width: 942px; margin-left: auto; margin-right: 11px; }
+.msg.me .bub svg { position: absolute; left: 0; top: 0; width: 100%; height: 100%; overflow: visible; }
+.msg.me .bd { position: relative; width: 740px; margin: 0 0 0 auto; padding: 56px 130px 53px 0; box-sizing: content-box; text-align: right; color: #fff; }
 .msg.me .bub .edit-box { text-align: left; }
 .msg.urim .hd .nm { font-family: "Passion One"; font-weight: 700; font-size: 30px; color: #5a5a5a; letter-spacing: .1em; }
 .msg.urim .bd { color: #5a5a5a; }
@@ -229,6 +231,7 @@
 :is(.L[data-r="center"], .L[data-r="bottom"]) .s76 { font-size: 16.8px; translate: 0 4.3px; }
 :is(.L[data-r="center"], .L[data-r="bottom"]) .s77 { font-size: 30.8px; translate: 0 7.9px; }
 :is(.L[data-r="center"], .L[data-r="bottom"]) .s78 { font-size: 19.6px; translate: 0 5.0px; }
+:is(.L[data-r="center"], .L[data-r="bottom"]) .msg .av { font-size: 23.8px; }
 :is(.L[data-r="center"], .L[data-r="bottom"]) .msg.urim .hd .nm { font-size: 21.0px; }
 :is(.L[data-r="center"], .L[data-r="bottom"]) .msgs .empty { font-size: 21.0px; }
 </style>
@@ -459,7 +462,7 @@
 <clipPath id="dm_clip4_72_184">
 <rect width="48" height="48" fill="white"/>
 </clipPath>
-</defs>
+<filter id="dm_fx_panel_f" x="0" y="0" width="1619.81" height="942.9" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/><feOffset dy="14"/><feGaussianBlur stdDeviation="11.35"/><feComposite in2="hardAlpha" operator="out"/><feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/><feBlend mode="normal" in2="BackgroundImageFix" result="ds"/><feBlend mode="normal" in="SourceGraphic" in2="ds" result="shape"/><feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/><feOffset dy="7"/><feGaussianBlur stdDeviation="2"/><feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1"/><feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/><feBlend mode="normal" in2="shape"/></filter><linearGradient id="dm_fx_panel_g" x1="953.832" y1="923.187" x2="953.832" y2="24.1666" gradientUnits="userSpaceOnUse"><stop stop-color="#C7C7C7"/><stop offset="1" stop-color="#0D0D0D"/></linearGradient><filter id="dm_fx_mine_f" x="0" y="0" width="941.58" height="141.74" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/><feOffset dy="8"/><feGaussianBlur stdDeviation="5"/><feComposite in2="hardAlpha" operator="out"/><feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/><feBlend mode="normal" in2="BackgroundImageFix" result="ds"/><feBlend mode="normal" in="SourceGraphic" in2="ds" result="shape"/></filter><pattern id="dm_fx_mine_p" patternUnits="userSpaceOnUse" patternTransform="matrix(29.76 0 -1.503 29.722 10 2)" preserveAspectRatio="none" viewBox="0 0 48 48" width="1" height="1"><rect width="24" height="24" fill="black"/><rect x="24" y="24" width="24" height="24" fill="black"/></pattern><linearGradient id="dm_fx_mine_g" x1="-24.2275" y1="70.3921" x2="931.835" y2="118.739" gradientUnits="userSpaceOnUse"><stop stop-color="#B5B5B5" stop-opacity="0.5"/><stop offset="1" stop-color="#1A1A1A"/></linearGradient></defs>
 </svg>
 <div class="L in in-left" data-r="left"><svg class="sh" viewBox="0 0 2560 1440" fill="none" aria-hidden="true"><rect y="330" width="612" height="1110" fill="url(#dm_pattern0_72_184)" fill-opacity="0.15"/>
 <g>
@@ -498,11 +501,7 @@
 </g>
 </g>
 </g>
-</svg></div><div class="L in in-center" data-r="center"><svg class="sh" viewBox="0 0 2560 1440" fill="none" aria-hidden="true"><g filter="url(#dm_filter10_di_72_184)">
-<path d="M705 311.5L1747.5 252.5L1933.79 242.5L1916.5 706.5L1897 1160.5L721.5 1109V969.5L722.5 526.5L614.5 516L722.5 467.5L705 311.5Z" fill="url(#dm_paint3_linear_72_184)" fill-opacity="0.5" />
-<path d="M705 311.5L1747.5 252.5L1933.79 242.5L1916.5 706.5L1897 1160.5L721.5 1109V969.5L722.5 526.5L614.5 516L722.5 467.5L705 311.5Z" fill="url(#agVid)" opacity="0.2"/>
-</g>
-</svg></div><div class="L in in-tabs" data-r="tabs"><svg class="sh" viewBox="0 0 2560 1440" fill="none" aria-hidden="true"><g>
+</svg></div><div class="L in in-center" data-r="center"><svg class="sh" viewBox="0 0 2560 1440" fill="none" aria-hidden="true"><g transform="translate(481.3 249.3)"><g filter="url(#dm_fx_panel_f)"><path d="M105.609 51.7L849.2 32.7L1220.7 20.7L1597.11 8.7V454.2V906.2L104.36 859.256V719.908L105.609 277.391L22.7 262.2L105.609 218.455V51.7Z" fill="url(#dm_fx_panel_g)" fill-opacity="0.5"/><path d="M105.609 51.7L849.2 32.7L1220.7 20.7L1597.11 8.7V454.2V906.2L104.36 859.256V719.908L105.609 277.391L22.7 262.2L105.609 218.455V51.7Z" fill="url(#agVid)" opacity="0.2"/></g></g></svg></div><div class="L in in-tabs" data-r="tabs"><svg class="sh" viewBox="0 0 2560 1440" fill="none" aria-hidden="true"><g>
 <g filter="url(#dm_filter11_d_72_184)">
 <path d="M1180 120H1456L1476.42 211.93H1200.42L1180 120Z" fill="url(#dm_pattern2_72_184)" fill-opacity="0.15" />
 <path d="M1180 120H1456L1476.42 211.93H1200.42L1180 120Z" fill="url(#dm_paint4_linear_72_184)" />
@@ -517,11 +516,7 @@
 <template id="tpl-rowSel" data-box="45,430,625,150"><svg><g filter="url(#dm_filter12_d_72_184)">
 <path d="M60 440H632L655.178 563.906H83.1776L60 440Z" fill="url(#dm_paint5_linear_72_184)" />
 </g>
-</svg></template><template id="tpl-mine" data-box="1100,776,765,150"><svg><g filter="url(#dm_filter13_d_72_184)">
-<path d="M1115.5 785.5L1821.5 812L1846.22 910.917L1154 895.5L1115.5 785.5Z" fill="url(#dm_pattern3_72_184)" fill-opacity="0.15" />
-<path d="M1115.5 785.5L1821.5 812L1846.22 910.917L1154 895.5L1115.5 785.5Z" fill="url(#dm_paint6_linear_72_184)" />
-</g>
-</svg></template>
+</svg></template><template id="tpl-mine" data-box="1049.41,771.05,941.58,141.74"><svg><g transform="translate(1049.41 771.05)"><g filter="url(#dm_fx_mine_f)"><path d="M10 2L900.403 27.7229L931.582 123.739L58.556 108.774L10 2Z" fill="url(#dm_fx_mine_p)" fill-opacity="0.15"/><path d="M10 2L900.403 27.7229L931.582 123.739L58.556 108.774L10 2Z" fill="url(#dm_fx_mine_g)" fill-opacity="1"/></g></g></svg></template>
 <div class="page-toast" id="pageToast" role="status"></div>
 </main>
 <script src="assets/ag.js"></script>

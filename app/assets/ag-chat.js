@@ -75,6 +75,7 @@ window.AGChat = function (cfg) {
     if (!st.msgs.length) { box.innerHTML = `<p class="empty">${esc(cfg.emptyMsgs || '첫 메시지를 보내 보세요')}</p>`; return; }
     st.msgs.forEach((m, i) => box.appendChild(node(m, old ? !old.has(m.id) : true, i)));
   }
+  const AVA = {};   // 사람별 프로필 사진 (서버는 첫 메시지에만 실어 보낸다)
   function node(m, anim, i) {
     const el = document.createElement('div');
     if (m.deleted) {
@@ -97,7 +98,9 @@ window.AGChat = function (cfg) {
       });
     } else {
       el.className = 'msg';
-      el.innerHTML = `<div class="hd"><span class="t s11" style="position:static">${esc(m.name)}</span><span class="t s12" style="position:static">${esc(fmt(m.at))}${m.editedAt ? '<span class="edited">수정됨</span>' : ''}</span></div>
+      if (m.avatar !== undefined) AVA[m.userId] = m.avatar;
+      const av = AVA[m.userId];
+      el.innerHTML = `<span class="av">${av ? `<img src="${esc(av)}" alt="">` : esc(Array.from(m.name || '?')[0])}</span><div class="hd"><span class="t s11" style="position:static">${esc(m.name)}</span><span class="t s12" style="position:static">${esc(fmt(m.at))}${m.editedAt ? '<span class="edited">수정됨</span>' : ''}</span></div>
         <p class="bd t s13" style="position:static">${esc(m.text)}</p>`;
     }
     if (anim) { el.classList.add('pop'); el.style.animationDelay = Math.min(i, 8) * 0.04 + 's'; }

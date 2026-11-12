@@ -38,8 +38,9 @@ AG.boot();
     $('dMeta').textContent = it ? [it.rarity, it.kind, it.source].filter(Boolean).join(' · ') : '';
     $('dDesc').textContent = it ? (it.desc || '') : (tab === 'deco' ? '전투나 탐색에서 얻은 꾸미기 아이템이 여기에 모여요.' : '전투에서 이기면 전리품이 여기에 들어와요.');
     $('dImgBox').innerHTML = it ? (it.img ? `<img src="${AG.esc(it.img)}" alt="">` : `<span class="glyph">${AG.esc(Array.from(it.name)[0])}</span>`) : '';
-    const canEquip = !!(it && it.slot), canPlace = !!(it && it.deco && !it.placed);
-    $('equipLbl').textContent = it && it.equipped ? '장착 해제' : '장착하기';
+    const eff = it && AG.battleUse(it);   // 소모품(회복 · 정화 등)은 창고에서 바로 쓸 수 있다
+    const canEquip = !!(it && (it.slot || eff)), canPlace = !!(it && it.deco && !it.placed);
+    $('equipLbl').textContent = eff ? `사용하기 · ${eff.label}` : it && it.equipped ? '장착 해제' : '장착하기';
     $('equipBtn').disabled = !canEquip; $('equipLbl').style.opacity = canEquip ? 1 : .4;
     $('placeLbl').textContent = it && it.placed ? '숙소에 있어요' : '숙소에 놓기';
     $('placeBtn').disabled = !canPlace; $('placeLbl').style.opacity = canPlace ? 1 : .4;
@@ -60,6 +61,11 @@ AG.boot();
 
   $('equipBtn').onclick = async () => {
     const it = items.find(i => i.id === sel); if (!it) return;
+    if (AG.battleUse(it)) {
+      try { const r = await AG.inventory.use(it.id); const s = await AG.stats().catch(() => null);
+        AG.toast(`${AG.j(it.name, '을', '를')} 썼어요 · ${r.label}` + (s ? ` (체력 ${s.hp}/${s.hpMax} · 잔향 ${s.echoLeft} · 오염도 ${s.taintTier})` : '')); await load(); } catch (e) { AG.toast(AG.errMsg(e)); }
+      return;
+    }
     try { const r = await AG.inventory.equip(it.id); AG.toast(r.equipped ? `${it.name} 장착했어요` : `${it.name} 장착을 풀었어요`); await load(); } catch (e) { AG.toast(AG.errMsg(e)); }
   };
   $('placeBtn').onclick = async () => {

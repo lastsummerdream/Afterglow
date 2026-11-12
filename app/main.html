@@ -240,19 +240,33 @@ html.ag-wait #stage > :not(.wallpaper):not(.tint) { opacity: 0 !important; will-
 @view-transition { navigation: auto; }
 ::view-transition-old(root), ::view-transition-new(root) { animation-duration: .32s; animation-timing-function: cubic-bezier(.4, 0, .2, 1); }
 
-/* ── UI 70% (메인: 캐릭터·대사창은 그대로, 사이드바·메뉴·이름·URIM만 축소) ── */
+/* ── 메인: 피그마 배치 (URIM · 이름 · 상단바 70%, 나머지는 피그마에서 정한 크기·위치) ── */
 :root { --u: 0.7; }
-.urim, .topbar, .top-btn, .namegrp, .layer, .hit, .demo-chip, .page-toast, .side-btn { scale: var(--u); }
+.play { top: 0; height: 1440px; } .canvas { top: 0; }
+.urim, .topbar, .top-btn, .namegrp, .demo-chip, .page-toast, .side-btn { scale: var(--u); }
 .urim { transform-origin: 0 0; }
 .topbar { transform-origin: 510.18px -22.8px; }
 .top-btn.refresh { transform-origin: 225px -37px; } .top-btn.browse { transform-origin: 160px -37px; } .top-btn.back { transform-origin: 96px -37px; }
 .namegrp { transform-origin: 975px 0; }
-.layer, .hit { transform-origin: 2560px 910px; }   /* 메뉴: 오른쪽, 예전 세로 중심 */
-.sidegrp > img { scale: var(--u) 1; transform-origin: 158px 0; }   /* 사이드바 판: 폭만 줄이고 세로는 그대로 */
-.side-btn { transform-origin: -42px 50%; }
-.char-hint { font-size: 23.8px; } .char-hint b { font-size: 30.8px; } .dialogue .line { font-size: 28.0px; } .nameplate { font-size: 28.0px; translate: 0 7.2px; }   /* 본문 글자 70% */   /* 버튼: 예전 높이 그대로, 왼쪽에 붙여 축소 */
+.layer, .hit { scale: .7224; transform-origin: 2545.5px 1128.9px; }   /* 메뉴: (1606, 637) 1101×667 */
+.sidegrp > img { scale: .909 1; transform-origin: 439.6px 0; }   /* 사이드바 판: 폭 376 */
+.side-btn { left: 244px; transform-origin: 0 0; }   /* 버튼 126px, x=86 */
+.chargrp { left: 497px; }
+.dlggrp { left: 517px; scale: .835; transform-origin: 0 0; }
+.optgrp { left: 1332px; scale: .903; transform-origin: 0 0; }
+.char-hint { font-size: 23.8px; } .char-hint b { font-size: 30.8px; } .dialogue .line { font-size: 33.5px; } .nameplate { font-size: 33.5px; translate: 0 4px; }
 .demo-chip { transform-origin: 60px -40px; }
 .page-toast { transform-origin: 50% -150px; }
+.modal { scale: var(--u); }
+/* 레벨 · 현재 상태 */
+.lvl { left: 1896px; top: 327px; width: 588px; height: 299px; pointer-events: none; }
+.lvl svg { position: absolute; left: 71px; top: 61px; width: 158px; height: 143px; overflow: visible; }
+.lvl .trk { stroke: rgba(255,255,255,.28); }
+.lvl .exp { stroke: #f2f2f2; stroke-dasharray: 0 100; transition: stroke-dasharray 1.4s cubic-bezier(.2,.8,.2,1) .9s; filter: drop-shadow(0 0 6px rgba(255,255,255,.45)); }
+.lvl p { position: absolute; white-space: nowrap; font-weight: 900; line-height: 1.15; }
+.lvl .num { left: 72px; top: 96px; width: 158px; text-align: center; font-size: 80px; letter-spacing: -.02em; color: #e9e9e9; text-shadow: 0 3px 10px rgba(0,0,0,.25); }
+.lvl .k { left: 247px; font-size: 32px; color: transparent; background: linear-gradient(90deg, #f2f2f2 20%, #8f8f8f 100%); -webkit-background-clip: text; background-clip: text; }
+.lvl .v { left: 422px; font-size: 32px; color: #c9c9c9; }
 /* <<< boot */
 </style>
 </head>
@@ -327,22 +341,27 @@ html.ag-wait #stage > :not(.wallpaper):not(.tint) { opacity: 0 !important; will-
       <!-- 사이드바 메뉴 -->
       <nav class="abs sidegrp in in-side" aria-label="사이드 메뉴">
         <img class="abs" src="assets/side-plate.svg" style="left:0;top:0;width:413.611px;height:1333px;pointer-events:none" alt="">
-        <button class="side-btn active" data-side="urim" style="top:237.16px" aria-label="URIM">
+        <button class="side-btn" data-side="notice" style="top:238.16px" aria-label="공지사항">
+          <img class="disc" src="assets/side-disc.svg" alt="">
+          <img class="ico" src="assets/icon-urim.svg" style="left:60.72px;top:35.68px;width:60.5px;height:60.5px" alt="">
+          <span class="txt" style="left:91px;top:102px">공지사항</span>
+        </button>
+        <button class="side-btn active" data-side="urim" style="top:430.16px" aria-label="URIM">
           <img class="disc" src="assets/side-disc-active.svg" alt="">
           <img class="ico" src="assets/icon-urim.svg" style="left:60.72px;top:35.68px;width:60.5px;height:60.5px" alt="">
           <span class="txt" style="left:91px;top:102px">URIM</span>
         </button>
-        <button class="side-btn" data-side="group" style="top:490.16px" aria-label="단체 단말">
+        <button class="side-btn" data-side="group" style="top:622.16px" aria-label="단체 단말">
           <img class="disc" src="assets/side-disc.svg" alt="">
           <img class="ico" src="assets/icon-group.svg" style="left:57.78px;top:24.74px;width:66.5px;height:63.5px" alt="">
           <span class="txt" style="left:91px;top:92px">단체<br>단말</span>
         </button>
-        <button class="side-btn" data-side="private" style="top:759.16px" aria-label="개인 연락망">
+        <button class="side-btn" data-side="private" style="top:814.16px" aria-label="개인 연락망">
           <img class="disc" src="assets/side-disc.svg" alt="">
           <img class="ico" src="assets/icon-private.svg" style="left:58.78px;top:24.74px;width:65.5px;height:51.5px" alt="">
           <span class="txt" style="left:91.5px;top:86px">개인<br>연락망</span>
         </button>
-        <button class="side-btn" data-side="timeline" style="top:1010.16px" aria-label="타임라인">
+        <button class="side-btn" data-side="timeline" style="top:1006.16px" aria-label="타임라인">
           <img class="disc" src="assets/side-disc.svg" alt="">
           <img class="ico" src="assets/icon-timeline.svg" style="left:57.78px;top:24.74px;width:66.5px;height:63.5px" alt="">
           <span class="txt" style="left:91px;top:98px">타임라인</span>
@@ -369,6 +388,17 @@ html.ag-wait #stage > :not(.wallpaper):not(.tint) { opacity: 0 !important; will-
       <input type="file" id="pickBgm" accept="audio/*" multiple hidden>
 
       <!-- 캐릭터 이름 -->
+      <!-- 레벨(테두리를 따라 경험치가 참) · 현재 오염도 / 체력 / 잔향 -->
+      <div class="abs lvl in in-name" id="lvl" aria-label="레벨과 현재 상태">
+        <svg viewBox="0 0 158 143" fill="none" aria-hidden="true">
+          <path class="trk" d="M148.89 112.486C154.856 122.82 147.398 135.736 135.467 135.736L22.033 135.736C10.1012 135.736 2.64364 122.82 8.60934 112.487L65.3261 14.2503C71.2921 3.91699 86.2072 3.91659 92.1731 14.2499L148.89 112.486Z" stroke-width="13"/>
+          <path class="exp" id="lvlExp" pathLength="100" d="M79 6.5C83.9 6.5 88.9 8.6 92.1731 14.2499L148.89 112.486C154.856 122.82 147.398 135.736 135.467 135.736L22.033 135.736C10.1012 135.736 2.64364 122.82 8.60934 112.487L65.3261 14.2503C68.3 9.1 73.6 6.5 79 6.5Z" stroke-width="13"/>
+        </svg>
+        <p class="num" id="lvlNum">00</p>
+        <p class="k" style="top:65px">현재 오염도</p><p class="v" id="lvlTaint" style="top:65px">T0</p>
+        <p class="k" style="top:108px">현재 체력</p><p class="v" id="lvlHp" style="top:108px">—</p>
+        <p class="k" style="top:151px">현재 잔향</p><p class="v" id="lvlEcho" style="top:151px">—</p>
+      </div>
       <div class="abs namegrp in in-name">
         <div class="name-panel" aria-hidden="true"><i class="sharp"></i><i class="soft"></i></div>
         <p class="abs caption">CHARACTER</p>
@@ -591,6 +621,16 @@ if (window.AG) {
     if (me.name && me.name !== '캐릭터 이름') { CONFIG.name = me.name; document.getElementById('charName').textContent = me.name; document.getElementById('nameplate').textContent = me.name; }
     if (me.lines && me.lines.length && !CONFIG.lines.length) { CONFIG.lines = me.lines.slice(0, 5); idx = 0; setTimeout(() => say(CONFIG.lines[0]), 300); }
   }).catch(() => {});
+  // 레벨 도형: 경험치만큼 테두리가 차오른다 · 현재 오염도/체력/잔향은 전투와 같은 값
+  AG.stats().then(s => {
+    if (!s) return;
+    document.getElementById('lvlNum').textContent = String(s.level).padStart(2, '0');
+    document.getElementById('lvlExp').style.strokeDasharray = `${Math.max(0, Math.min(100, s.exp / s.expMax * 100)).toFixed(1)} 100`;
+    document.getElementById('lvl').title = `Lv.${s.level} · EXP ${s.exp} / ${s.expMax}`;
+    document.getElementById('lvlTaint').textContent = s.taintTier || 'T0';
+    document.getElementById('lvlHp').textContent = `${s.hp} / ${s.hpMax}`;
+    document.getElementById('lvlEcho').textContent = `${s.echoLeft ?? 0} / ${s.echoMax ?? 0}`;
+  }).catch(() => {});
   if (!CONFIG.images.length) AG.illust.get().then(url => { if (url && !images.length) { images.push(url); imgIdx = 0; setImage(url); } }).catch(() => {});
 }
 
@@ -601,6 +641,7 @@ addEventListener('pageshow', e => {
 document.querySelectorAll('.side-btn').forEach(b => b.addEventListener('click', () => {
   const k = b.dataset.side;
   document.querySelectorAll('.side-btn').forEach(x => x.classList.toggle('active', x === b));
+  if (k === 'notice') { toast('아직 올라온 공지사항이 없어요'); document.querySelectorAll('.side-btn').forEach(x => x.classList.toggle('active', x.dataset.side === 'urim')); return; }
   if (k !== 'urim') go(k);
 }));
 
