@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>애프터 글로우 · 스토리 진행</title>
+<link rel="preload" href="assets/bg.jpg" as="image">
+<script>
+/* 첫 그림부터 화면 크기에 맞추고, 글꼴·배경이 준비될 때까지 진입 애니메이션을 멈춰 둔다 */
+(function () {
+  var d = document.documentElement; d.classList.add('ag-wait');
+  function fit() { var s = Math.min(innerWidth / 2560, innerHeight / 1440); d.style.setProperty('--ag-s', s); d.style.setProperty('--ag-x', (innerWidth - 2560 * s) / 2 + 'px'); d.style.setProperty('--ag-y', (innerHeight - 1440 * s) / 2 + 'px'); }
+  fit(); addEventListener('resize', fit);
+  var started = false;
+  function start() {
+    if (started) return; started = true;
+    requestAnimationFrame(function () { requestAnimationFrame(function () {
+      d.classList.remove('ag-wait'); d.classList.add('ag-intro');
+      setTimeout(function () { d.classList.remove('ag-intro'); }, 2600);
+    }); });
+  }
+  function frame() { return new Promise(function (r) { requestAnimationFrame(function () { r(); }); }); }
+  var img = new Image(); img.src = 'assets/bg.jpg';
+  var pImg = img.decode ? img.decode().catch(function () {}) : Promise.resolve();
+  var pDom = new Promise(function (r) { if (document.readyState !== 'loading') r(); else document.addEventListener('DOMContentLoaded', r); });
+  var pFont = pDom.then(frame).then(function () {
+    if (!document.fonts) return;
+    var f = ['500 20px "Noto Sans KR"', '700 20px "Noto Sans KR"', '900 20px "Noto Sans KR"', '700 20px "Passion One"'];
+    return Promise.all(f.map(function (x) { return document.fonts.load(x, '가나다 AFTERGLOW').catch(function () {}); }))
+      .then(function () { return document.fonts.ready; });
+  });
+  Promise.all([pImg, pFont]).then(start, start);
+  setTimeout(start, 2500);
+  addEventListener('pageshow', function (e) { if (e.persisted) { started = true; d.classList.remove('ag-wait', 'ag-intro'); } });
+})();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&family=Passion+One:wght@700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/ag.css">
+<style>
+.sact{font-weight:900;font-size:32px;color:#fff;line-height:1.2;text-align:center}
+.s0{font-family:"Passion One";font-weight:700;font-size:28px;color:#fff;line-height:39px;letter-spacing:.3em}
+.s1{font-weight:900;font-size:110px;line-height:115px;letter-spacing:-.01em}
+.s2{font-family:"Passion One";font-weight:700;font-size:64px;color:#fff;line-height:70px;letter-spacing:.1em}
+.s3{font-weight:900;font-size:38px;color:#fff;line-height:1.2;letter-spacing:-.02em;text-shadow:0 3px 8px rgba(0,0,0,.45)}
+.s4{font-weight:500;font-size:24px;color:#fff;line-height:1.2;letter-spacing:-.02em;text-shadow:0 2px 6px rgba(0,0,0,.45)}
+.s5{font-weight:900;font-size:38px;color:#969696;line-height:1.2;letter-spacing:-.02em}
+.s6{font-weight:500;font-size:24px;color:#898989;line-height:1.2;letter-spacing:-.02em}
+.s7{font-weight:500;font-size:34px;color:#bdbdbd;line-height:34px;letter-spacing:-.05em}
+.s8{font-weight:700;font-size:34px;color:#fff;line-height:1.2;text-shadow:0 3px 8px rgba(0,0,0,.45)}
+.s9{font-weight:500;font-size:22px;color:#e6e6e6;line-height:1.2}
+.s10{font-weight:500;font-size:22px;color:#595959;line-height:1.2}
+.s11{font-weight:700;font-size:32px;color:#1e1e1e;line-height:1.2}
+.s12{font-weight:500;font-size:22px;color:#5a5a5a;line-height:1.2}
+.s13{font-weight:500;font-size:32px;color:#1e1e1e;line-height:34px;letter-spacing:-.05em}
+.s14{font-weight:500;font-size:32px;color:#fff;line-height:34px;letter-spacing:-.05em;text-align:right}
+.s15{font-weight:500;font-size:22px;color:#5a5a5a;line-height:1.2;text-align:right}
+.s18{font-weight:500;font-size:22px;color:#c7c7c7;line-height:1.2}
+.s19{font-weight:700;font-size:30px;color:#fff;line-height:1.2;text-shadow:0 3px 8px rgba(0,0,0,.45)}
+.s20{font-weight:900;font-size:30px;color:#fff;line-height:1.2;letter-spacing:-.02em;text-align:center;text-shadow:0 3px 8px rgba(0,0,0,.45)}
+.s21{font-weight:700;font-size:22px;color:#ff9d9d;line-height:1.2}
+.s23{font-weight:700;font-size:24px;color:#fff;line-height:44px;text-align:center}
+.s24{font-weight:900;font-size:30px;color:#fff;line-height:1.2;letter-spacing:-.02em;text-shadow:0 3px 8px rgba(0,0,0,.45)}
+.s25{font-weight:900;font-size:30px;color:#fff;line-height:1.2;letter-spacing:-.02em;text-align:right;text-shadow:0 3px 8px rgba(0,0,0,.45)}
+.s26{font-family:"Passion One";font-weight:700;font-size:44px;color:#fff;line-height:1.1;letter-spacing:.1em;text-shadow:0 2px 6px rgba(0,0,0,.45)}
+.s27{font-weight:900;font-size:38px;color:#1a1a1a;line-height:1.2}
+.s28{font-family:"Passion One";font-weight:700;font-size:44px;color:#3a3a3a;line-height:1.1;letter-spacing:.1em}
+.s29{font-weight:900;font-size:38px;color:#fff;line-height:1.2;text-shadow:0 2px 6px rgba(0,0,0,.45)}
+.s30{font-weight:700;font-size:30px;color:#8a8a8a;line-height:1.6;text-align:center}
+.s31{font-weight:900;font-size:48px;color:#fff;line-height:1.2}
+.s32{font-weight:900;font-size:24px;color:#fff;line-height:1.2;letter-spacing:-.05em}
+.s33{font-weight:700;font-size:34px;color:#d2d2d2;line-height:1.2}
+.s34{font-family:"Passion One";font-weight:700;font-size:28px;color:#c7c7c7;line-height:39px;letter-spacing:.3em}
+.s35{font-family:"Passion One";font-weight:700;font-size:56px;color:#fff;line-height:1.1}
+.s36{font-weight:900;font-size:24px;color:#b9b9b9;line-height:1.2;letter-spacing:-.1em}
+.s37{font-weight:700;font-size:28px;color:#fff;line-height:1.2}
+.s38{font-family:"Passion One";font-weight:700;font-size:72px;color:#fff;line-height:1.1;letter-spacing:.04em;text-shadow:0 2px 6px rgba(0,0,0,.45)}
+.s39{font-weight:700;font-size:22px;color:#f9f9f9;line-height:1.2}
+.s40{font-weight:700;font-size:28px;color:#f8f8f8;line-height:1.2}
+.s41{font-family:"Passion One";font-weight:700;font-size:40px;color:#cdcdcd;line-height:1.1}
+.s42{font-weight:500;font-size:26px;color:#cecece;line-height:1.5}
+.s43{font-weight:700;font-size:24px;color:#b3b3b3;line-height:1.2;text-align:center}
+.s44{font-family:"Passion One";font-weight:700;font-size:48px;color:#fff;line-height:1.1;letter-spacing:.1em;text-shadow:0 2px 6px rgba(0,0,0,.45)}
+.s45{font-weight:900;font-size:40px;color:#fff;line-height:1.2}
+.s46{font-weight:700;font-size:22px;color:#e6e6e6;line-height:1.2}
+.s47{font-weight:900;font-size:40px;color:#fff;line-height:1.2;text-shadow:0 2px 6px rgba(0,0,0,.45)}
+.s48{font-weight:700;font-size:22px;color:#fff;line-height:1.2;text-shadow:0 2px 6px rgba(0,0,0,.45)}
+.s49{font-weight:500;font-size:32px;color:#bdbdbd;line-height:1.2}
+.s50{font-weight:500;font-size:24px;color:#cfcfcf;line-height:1.2}
+.s51{font-family:"Passion One";font-weight:700;font-size:28px;color:#2b2b2b;line-height:39px;letter-spacing:.3em}
+.s52{font-family:"Passion One";font-weight:700;font-size:30px;color:#1e1e1e;line-height:1.1;letter-spacing:.1em}
+.s53{font-weight:500;font-size:32px;color:#1e1e1e;line-height:1.45}
+.s54{font-family:"Passion One";font-weight:700;font-size:30px;color:#5a5a5a;line-height:1.1;letter-spacing:.1em}
+.s55{font-weight:500;font-size:32px;color:#5a5a5a;line-height:1.45}
+.s56{font-weight:900;font-size:38px;color:#3a3a3a;line-height:1.2}
+.s57{font-weight:700;font-size:26px;color:#fff;line-height:1.2;text-align:center}
+.s58{font-family:"Passion One";font-weight:700;font-size:22px;color:#dadada;line-height:1.1;letter-spacing:.2em;text-align:center}
+.s59{font-family:"Passion One";font-weight:700;font-size:28px;color:#e6e6e6;line-height:39px;letter-spacing:.3em}
+.s60{font-weight:900;font-size:52px;color:#eaeaea;line-height:1.2}
+.s61{font-family:"Passion One";font-weight:700;font-size:26px;color:#d3d3d3;line-height:1.1;letter-spacing:.2em}
+.s62{font-weight:500;font-size:28px;color:#eaeaea;line-height:1.5}
+.s63{font-weight:700;font-size:30px;color:#fff;line-height:1.2;text-shadow:0 2px 6px rgba(0,0,0,.45)}
+.s64{font-weight:900;font-size:26px;color:#8a3a3a;line-height:1.2}
+.s65{font-weight:900;font-size:36px;color:#fff;line-height:1.2;text-shadow:0 2px 6px rgba(0,0,0,.45)}
+.s66{font-weight:900;font-size:36px;color:#3a3a3a;line-height:1.2}
+.s67{font-weight:700;font-size:22px;color:#fff;line-height:1.2;text-align:center}
+.s68{font-weight:500;font-size:24px;color:#d0d0d0;line-height:1.2}
+.s69{font-weight:700;font-size:32px;color:#bfbfbf;line-height:1.2}
+.s70{font-weight:500;font-size:22px;color:#b7b7b7;line-height:1.2}
+.s71{font-weight:500;font-size:24px;color:#e9e9e9;line-height:1.5}
+.s72{font-weight:500;font-size:24px;color:#5a5a5a;line-height:1.2}
+.s73{font-weight:500;font-size:30px;color:#fff;line-height:1.2}
+.s74{font-weight:900;font-size:22px;color:#8a3a3a;line-height:1.2}
+.s75{font-weight:500;font-size:24px;color:#3a3a3a;line-height:1.5}
+.s76{font-weight:500;font-size:24px;color:#acacac;line-height:1.5}
+.s77{font-family:"Passion One";font-weight:700;font-size:44px;color:#2b2b2b;line-height:1.1}
+.s78{font-weight:500;font-size:28px;color:#9a9a9a;line-height:1.2}
+
+.pnl, .strip, #choices, #lobby, #mates { pointer-events: auto; }
+.pnl { position: absolute; color: #fff; filter: drop-shadow(0 14px 22px rgba(0,0,0,.35)); }
+.pnl::before { content: ""; position: absolute; inset: 0; z-index: -1; clip-path: polygon(0 0, calc(100% - var(--sl, 76px)) 0, 100% 100%, var(--sl, 76px) 100%);
+  background: repeating-conic-gradient(rgba(0,0,0,.16) 0 25%, transparent 0 50%) 0 0 / 34px 34px, linear-gradient(90deg, rgba(10,10,10,.94), rgba(74,74,74,.9)); transition: filter .2s; }
+.pnl::after { content: ""; position: absolute; left: 0; right: var(--sl, 76px); top: 0; height: 7px; z-index: -1; background: linear-gradient(90deg, rgba(255,255,255,.28), rgba(255,255,255,0)); }
+.cap { font-family: "Passion One"; font-size: 34px; letter-spacing: .32em; color: #bdbdbd; }
+.big { font-weight: 900; width: fit-content; background: linear-gradient(180deg, #f2f2f2, #8c8c8c); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.strip { position: relative; display: inline-flex; white-space: nowrap; text-decoration: none; align-items: center; justify-content: center; height: 86px; padding: 0 64px; font-size: 32px; font-weight: 900; color: #fff; transition: translate .18s, filter .18s; }
+.strip::before { content: ""; position: absolute; inset: 0; z-index: -1; clip-path: polygon(0 0, calc(100% - 26px) 0, 100% 100%, 26px 100%); background: linear-gradient(92deg, rgba(255,255,255,.06), rgba(123,123,123,.55) 50%, #171717); }
+.strip:hover:not([disabled]) { translate: 8px 0; filter: brightness(1.35); }
+.strip[disabled] { opacity: .4; cursor: default; }
+
+#sList, #sMain { padding: 44px 50px; box-sizing: border-box; }
+#sList .cap, #sMain .cap { font-size: 26px; }
+.rows { position: absolute; left: 30px; right: 20px; top: 110px; bottom: 30px; }
+.srow { display: block; width: 100%; text-align: left; padding: 22px 26px; margin-bottom: 14px; color: #fff; background: rgba(255,255,255,.07); border-left: 6px solid transparent; transition: background .2s, translate .18s; }
+.srow:hover { translate: 6px 0; background: rgba(255,255,255,.13); }
+.srow.on { border-left-color: #f2f2f2; background: rgba(255,255,255,.16); }
+.srow b { display: block; font-size: 32px; font-weight: 900; }
+.srow small { display: block; margin-top: 6px; font-size: 22px; line-height: 1.4; color: #b5b5b5; }
+.srow em { display: inline-block; margin-top: 10px; font-style: normal; font-size: 20px; font-weight: 700; color: #cfe5a8; }
+#sMain .big { font-size: 60px; margin: 2px 0 18px; }
+#sLog { position: absolute; left: 50px; right: 30px; top: 190px; bottom: 30px; padding: 10px 30px 40px 0; }
+.sl { margin-bottom: 34px; font-size: 32px; line-height: 1.7; font-weight: 500; white-space: pre-wrap; word-break: keep-all; color: #ededed; }
+.sl.me { color: #fff; text-align: right; padding-left: 260px; }
+.sl.me::before, .sl.other::before { content: attr(data-nm); display: block; font-size: 22px; font-weight: 700; color: #a9a9a9; }
+.sl.other { color: #d8e2f2; }
+.sl.sys { text-align: center; font-family: "Passion One"; letter-spacing: .2em; font-size: 26px; color: #a9a9a9; }
+.sl.typing::after { content: "▍"; animation: blink 1s steps(1) infinite; }
+@keyframes blink { 50% { opacity: 0; } }
+.sl.empty { padding-top: 180px; text-align: center; color: #a9a9a9; }
+#choices { display: flex; gap: 20px; flex-wrap: wrap; min-height: 86px; }
+#choices .strip { height: 76px; padding: 0 50px; font-size: 28px; }
+#stage[data-pg="story"] .field { color: #fff; background: rgba(10,10,10,.72); padding: 0 34px; box-sizing: border-box; height: 86px !important; top: 1220px !important; left: 760px !important; width: 1500px !important; }
+.busy #choices, .busy #sendBtn { pointer-events: none; opacity: .5; }
+
+/* ── 본문 글자 70% ── */
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .field { font-size: 21.0px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .acts button { font-size: 15.4px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .edit-box { font-size: 21.0px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .edit-row button { font-size: 15.4px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .edited { font-size: 14.0px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .confirm { font-size: 15.4px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .sact { font-size: 22.4px; translate: 0 5.8px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s0 { font-size: 19.6px; line-height: 27.3px; translate: 0 5.0px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s1 { font-size: 77.0px; line-height: 80.5px; translate: 0 19.8px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s2 { font-size: 44.8px; line-height: 49.0px; translate: 0 11.5px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s3 { font-size: 26.6px; translate: 0 6.8px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s4 { font-size: 16.8px; translate: 0 4.3px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s5 { font-size: 26.6px; translate: 0 6.8px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s6 { font-size: 16.8px; translate: 0 4.3px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s7 { font-size: 23.8px; line-height: 23.8px; translate: 0 6.1px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s8 { font-size: 23.8px; translate: 0 6.1px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s9 { font-size: 15.4px; translate: 0 4.0px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s10 { font-size: 15.4px; translate: 0 4.0px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s11 { font-size: 22.4px; translate: 0 5.8px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s12 { font-size: 15.4px; translate: 0 4.0px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s13 { font-size: 22.4px; line-height: 23.8px; translate: 0 5.8px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s14 { font-size: 22.4px; line-height: 23.8px; translate: 0 5.8px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s15 { font-size: 15.4px; translate: 0 4.0px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s18 { font-size: 15.4px; translate: 0 4.0px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s19 { font-size: 21.0px; translate: 0 5.4px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s20 { font-size: 21.0px; translate: 0 5.4px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s21 { font-size: 15.4px; translate: 0 4.0px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s23 { font-size: 16.8px; line-height: 30.8px; translate: 0 4.3px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s24 { font-size: 21.0px; translate: 0 5.4px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s25 { font-size: 21.0px; translate: 0 5.4px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s26 { font-size: 30.8px; translate: 0 7.9px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s27 { font-size: 26.6px; translate: 0 6.8px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s28 { font-size: 30.8px; translate: 0 7.9px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s29 { font-size: 26.6px; translate: 0 6.8px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s30 { font-size: 21.0px; translate: 0 5.4px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s31 { font-size: 33.6px; translate: 0 8.6px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s32 { font-size: 16.8px; translate: 0 4.3px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s33 { font-size: 23.8px; translate: 0 6.1px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s34 { font-size: 19.6px; line-height: 27.3px; translate: 0 5.0px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s35 { font-size: 39.2px; translate: 0 10.1px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s36 { font-size: 16.8px; translate: 0 4.3px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s37 { font-size: 19.6px; translate: 0 5.0px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s38 { font-size: 50.4px; translate: 0 13.0px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s39 { font-size: 15.4px; translate: 0 4.0px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s40 { font-size: 19.6px; translate: 0 5.0px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s41 { font-size: 28.0px; translate: 0 7.2px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s42 { font-size: 18.2px; translate: 0 4.7px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s43 { font-size: 16.8px; translate: 0 4.3px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s44 { font-size: 33.6px; translate: 0 8.6px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s45 { font-size: 28.0px; translate: 0 7.2px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s46 { font-size: 15.4px; translate: 0 4.0px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s47 { font-size: 28.0px; translate: 0 7.2px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s48 { font-size: 15.4px; translate: 0 4.0px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s49 { font-size: 22.4px; translate: 0 5.8px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s50 { font-size: 16.8px; translate: 0 4.3px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s51 { font-size: 19.6px; line-height: 27.3px; translate: 0 5.0px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s52 { font-size: 21.0px; translate: 0 5.4px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s53 { font-size: 22.4px; translate: 0 5.8px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s54 { font-size: 21.0px; translate: 0 5.4px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s55 { font-size: 22.4px; translate: 0 5.8px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s56 { font-size: 26.6px; translate: 0 6.8px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s57 { font-size: 18.2px; translate: 0 4.7px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s58 { font-size: 15.4px; translate: 0 4.0px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s59 { font-size: 19.6px; line-height: 27.3px; translate: 0 5.0px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s60 { font-size: 36.4px; translate: 0 9.4px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s61 { font-size: 18.2px; translate: 0 4.7px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s62 { font-size: 19.6px; translate: 0 5.0px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s63 { font-size: 21.0px; translate: 0 5.4px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s64 { font-size: 18.2px; translate: 0 4.7px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s65 { font-size: 25.2px; translate: 0 6.5px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s66 { font-size: 25.2px; translate: 0 6.5px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s67 { font-size: 15.4px; translate: 0 4.0px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s68 { font-size: 16.8px; translate: 0 4.3px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s69 { font-size: 22.4px; translate: 0 5.8px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s70 { font-size: 15.4px; translate: 0 4.0px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s71 { font-size: 16.8px; translate: 0 4.3px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s72 { font-size: 16.8px; translate: 0 4.3px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s73 { font-size: 21.0px; translate: 0 5.4px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s74 { font-size: 15.4px; translate: 0 4.0px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s75 { font-size: 16.8px; translate: 0 4.3px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s76 { font-size: 16.8px; translate: 0 4.3px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s77 { font-size: 30.8px; translate: 0 7.9px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s78 { font-size: 19.6px; translate: 0 5.0px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .cap { font-size: 23.8px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .strip { font-size: 22.4px; translate: 0 5.8px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) #sList .cap, :is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) #sMain .cap { font-size: 18.2px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .srow b { font-size: 22.4px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .srow small { font-size: 15.4px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .srow em { font-size: 14.0px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) #sMain .big { font-size: 42.0px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .sl { font-size: 22.4px; translate: 0 5.8px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .sl.me::before, :is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .sl.other::before { font-size: 15.4px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .sl.sys { font-size: 18.2px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) #choices .strip { font-size: 19.6px; }
+</style>
+</head>
+<body>
+<main id="stage" data-pg="story" aria-label="스토리 진행">
+<div class="wallpaper"></div><div class="tint"></div>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><pattern id="agVid" patternUnits="userSpaceOnUse" width="128" height="128"><image href="assets/vid-tile.png" width="128" height="128"/></pattern>
+<filter id="agGrain" x="0" y="0" width="100%" height="100%" filterUnits="objectBoundingBox">
+<feTurbulence id="agGrainTurb" type="fractalNoise" baseFrequency=".85" numOctaves="2" seed="1" result="n"/>
+<feColorMatrix in="n" type="matrix" values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 .9 -.25" result="a"/>
+<feComposite in="a" in2="SourceGraphic" operator="in"/></filter></defs><defs>
+<filter id="battle_filter0_d_83_2" x="2049.8" y="22.8" width="506.4" height="105.4" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="12"/>
+<feGaussianBlur stdDeviation="7.6"/>
+<feComposite in2="hardAlpha" operator="out"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
+<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_83_2"/>
+<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_83_2" result="shape"/>
+</filter>
+<filter id="battle_filter1_i_83_2" x="2464" y="37" width="53" height="61" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="8"/>
+<feGaussianBlur stdDeviation="4.85"/>
+<feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
+<feBlend mode="normal" in2="shape" result="effect1_innerShadow_83_2"/>
+</filter>
+<filter id="battle_filter2_i_83_2" x="2400" y="37" width="52" height="61" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="8"/>
+<feGaussianBlur stdDeviation="4.85"/>
+<feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
+<feBlend mode="normal" in2="shape" result="effect1_innerShadow_83_2"/>
+</filter>
+<filter id="battle_filter3_i_83_2" x="2335" y="37" width="53" height="61" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="8"/>
+<feGaussianBlur stdDeviation="4.85"/>
+<feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
+<feBlend mode="normal" in2="shape" result="effect1_innerShadow_83_2"/>
+</filter>
+<filter id="battle_filter4_d_83_2" x="1044.58" y="119" width="470.692" height="111.93" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="8"/>
+<feGaussianBlur stdDeviation="5"/>
+<feComposite in2="hardAlpha" operator="out"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
+<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_83_2"/>
+<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_83_2" result="shape"/>
+</filter>
+<filter id="battle_filter5_d_83_2" x="97.3" y="281.3" width="745.4" height="195.4" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="14"/>
+<feGaussianBlur stdDeviation="11.35"/>
+<feComposite in2="hardAlpha" operator="out"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
+<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_83_2"/>
+<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_83_2" result="shape"/>
+</filter>
+<filter id="battle_filter6_d_83_2" x="1730" y="288" width="714.167" height="169.887" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="8"/>
+<feGaussianBlur stdDeviation="5"/>
+<feComposite in2="hardAlpha" operator="out"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
+<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_83_2"/>
+<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_83_2" result="shape"/>
+</filter>
+<filter id="battle_filter7_d_83_2" x="97.3" y="471.3" width="2365.4" height="645.4" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="14"/>
+<feGaussianBlur stdDeviation="11.35"/>
+<feComposite in2="hardAlpha" operator="out"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
+<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_83_2"/>
+<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_83_2" result="shape"/>
+</filter>
+<filter id="battle_filter8_d_83_2" x="109.479" y="1118" width="260.439" height="82" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="8"/>
+<feGaussianBlur stdDeviation="5"/>
+<feComposite in2="hardAlpha" operator="out"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
+<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_83_2"/>
+<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_83_2" result="shape"/>
+</filter>
+<filter id="battle_filter9_d_83_2" x="370.869" y="1118" width="260.439" height="82" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="8"/>
+<feGaussianBlur stdDeviation="5"/>
+<feComposite in2="hardAlpha" operator="out"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
+<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_83_2"/>
+<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_83_2" result="shape"/>
+</filter>
+<filter id="battle_filter10_d_83_2" x="632.258" y="1118" width="260.439" height="82" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="8"/>
+<feGaussianBlur stdDeviation="5"/>
+<feComposite in2="hardAlpha" operator="out"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
+<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_83_2"/>
+<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_83_2" result="shape"/>
+</filter>
+<filter id="battle_filter11_d_83_2" x="893.647" y="1118" width="260.439" height="82" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="8"/>
+<feGaussianBlur stdDeviation="5"/>
+<feComposite in2="hardAlpha" operator="out"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
+<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_83_2"/>
+<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_83_2" result="shape"/>
+</filter>
+<filter id="battle_filter12_d_83_2" x="1155.04" y="1118" width="260.439" height="82" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="8"/>
+<feGaussianBlur stdDeviation="5"/>
+<feComposite in2="hardAlpha" operator="out"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
+<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_83_2"/>
+<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_83_2" result="shape"/>
+</filter>
+<filter id="battle_filter13_d_83_2" x="1421.3" y="1111.3" width="931.4" height="149.4" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="14"/>
+<feGaussianBlur stdDeviation="11.35"/>
+<feComposite in2="hardAlpha" operator="out"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
+<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_83_2"/>
+<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_83_2" result="shape"/>
+</filter>
+<filter id="battle_filter14_i_83_2" x="2323" y="1133" width="77" height="81" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="8"/>
+<feGaussianBlur stdDeviation="2"/>
+<feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
+<feBlend mode="normal" in2="shape" result="effect1_innerShadow_83_2"/>
+</filter>
+<linearGradient id="battle_paint0_linear_83_2" x1="1052.79" y1="166.965" x2="1506.37" y2="184.619" gradientUnits="userSpaceOnUse">
+<stop stop-color="white" stop-opacity="0"/>
+<stop offset="0.504808" stop-color="#7B7B7B" stop-opacity="0.5"/>
+<stop offset="1" stop-color="#171717"/>
+</linearGradient>
+<linearGradient id="battle_paint1_linear_83_2" x1="120" y1="365" x2="882.013" y2="365" gradientUnits="userSpaceOnUse">
+<stop/>
+<stop offset="1" stop-color="#666666" stop-opacity="0.3"/>
+</linearGradient>
+<linearGradient id="battle_paint2_linear_83_2" x1="1737.08" y1="364.943" x2="2436.02" y2="392.146" gradientUnits="userSpaceOnUse">
+<stop stop-color="white" stop-opacity="0"/>
+<stop offset="1" stop-color="#4A4A4A"/>
+</linearGradient>
+<linearGradient id="battle_paint3_linear_83_2" x1="117.717" y1="1151" x2="360.895" y2="1164.82" gradientUnits="userSpaceOnUse">
+<stop stop-color="white" stop-opacity="0"/>
+<stop offset="0.5" stop-color="#CCCCCC" stop-opacity="0.278925"/>
+<stop offset="0.754808" stop-color="#9B9B9B" stop-opacity="0.552486"/>
+<stop offset="1" stop-color="#2F2F2F"/>
+</linearGradient>
+<linearGradient id="battle_paint4_linear_83_2" x1="379.107" y1="1151" x2="622.284" y2="1164.82" gradientUnits="userSpaceOnUse">
+<stop stop-color="white" stop-opacity="0"/>
+<stop offset="0.5" stop-color="#CCCCCC" stop-opacity="0.278925"/>
+<stop offset="0.754808" stop-color="#9B9B9B" stop-opacity="0.552486"/>
+<stop offset="1" stop-color="#2F2F2F"/>
+</linearGradient>
+<linearGradient id="battle_paint5_linear_83_2" x1="640.496" y1="1151" x2="883.674" y2="1164.82" gradientUnits="userSpaceOnUse">
+<stop stop-color="white" stop-opacity="0"/>
+<stop offset="0.5" stop-color="#CCCCCC" stop-opacity="0.278925"/>
+<stop offset="0.754808" stop-color="#9B9B9B" stop-opacity="0.552486"/>
+<stop offset="1" stop-color="#2F2F2F"/>
+</linearGradient>
+<linearGradient id="battle_paint6_linear_83_2" x1="901.885" y1="1151" x2="1145.06" y2="1164.82" gradientUnits="userSpaceOnUse">
+<stop stop-color="white" stop-opacity="0"/>
+<stop offset="0.5" stop-color="#CCCCCC" stop-opacity="0.278925"/>
+<stop offset="0.754808" stop-color="#9B9B9B" stop-opacity="0.552486"/>
+<stop offset="1" stop-color="#2F2F2F"/>
+</linearGradient>
+<linearGradient id="battle_paint7_linear_83_2" x1="1163.27" y1="1151" x2="1406.45" y2="1164.82" gradientUnits="userSpaceOnUse">
+<stop stop-color="white" stop-opacity="0"/>
+<stop offset="0.5" stop-color="#CCCCCC" stop-opacity="0.278925"/>
+<stop offset="0.754808" stop-color="#9B9B9B" stop-opacity="0.552486"/>
+<stop offset="1" stop-color="#2F2F2F"/>
+</linearGradient>
+<linearGradient id="battle_paint8_linear_83_2" x1="1444" y1="1172" x2="2408.49" y2="1172" gradientUnits="userSpaceOnUse">
+<stop/>
+<stop offset="1" stop-color="#666666" stop-opacity="0.3"/>
+</linearGradient>
+<pattern id="battle_pattern0_83_2" patternUnits="userSpaceOnUse" patternTransform="matrix(24 0 -0.933374 23.9818 1054.58 121)" preserveAspectRatio="none" viewBox="0 0 48 48" width="1" height="1">
+<g>
+<g clip-path="url(#battle_clip0_83_2)">
+<rect width="24" height="24" fill="black"/>
+<rect x="24" y="24" width="24" height="24" fill="black"/>
+</g>
+</g>
+</pattern><pattern id="battle_pattern1_83_2" patternUnits="userSpaceOnUse" patternTransform="matrix(34.08 0 -1.32539 34.0542 1740 290)" preserveAspectRatio="none" viewBox="0 0 48 48" width="1" height="1">
+<g>
+<g clip-path="url(#battle_clip1_83_2)">
+<rect width="24" height="24" fill="black"/>
+<rect x="24" y="24" width="24" height="24" fill="black"/>
+</g>
+</g>
+</pattern><pattern id="battle_pattern2_83_2" patternUnits="userSpaceOnUse" patternTransform="matrix(25.92 0 -1.47091 25.8782 119.479 1120)" preserveAspectRatio="none" viewBox="0 0 48 48" width="1" height="1">
+<g>
+<g clip-path="url(#battle_clip2_83_2)">
+<rect width="24" height="24" fill="black"/>
+<rect x="24" y="24" width="24" height="24" fill="black"/>
+</g>
+</g>
+</pattern><pattern id="battle_pattern3_83_2" patternUnits="userSpaceOnUse" patternTransform="matrix(25.92 0 -1.47091 25.8782 380.869 1120)" preserveAspectRatio="none" viewBox="0 0 48 48" width="1" height="1">
+<g>
+<g clip-path="url(#battle_clip3_83_2)">
+<rect width="24" height="24" fill="black"/>
+<rect x="24" y="24" width="24" height="24" fill="black"/>
+</g>
+</g>
+</pattern><pattern id="battle_pattern4_83_2" patternUnits="userSpaceOnUse" patternTransform="matrix(25.92 0 -1.47091 25.8782 642.258 1120)" preserveAspectRatio="none" viewBox="0 0 48 48" width="1" height="1">
+<g>
+<g clip-path="url(#battle_clip4_83_2)">
+<rect width="24" height="24" fill="black"/>
+<rect x="24" y="24" width="24" height="24" fill="black"/>
+</g>
+</g>
+</pattern><pattern id="battle_pattern5_83_2" patternUnits="userSpaceOnUse" patternTransform="matrix(25.92 0 -1.47091 25.8782 903.647 1120)" preserveAspectRatio="none" viewBox="0 0 48 48" width="1" height="1">
+<g>
+<g clip-path="url(#battle_clip5_83_2)">
+<rect width="24" height="24" fill="black"/>
+<rect x="24" y="24" width="24" height="24" fill="black"/>
+</g>
+</g>
+</pattern><pattern id="battle_pattern6_83_2" patternUnits="userSpaceOnUse" patternTransform="matrix(25.92 0 -1.47091 25.8782 1165.04 1120)" preserveAspectRatio="none" viewBox="0 0 48 48" width="1" height="1">
+<g>
+<g clip-path="url(#battle_clip6_83_2)">
+<rect width="24" height="24" fill="black"/>
+<rect x="24" y="24" width="24" height="24" fill="black"/>
+</g>
+</g>
+</pattern><clipPath id="battle_clip0_83_2">
+<rect width="48" height="48" fill="white"/>
+</clipPath>
+<clipPath id="battle_clip1_83_2">
+<rect width="48" height="48" fill="white"/>
+</clipPath>
+<clipPath id="battle_clip2_83_2">
+<rect width="48" height="48" fill="white"/>
+</clipPath>
+<clipPath id="battle_clip3_83_2">
+<rect width="48" height="48" fill="white"/>
+</clipPath>
+<clipPath id="battle_clip4_83_2">
+<rect width="48" height="48" fill="white"/>
+</clipPath>
+<clipPath id="battle_clip5_83_2">
+<rect width="48" height="48" fill="white"/>
+</clipPath>
+<clipPath id="battle_clip6_83_2">
+<rect width="48" height="48" fill="white"/>
+</clipPath>
+</defs>
+</svg>
+
+<div class="L in in-title" data-r="title" id="L-title"><p class="t s0 " style="left:167px;top:64px" >STORY</p><p class="t s1 title-grad" style="left:167px;top:98px;width:978px" >스토리 진행</p></div><div class="L in in-center" data-r="center" id="L-center"><aside class="pnl" id="sList" style="--sl:0px;left:120px;top:300px;width:600px;height:990px"><p class="cap">STORIES</p><div class="scroll rows" id="rows"></div></aside><section class="pnl" id="sMain" style="--sl:0px;left:760px;top:300px;width:1680px;height:800px"><p class="cap" id="sCap">STORY</p><h2 class="big" id="sTitle">이야기를 골라 주세요</h2><div class="scroll fade-y" id="sLog" aria-live="polite"></div></section></div><div class="L in in-bottom" data-r="bottom" id="L-bottom"><div class="abs" id="choices" style="left:760px;top:1122px;width:1680px"></div><input class="field" id="actInput" style="left:800px;top:1232px;width:1470px;height:62px;font-size:23.8px" placeholder="캐릭터의 행동이나 대사를 적어 주세요" maxlength="300" autocomplete="off" disabled><button class="abs strip" id="sendBtn" style="left:2290px;top:1220px" disabled>보내기</button></div>
+<img class="abs topbar" src="assets/topbar.svg" alt="">
+<button class="top-btn refresh" data-action="refresh" aria-label="새로고침"><img src="assets/btn-refresh.svg" width="53" height="53" alt=""><span class="glyph"><svg viewBox="0 0 24 24" fill="none" stroke="#1e1e1e" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg></span><span class="tip">새로고침</span></button>
+<button class="top-btn browse" data-action="browse" aria-label="다른 캐릭터 프로필 구경가기"><img src="assets/btn-browse.svg" width="52" height="53" alt=""><span class="glyph"><svg viewBox="0 0 24 24" fill="none" stroke="#1e1e1e" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="4"/><path d="M2 21a7 7 0 0 1 14 0"/><path d="M17 4a4 4 0 0 1 0 8M22 21a7 7 0 0 0-4-6.3"/></svg></span><span class="tip">다른 캐릭터 프로필 구경가기</span></button>
+<button class="top-btn back" data-action="back" aria-label="뒤로 가기"><img src="assets/btn-back.svg" width="53" height="53" alt=""><span class="glyph"><svg viewBox="0 0 24 24" fill="none" stroke="#1e1e1e" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></span><span class="tip">뒤로 가기</span></button>
+
+<div class="page-toast" id="pageToast" role="status"></div>
+</main>
+<script src="assets/ag.js"></script>
+
+<script src="assets/p-story.js"></script>
+</body>
+</html>

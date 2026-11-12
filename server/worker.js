@@ -631,6 +631,10 @@ async function community(request, env, user, path, cors, later) {
       if (!(p.user_id in avatars)) { const c = await DB.prepare("SELECT c.avatar FROM users u LEFT JOIN characters c ON c.id = u.active_character_id WHERE u.id = ?").bind(p.user_id).first(); avatars[p.user_id] = c && c.avatar || null; }
       out.push({ id: p.id, userId: p.user_id, name: a.name, sub: a.sub, avatar: avatars[p.user_id], text: p.text, at: p.created_at, editedAt: p.edited_at, comments: p.cm, mine: p.user_id === user.id });
     }
+    if (!new URL(request.url).searchParams.get("before")) {   // 진행 중인 단체 스토리: URIM의 참여 글로 맨 위에
+      for (const st of (await stories(env)).filter(x => x.kind === "group").reverse())
+        out.unshift({ id: "story-" + st.id, userId: "urim", name: "URIM", sub: "단체 스토리", avatar: null, text: `【단체 스토리】 ${st.title}\n${st.intro || ""}`.trim(), at: st.at || now, editedAt: null, comments: 0, mine: false, story: st.id });
+    }
     return ok(out);
   }
   if (path === "/posts" && M === "POST") {
@@ -758,6 +762,144 @@ async function community(request, env, user, path, cors, later) {
     }
   }
 
+  /* ── 스토리 (노션 줄거리를 URIM이 진행) ── */
+  if (path === "/stories" && M === "GET") {
+    const list = await stories(env);
+    const ids = list.map(s => (s.kind === "group" ? "group" : user.id) + ":" + s.id);
+    const runs = {};
+    for (const id of ids) { const r = await DB.prepare("SELECT state FROM story_runs WHERE id = ?").bind(id).first(); if (r) runs[id] = safeParse(r.state); }
+    return ok(list.map(s => { const r = runs[(s.kind === "group" ? "group" : user.id) + ":" + s.id]; return { id: s.id, title: s.title, kind: s.kind, intro: s.intro, started: !!r, done: !!(r && r.done), at: s.at }; }));
+  }
+  if ((m = path.match(/^\/story\/([\w-]+)(\/act|\/reset)?$/))) {
+    const st = (await stories(env)).find(s => s.id === m[1]);
+    if (!st) return bad("not_found", 404);
+    const owner = st.kind === "group" ? "group" : user.id, rid = owner + ":" + st.id;
+    const row = await DB.prepare("SELECT state FROM story_runs WHERE id = ?").bind(rid).first();
+    let run = row ? safeParse(row.state) : null;
+    const me = await statsOf(DB, user.id, now);
+    const save = () => DB.prepare("INSERT INTO story_runs (id, story_id, owner, state, updated_at) VALUES (?, ?, ?, ?, ?) ON CONFLICT(id) DO UPDATE SET state = excluded.state, updated_at = excluded.updated_at").bind(rid, st.id, owner, JSON.stringify(run), now).run();
+    const view = () => ({ id: st.id, title: st.title, kind: st.kind, intro: st.intro, log: run.log, choices: run.choices || [], done: !!run.done, battle: run.battle || null, me: user.id });
+    if (m[2] === "/reset" && M === "POST") {
+      if (st.kind === "group") return bad("단체 스토리는 다시 시작할 수 없어요");
+      await DB.prepare("DELETE FROM story_runs WHERE id = ?").bind(rid).run(); run = null;
+    }
+    if (!run) {   // 처음 열면 URIM이 첫 장면을 연다
+      run = { step: 0, log: [], choices: [], done: false, battle: null };
+      const o = await narrate(env, st, run, me, null);
+      applyStory(run, o);
+      await save();
+    }
+    if (run.battle) await storyBattleSync(DB, run, st, user.id, now, save);
+    if (!run.battle && run.afterBattle && !run.done) { applyStory(run, await narrate(env, st, run, me, null)); await save(); }   // 전투가 끝났으면 다음 장면으로
+    if (M === "GET" || m[2] === "/reset") return ok(view());
+    if (m[2] === "/act" && M === "POST") {
+      if (run.done) return ok(view());
+      if (run.battle) return ok(view());
+      const req = await body(request);
+      const said = String((req && req.text) || "").trim().slice(0, 300);
+      if (!said) return bad("empty");
+      run.log.push({ who: "me", userId: user.id, name: me.name, text: said });
+      const o = await narrate(env, st, run, me, said);
+      applyStory(run, o);
+      if (o.battle && !run.done) {   // 줄거리에 전투가 필요하면 전투 화면으로 보낸다
+        const en = enemyFor(o.enemy || st.enemy);
+        if (st.kind === "group") {
+          const p = newParty(user.id, me, st.id, en);
+          await DB.prepare("INSERT INTO parties (id, host_id, story_id, state, status, updated_at) VALUES (?, ?, ?, ?, 'lobby', ?)").bind(p.id, user.id, st.id, JSON.stringify(p), now).run();
+          run.battle = { party: p.id, enemy: en.name };
+        } else if (me.hp > 0) {
+          const b = { id: randomId(), turn: 1, over: false, result: null, story: st.id, me: { name: me.name, hp: me.hp, hpMax: me.hpMax, echo: me.echoLeft, taint: me.taintTier },
+            enemy: { name: en.name, hp: en.hp, hpMax: en.hp, atk: en.atk, def: en.def, spd: en.spd, state: en.state },
+            log: [{ kind: "urim", text: `${en.name}이(가) 길을 막았어요. 이야기는 전투가 끝난 뒤에 이어져요.` }] };
+          await saveBattle(DB, user.id, b, now);
+          run.battle = { solo: b.id, enemy: en.name };
+        } else {
+          run.log.push({ who: "urim", text: "지금은 체력이 없어서 싸울 수 없어요. 창고에서 회복한 뒤에 다시 말을 걸어 주세요." });
+        }
+      }
+      run.log = run.log.slice(-80);
+      await save();
+      return ok(view());
+    }
+  }
+
+  /* ── 파티 전투 (방을 만들어 접속 중인 사람과 함께, 턴마다 동시에 행동) ── */
+  if (path === "/party" && M === "GET") {
+    const r = await DB.prepare("SELECT id, state, status, updated_at FROM parties WHERE status != 'over' AND updated_at > ? ORDER BY updated_at DESC LIMIT 30").bind(now - 10 * 60000).all();
+    let mine = null; const open = [];
+    for (const x of r.results || []) {
+      const p = safeParse(x.state); const on = (p.members || []).filter(mm => now - (mm.seen || 0) < PARTY_ONLINE);
+      if ((p.members || []).some(mm => mm.id === user.id && !mm.left)) mine = mine || partyView(p, user.id, now);
+      else if (x.status === "lobby" && on.length && on.length < PARTY_MAX) open.push({ id: p.id, host: (p.members.find(mm => mm.id === p.hostId) || {}).name || "?", count: on.length, max: PARTY_MAX, enemy: p.enemy.name, story: p.storyId || null });
+    }
+    return ok({ mine, open });
+  }
+  if (path === "/party" && M === "POST") {
+    const me = await statsOf(DB, user.id, now);
+    if (me.hp <= 0) return bad("체력이 없어요. 창고에서 회복 아이템을 쓰고 다시 나가요");
+    const p = newParty(user.id, me, null, enemyFor(null));
+    await DB.prepare("INSERT INTO parties (id, host_id, story_id, state, status, updated_at) VALUES (?, ?, NULL, ?, 'lobby', ?)").bind(p.id, user.id, JSON.stringify(p), now).run();
+    return ok(partyView(p, user.id, now));
+  }
+  if ((m = path.match(/^\/party\/([\w-]+)(\/join|\/leave|\/start|\/act)?$/))) {
+    for (let attempt = 0; attempt < 3; attempt++) {   // 여러 명이 동시에 고쳐도 덮어쓰지 않게 다시 시도
+      const row = await DB.prepare("SELECT state, status, updated_at FROM parties WHERE id = ?").bind(m[1]).first();
+      if (!row) return bad("not_found", 404);
+      const p = safeParse(row.state);
+      let mem = p.members.find(x => x.id === user.id && !x.left);
+      const req = M === "POST" ? await body(request.clone()) : null;
+      let err = null;
+      if (m[2] === "/join" && M === "POST") {
+        if (!mem) {
+          if (p.status !== "lobby") err = "이미 시작한 방이에요";
+          else if (p.members.filter(x => !x.left).length >= PARTY_MAX) err = "방이 가득 찼어요";
+          else { const me = await statsOf(DB, user.id, now); if (me.hp <= 0) err = "체력이 없어요. 창고에서 회복 아이템을 쓰고 다시 나가요"; else { p.members = p.members.filter(x => x.id !== user.id); mem = partyMember(user.id, me, now); p.members.push(mem); p.log.push({ kind: "urim", text: `${me.name} 님이 들어왔어요.` }); } }
+        }
+      } else if (!mem) return bad("이 방에 있지 않아요", 403);
+      if (err) return bad(err);
+      if (mem) mem.seen = now;
+      if (m[2] === "/leave" && M === "POST") {
+        mem.left = true; p.log.push({ kind: "urim", text: `${mem.name} 님이 나갔어요.` });
+        const rest = p.members.filter(x => !x.left);
+        if (!rest.length) { p.status = "over"; p.result = p.result || "closed"; }
+        else if (p.hostId === user.id) p.hostId = rest[0].id;
+      }
+      if (m[2] === "/start" && M === "POST") {
+        if (p.hostId !== user.id) return bad("방을 만든 사람만 시작할 수 있어요");
+        if (p.status === "lobby") {
+          p.members = p.members.filter(x => !x.left && now - (x.seen || 0) < PARTY_ONLINE);
+          const n = p.members.length; p.enemy.hp = p.enemy.hpMax = Math.round(p.enemy.hp * (0.55 + 0.6 * n));
+          p.status = "battle"; p.turn = 1;
+          p.log.push({ kind: "urim", text: `${p.enemy.name}이(가) 나타났어요. ${n}명이 모두 행동을 고르면 한꺼번에 판정해요.` });
+        }
+      }
+      if (m[2] === "/act" && M === "POST") {
+        if (p.status !== "battle") return bad("전투 중이 아니에요");
+        if (mem.down || mem.fled) return bad("지금은 행동할 수 없어요");
+        const action = ["attack", "guard", "echo", "run", "custom"].includes(req && req.action) ? req.action : "custom";
+        const said = action === "custom" ? String((req && req.text) || "").trim().slice(0, 200) : "";
+        if (action === "custom" && !said) return bad("empty");
+        let skill = null;
+        if (action === "attack") {
+          const kind = SKILL_RULES[req && req.skill] ? req.skill : "normal";
+          const s0 = await statsOf(DB, user.id, now); const sk = s0.skills[kind]; const R = SKILL_RULES[kind]; const c = mem.cool || (mem.cool = {});
+          if (kind !== "normal" && !(sk && sk.name)) return bad("아직 정하지 않은 공격이에요");
+          if (R.cooldown && c[kind] && p.turn < c[kind]) return bad(`${c[kind] - p.turn}턴 뒤에 다시 쓸 수 있어요`);
+          if (R.perBattle && (c[kind + "Used"] || 0) >= R.perBattle) return bad("이번 전투에서 이미 썼어요");
+          skill = { kind, label: R.label, mult: R.mult, name: (sk && sk.name) || "일반 공격" };
+        }
+        mem.choice = { action, text: said, skill };
+      }
+      if (p.status === "battle") await partyResolve(env, DB, p, now);
+      const status = p.status;
+      const w = await DB.prepare("UPDATE parties SET state = ?, status = ?, updated_at = ? WHERE id = ? AND updated_at = ?").bind(JSON.stringify(p), status, Math.max(now, row.updated_at + 1), m[1], row.updated_at).run();
+      if (w.meta && w.meta.changes === 0) continue;
+      if (p.status === "over" && p.storyId && !p.storyDone) await storyPartyDone(DB, p, now);
+      return ok(partyView(p, user.id, now));
+    }
+    return bad("잠시 뒤에 다시 시도해 주세요", 409);
+  }
+
   /* ── 전투 (Claude 판정) ── */
   if (path === "/battle" && M === "GET") {
     const r = await DB.prepare("SELECT state FROM battles WHERE user_id = ?").bind(user.id).first();
@@ -832,6 +974,7 @@ async function community(request, env, user, path, cors, later) {
     }
     b.log = b.log.slice(-40);
     await saveBattle(DB, user.id, b, now);
+    if (b.over && b.story) await storyBattleDone(DB, user.id, b.story, b, now);   // 스토리 중 전투였으면 이야기로 돌아간다
     return ok(b);
   }
   return null;
@@ -873,6 +1016,177 @@ narration은 한국어 한두 문장, 3인칭이 아닌 2인칭 서술 없이 �
     return { narration: skill && skill.kind !== "normal" && dmg ? `「${skill.name}」 — 피해 ${dmg}.` : escaped ? "무너진 배급대 사이로 빠져나갔다." : dmg ? `${b.enemy.name}의 빈틈을 노렸다 — 피해 ${dmg}.` : action === "guard" ? "자세를 낮추고 다음 공격에 대비했다." : action === "item" ? `${josa(used ? used.name : "아이템", "을", "를")} 썼다 — ${used ? used.label : ""}.` : "아무 일도 일어나지 않았다.",
       enemyDamage: dmg, playerDamage: escaped ? 0 : taken, enemyState: b.enemy.state, urim: dodge ? "반 박자 빠르게 피했어요." : "거리를 벌리면 반격을 줄일 수 있어요.", escaped };
   }
+}
+
+/* ── 스토리: 노션의 줄거리 읽기 · URIM 진행 ── */
+const NOTION_STORY_DB_DEFAULT = "ca60aa37c9434826a050336406926555";
+const SAMPLE_STORIES = [{ id: "sample-ration", title: "배급소의 빈 상자", kind: "solo", intro: "배급 상자 하나가 비어 있다. 누가, 왜 가져갔을까.", enemy: "굶주린 들개 무리", at: 0,
+  outline: "배경: 3구역 배급소의 아침. 안개가 짙다.\n1. 주인공은 배급 상자 하나가 비어 있는 것을 발견한다. 기록원은 장부와 수량이 맞지 않는다고 말한다.\n2. 발자국은 무너진 창고 뒤편으로 이어진다. 따라가거나, 기록원을 더 캐묻거나, 그냥 돌아갈 수 있다.\n3. 창고 뒤편에서 굶주린 들개 무리와 마주친다. (전투)\n4. 전투가 끝나면 상자를 가져간 사람이 근처에 숨어 있던 아이였다는 것이 드러난다. 주인공이 어떻게 할지 선택하게 한다.\n5. 선택에 맞는 짧은 결말로 마무리한다." }];
+let STORY_CACHE = { at: 0, list: null };
+async function stories(env) {
+  if (STORY_CACHE.list && Date.now() - STORY_CACHE.at < 60000) return STORY_CACHE.list;
+  let list = null;
+  if (env.NOTION_TOKEN) {
+    try {
+      const q = await notion(env, "POST", "/databases/" + (env.NOTION_STORY_DB || NOTION_STORY_DB_DEFAULT) + "/query", { filter: { property: "공개", checkbox: { equals: true } }, sorts: [{ property: "순서", direction: "ascending" }], page_size: 30 });
+      const plain = a => (a || []).map(t => t.plain_text || "").join("");
+      list = [];
+      for (const pg of q.results || []) {
+        const pr = pg.properties || {};
+        const blocks = await notion(env, "GET", "/blocks/" + pg.id + "/children?page_size=100");
+        const outline = (blocks.results || []).map((b, i) => { const t = b[b.type] && plain(b[b.type].rich_text); return t ? (b.type === "numbered_list_item" ? "- " : "") + t : ""; }).filter(Boolean).join("\n").slice(0, 6000);
+        list.push({ id: pg.id.replace(/-/g, ""), title: plain(pr["제목"] && pr["제목"].title) || "제목 없음", kind: pr["종류"] && pr["종류"].select && pr["종류"].select.name === "단체" ? "group" : "solo",
+          intro: plain(pr["한 줄 소개"] && pr["한 줄 소개"].rich_text), enemy: plain(pr["전투 상대"] && pr["전투 상대"].rich_text), outline, at: Date.parse(pg.created_time) || 0 });
+      }
+    } catch (e) { console.log("story notion failed", String(e)); list = null; }
+  }
+  if (!list) list = SAMPLE_STORIES;   // 노션에 연결되지 않았으면 예시 한 편
+  STORY_CACHE = { at: Date.now(), list };
+  return list;
+}
+function applyStory(run, o) {
+  run.step = (run.step || 0) + 1;
+  run.log.push({ who: "urim", text: String(o.narration || "…").slice(0, 1200) });
+  run.choices = Array.isArray(o.choices) ? o.choices.filter(c => typeof c === "string" && c.trim()).slice(0, 3).map(c => c.slice(0, 60)) : [];
+  if (o.end) { run.done = true; run.choices = []; }
+}
+async function narrate(env, st, run, me, said) {
+  const sys = `너는 잔광(AFTERGLOW) 세계관의 안내 단말 URIM이다. 1기의 URIM은 친절하고 차분한 AI 어시스턴트로, 존댓말(해요체)로 이야기를 진행한다.
+아래 [줄거리]를 순서대로 따라가며 플레이어의 캐릭터가 겪는 장면을 3~6문장으로 서술한다. 줄거리에 없는 큰 사건을 지어내지 않고, 플레이어의 행동에 자연스럽게 반응한다.
+플레이어가 줄거리를 건너뛰거나 결과를 마음대로 정하려 하면 부드럽게 다음 장면으로 이끈다. 세계관에 맞지 않는 행동은 일어나지 않은 것으로 처리한다.
+줄거리에서 전투가 벌어질 차례가 되면 직전 상황까지만 서술하고 battle을 true로 한다(전투 자체는 서술하지 않는다). 줄거리의 마지막 장면을 마무리했으면 end를 true로 한다.
+choices에는 지금 할 수 있는 행동 2~3개를 12자 안팎으로 적는다(전투 직전이나 끝에는 빈 배열).
+반드시 JSON 하나만 출력: {"narration":string,"choices":string[],"battle":bool,"enemy":string,"end":bool}
+
+[줄거리: ${st.title}]
+${st.outline || st.intro || "자유롭게 진행"}
+${st.enemy ? `[전투 상대] ${st.enemy}` : ""}`;
+  const hist = run.log.slice(-14).map(l => (l.who === "urim" ? "URIM: " : `${l.name || "플레이어"}: `) + l.text).join("\n");
+  const userMsg = `[캐릭터] ${me.name} · Lv.${me.level} · ${(me.registry && [me.registry.origin, me.registry.species, me.registry.job].filter(Boolean).join(" · ")) || ""} · 잔향 ${me.echoType || "없음"}
+[지금까지]
+${hist || "(아직 시작 전)"}
+${said ? `[이번 행동] ${me.name}: ${said}` : run.afterBattle ? "[요청] 전투가 끝난 뒤의 장면을 이어 주세요. battle은 false." : "[요청] 첫 장면을 열어 주세요."}${run.afterBattle ? `\n[방금 전투 결과] ${run.afterBattle}` : ""}`;
+  try {
+    if (!env.ANTHROPIC_API_KEY) throw 0;
+    const r = await fetch("https://api.anthropic.com/v1/messages", { method: "POST",
+      headers: { "content-type": "application/json", "x-api-key": env.ANTHROPIC_API_KEY, "anthropic-version": "2023-06-01" },
+      body: JSON.stringify({ model: MODELS[0], max_tokens: 900, system: sys, messages: [{ role: "user", content: userMsg }] }) });
+    const j = await r.json();
+    const t = (j.content || []).map(c => c.text || "").join("");
+    const o = JSON.parse(t.slice(t.indexOf("{"), t.lastIndexOf("}") + 1));
+    if (typeof o.narration !== "string") throw 0;
+    run.afterBattle = null;
+    return o;
+  } catch {
+    // AI를 쓸 수 없을 때: 줄거리의 번호 줄을 한 줄씩 읽어 준다
+    const lines = String(st.outline || "").split("\n").map(x => x.trim()).filter(x => /^(\d+\.|-)\s/.test(x)).map(x => x.replace(/^(\d+\.|-)\s*/, ""));
+    const i = Math.min(run.step || 0, lines.length);
+    const line = lines[i];
+    run.afterBattle = null;
+    if (!line) return { narration: "여기까지가 이번 이야기예요. 수고하셨어요.", choices: [], battle: false, end: true };
+    const battle = /\(전투\)/.test(line);
+    return { narration: line.replace(/\s*\(전투\)\s*/, " ").trim(), choices: battle ? [] : ["주변을 살핀다", "앞으로 나아간다"], battle, enemy: st.enemy, end: i >= lines.length - 1 && !battle };
+  }
+}
+function enemyFor(name) {
+  const known = ENEMIES.find(e => name && e.name === String(name).trim());
+  if (known) return known;
+  const base = ENEMIES[Math.floor(Math.random() * ENEMIES.length)];
+  return name && String(name).trim() ? { ...base, name: String(name).trim().slice(0, 24), state: "경계 상태" } : base;
+}
+const RESULT_KO = { win: "승리했다", lose: "쓰러졌다", run: "달아났다", closed: "흩어졌다" };
+async function storyBattleSync(DB, run, st, uid, now, save) {
+  if (run.battle.solo) {
+    const r = await DB.prepare("SELECT state FROM battles WHERE user_id = ?").bind(uid).first();
+    const b = r && safeParse(r.state);
+    if (!b || b.id !== run.battle.solo) { run.battle = null; await save(); }
+    else if (b.over) { run.afterBattle = `${run.battle.enemy}과(와)의 전투에서 ${RESULT_KO[b.result] || "끝났다"}`; run.log.push({ who: "sys", text: `전투 결과 — ${RESULT_KO[b.result] || "종료"}` }); run.battle = null; await save(); }
+  } else if (run.battle.party) {
+    const r = await DB.prepare("SELECT state, status FROM parties WHERE id = ?").bind(run.battle.party).first();
+    if (!r || r.status === "over") { const p = r && safeParse(r.state); run.afterBattle = `${run.battle.enemy}과(와)의 전투에서 일행은 ${RESULT_KO[(p && p.result) || "closed"]}`; run.log.push({ who: "sys", text: `전투 결과 — ${RESULT_KO[(p && p.result) || "closed"]}` }); run.battle = null; await save(); }
+  }
+}
+async function storyBattleDone(DB, uid, storyId, b, now) {
+  const rid = uid + ":" + storyId;
+  const row = await DB.prepare("SELECT state FROM story_runs WHERE id = ?").bind(rid).first();
+  const run = row && safeParse(row.state);
+  if (!run || !run.battle || run.battle.solo !== b.id) return;
+  run.afterBattle = `${b.enemy.name}과(와)의 전투에서 ${RESULT_KO[b.result] || "끝났다"}`;
+  run.log.push({ who: "sys", text: `전투 결과 — ${RESULT_KO[b.result] || "종료"}` });
+  run.battle = null;
+  await DB.prepare("UPDATE story_runs SET state = ?, updated_at = ? WHERE id = ?").bind(JSON.stringify(run), now, rid).run();
+}
+async function storyPartyDone(DB, p, now) {
+  const rid = "group:" + p.storyId;
+  const row = await DB.prepare("SELECT state FROM story_runs WHERE id = ?").bind(rid).first();
+  const run = row && safeParse(row.state);
+  if (!run || !run.battle || run.battle.party !== p.id) return;
+  run.afterBattle = `${p.enemy.name}과(와)의 전투에서 일행은 ${RESULT_KO[p.result] || "끝났다"}`;
+  run.log.push({ who: "sys", text: `전투 결과 — ${RESULT_KO[p.result] || "종료"}` });
+  run.battle = null;
+  await DB.prepare("UPDATE story_runs SET state = ?, updated_at = ? WHERE id = ?").bind(JSON.stringify(run), now, rid).run();
+}
+
+/* ── 파티 전투 ── */
+const PARTY_MAX = 4, PARTY_ONLINE = 20000;   // 20초 안에 응답이 있어야 '접속 중'
+function partyMember(id, s, now) { return { id, name: s.name, hp: s.hp, hpMax: s.hpMax, echo: s.echoLeft, atk: s.atk, def: s.def, spd: s.spd, echoPow: s.echo, seen: now, choice: null, down: false, fled: false, left: false }; }
+function newParty(uid, s, storyId, e) {
+  return { id: randomId(), hostId: uid, storyId, status: "lobby", turn: 0, result: null, members: [partyMember(uid, s, Date.now())],
+    enemy: { name: e.name, hp: e.hp, hpMax: e.hp, atk: e.atk, def: e.def, spd: e.spd, state: e.state },
+    log: [{ kind: "urim", text: "방을 열었어요. 함께할 사람이 들어오면 시작할 수 있어요." }] };
+}
+function partyView(p, uid, now) {
+  return { id: p.id, status: p.status, turn: p.turn, result: p.result, host: p.hostId, me: uid, storyId: p.storyId || null, enemy: p.enemy, log: p.log.slice(-40),
+    members: p.members.filter(x => !x.left).map(x => ({ id: x.id, name: x.name, hp: x.hp, hpMax: x.hpMax, echo: x.echo, down: x.down, fled: x.fled, online: now - (x.seen || 0) < PARTY_ONLINE, chosen: !!x.choice, cool: x.id === uid ? (x.cool || {}) : undefined })) };
+}
+async function partyResolve(env, DB, p, now) {
+  const act = p.members.filter(x => !x.left && !x.down && !x.fled);
+  if (!act.length) { p.status = "over"; p.result = p.members.some(x => x.fled) ? "run" : "lose"; return; }
+  const online = act.filter(x => now - (x.seen || 0) < PARTY_ONLINE);
+  if (!online.length || online.some(x => !x.choice)) return;   // 접속 중인 사람이 모두 고를 때까지 기다린다
+  const rnd = (a, z) => a + Math.floor(Math.random() * (z - a + 1));
+  const T = `TURN ${String(p.turn).padStart(2, "0")}`; const parts = [];
+  for (const x of act) {
+    const c = x.choice || { action: "guard" };   // 접속이 끊긴 사람은 방어로 처리
+    let dmg = 0;
+    if (c.action === "attack" || c.action === "custom") dmg = Math.max(3, Math.round(x.atk * 0.8 * (c.skill ? c.skill.mult : 1) - p.enemy.def * 0.35 + rnd(-4, 8)));
+    if (c.action === "echo") { dmg = x.echo > 0 ? Math.max(3, Math.round(x.echoPow * 1.4 + 6 - p.enemy.def * 0.35)) : 0; x.echo = Math.max(0, x.echo - 1); }
+    if (c.action === "run" && Math.random() < 0.35 + x.spd / 300) { x.fled = true; parts.push(`${x.name}은(는) 전장을 빠져나갔다.`); continue; }
+    if (c.action === "attack" && c.skill) { const R = SKILL_RULES[c.skill.kind]; const cc = x.cool || (x.cool = {}); if (R.cooldown) cc[c.skill.kind] = p.turn + R.cooldown + 1; if (R.perBattle) cc[c.skill.kind + "Used"] = (cc[c.skill.kind + "Used"] || 0) + 1; }
+    p.enemy.hp = Math.max(0, p.enemy.hp - dmg);
+    parts.push(c.action === "guard" ? `${x.name}은(는) 자세를 낮춰 막았다.` : c.action === "custom" ? `${x.name}: ${c.text} — 피해 ${dmg}.` : c.action === "run" ? `${x.name}은(는) 빠져나가지 못했다.` : dmg ? `${x.name}${c.skill && c.skill.kind !== "normal" ? `의 「${c.skill.name}」` : "의 공격"} — 피해 ${dmg}.` : `${x.name}의 잔향이 흩어졌다.`);
+  }
+  if (p.enemy.hp > 0) {   // 적의 반격: 남은 사람 중 한두 명
+    const alive = act.filter(x => !x.fled);
+    const targets = alive.sort(() => Math.random() - 0.5).slice(0, alive.length > 2 ? 2 : 1);
+    for (const x of targets) {
+      const c = x.choice || { action: "guard" };
+      const dodge = Math.random() < x.spd / 400;
+      const taken = dodge ? 0 : Math.max(2, Math.round(p.enemy.atk * (c.action === "guard" ? 0.35 : 0.8) - x.def * 0.3 + rnd(-4, 6)));
+      x.hp = Math.max(0, x.hp - taken);
+      parts.push(dodge ? `${p.enemy.name}의 반격을 ${x.name}이(가) 피했다.` : `${p.enemy.name}의 반격 — ${x.name} 피해 ${taken}.`);
+      if (x.hp <= 0) { x.down = true; parts.push(`${x.name}이(가) 쓰러졌다.`); }
+    }
+  }
+  p.log.push({ kind: "turn", label: T, text: parts.join(" ") });
+  for (const x of act) { x.choice = null; await saveVitals(DB, x.id, { hp: x.hp, echo: x.echo }, now); }
+  const still = p.members.filter(x => !x.left && !x.down && !x.fled);
+  if (p.enemy.hp <= 0) {
+    p.status = "over"; p.result = "win";
+    const enemy = ENEMIES.find(e => e.name === p.enemy.name) || ENEMIES[0];
+    for (const x of p.members.filter(y => !y.left && !y.fled)) {
+      const l = enemy.loot[Math.floor(Math.random() * enemy.loot.length)];
+      await DB.prepare("INSERT INTO items (id, user_id, name, rarity, kind, source, descr, slot, deco, img, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)").bind(randomId(), x.id, l.name, l.rarity, l.kind, "전리품", l.desc, l.slot || null, l.deco ? 1 : 0, null, now).run();
+      const pr = await profile(DB, x.id); const game = pr.game || {}; game.level = game.level || 1; game.exp = (game.exp || 0) + 120;
+      while (game.exp >= expMax(game.level)) { game.exp -= expMax(game.level); game.level += 1; }
+      await saveProfile(DB, x.id, { game }, now);
+    }
+    p.log.push({ kind: "urim", text: `${p.enemy.name}을(를) 함께 쓰러뜨렸어요. 전리품은 각자 창고에 넣어 두었어요.` });
+  } else if (!still.length) {
+    p.status = "over"; p.result = p.members.some(x => x.fled) ? "run" : "lose";
+    p.log.push({ kind: "urim", text: p.result === "run" ? "모두 전장을 벗어났어요." : "모두 쓰러졌어요. 숙소로 옮겨 놓을게요. 체력을 회복하고 다시 나가요." });
+  } else { p.turn += 1; }
+  p.log = p.log.slice(-60);
 }
 
 /* ── 도움 함수 ── */

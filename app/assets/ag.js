@@ -19,6 +19,7 @@ AG.PROD = /(^|\.)lastsummerdream\.github\.io$/.test(location.hostname);   // 실
 AG.PAGES = {
   cover: 'index.html', main: 'main.html', group: 'group.html', private: 'private.html', dm: 'dm.html', stats: 'stats.html',
   battle: 'battle.html', inventory: 'inventory.html', home: 'home.html', settings: 'settings.html', timeline: 'timeline.html',
+  enter: 'enter.html', story: 'story.html', party: 'party.html',
 };
 
 /* ── 화면 ── */
@@ -430,6 +431,21 @@ const S = {
     editComment: (cid, text) => call('PUT', `/comments/${cid}`, { text }),
     delComment: cid => call('DELETE', `/comments/${cid}`),
   },
+  story: {
+    list: () => call('GET', '/stories'),
+    open: id => call('GET', `/story/${id}`),
+    act: (id, text) => call('POST', `/story/${id}/act`, { text }),
+    reset: id => call('POST', `/story/${id}/reset`, {}),
+  },
+  party: {
+    lobby: () => call('GET', '/party'),
+    create: () => call('POST', '/party', {}),
+    get: id => call('GET', `/party/${id}`),
+    join: id => call('POST', `/party/${id}/join`, {}),
+    leave: id => call('POST', `/party/${id}/leave`, {}),
+    start: id => call('POST', `/party/${id}/start`, {}),
+    act: (id, action, text, skill) => call('POST', `/party/${id}/act`, { action, text, skill }),
+  },
 };
 
 /* 체험 모드: 피그마 예시 내용으로 시작해서 이 브라우저(localStorage)에만 저장 */
@@ -707,11 +723,101 @@ function demoTurn(b, s, action, text, used, skill) {
   return {};
 }
 
+/* 체험 모드 스토리 · 파티: 예시 줄거리를 한 장면씩 읽고, 파티는 가상의 동료 한 명과 함께 */
+const DEMO_STORIES = [
+  { id: 'ration', title: '배급소의 빈 상자', kind: 'solo', intro: '배급 상자 하나가 비어 있다. 누가, 왜 가져갔을까.', enemy: '잔향 들개',
+    scenes: [['3구역 배급소의 아침이에요. 안개가 짙게 깔렸고, 줄 맨 앞의 상자 하나가 텅 비어 있어요. 기록원이 장부를 넘기며 수량이 맞지 않는다고 중얼거려요.', ['기록원에게 묻는다', '상자를 살핀다']],
+             ['상자 바닥에는 젖은 흙이 묻어 있고, 작은 발자국이 무너진 창고 뒤편으로 이어져 있어요.', ['발자국을 따라간다', '기록원을 더 캐묻는다']],
+             ['창고 뒤편은 조용해요. 그런데 낮게 으르렁거리는 소리가 들려요. 굶주린 들개가 길을 막아섰어요.', [], true],
+             ['들개가 물러난 자리 뒤, 무너진 선반 아래에 아이 하나가 빈 통조림을 끌어안고 숨어 있어요. 상자를 가져간 건 이 아이였어요.', ['기록원에게 알린다', '모른 척 돌아선다', '내 몫을 나눠 준다']],
+             ['당신의 선택은 장부에 남지 않았지만, 안개가 걷힌 배급소는 어제보다 조금 조용했어요. 여기까지가 이번 이야기예요.', [], false, true]] },
+  { id: 'marker', title: '남쪽 경계선의 쓰러진 표지', kind: 'group', intro: '경계 표지가 칼로 자른 듯 쓰러져 있다. 함께 조사할 사람을 모은다.', enemy: '변이 수집자',
+    scenes: [['남쪽 경계선이에요. 표지 두 개가 나란히 쓰러져 있고 단면이 지나치게 깔끔해요. 순찰대가 모여 웅성거리고 있어요.', ['단면을 살핀다', '주변 흙을 본다']],
+             ['흙 위에 한쪽 발을 끄는 자국이 남아 있어요. 자국은 폐허가 된 관측소 쪽으로 이어져요.', ['관측소로 간다', '지원을 기다린다']],
+             ['관측소 문이 안쪽에서 열려요. 가면을 쓴 변이 수집자가 갈고리를 끌며 걸어 나와요.', [], true],
+             ['수집자가 떨어뜨린 자루에는 잘라 낸 표지 조각이 가득해요. 누군가 경계를 지우려 하고 있어요. 이번 조사는 여기까지예요.', [], false, true]] },
+];
+function demoStoryRun(st) { const d = db(); d.stories = d.stories || {}; return d.stories[st.id]; }
+function demoStoryView(st) { const r = demoStoryRun(st); return { id: st.id, title: st.title, kind: st.kind, intro: st.intro, log: r.log, choices: r.choices, done: r.done, battle: r.battle, me: 'me' }; }
+function demoStoryStep(st, r) {
+  const sc = st.scenes[r.step]; if (!sc) { r.done = true; r.choices = []; return; }
+  r.step += 1; r.log.push({ who: 'urim', text: sc[0] }); r.choices = sc[1] || []; if (sc[3]) r.done = true;
+  if (sc[2]) {
+    const d = db(); const e = ENEMIES.find(x => x.name === st.enemy) || ENEMIES[0];
+    if (st.kind === 'group') { const p = demoNewParty(e, st.id); d.party = p; r.battle = { party: p.id, enemy: e.name }; }
+    else if (d.stats.hp > 0) { d.battle = newBattle(); Object.assign(d.battle.enemy, { name: e.name, hp: e.hp, hpMax: e.hp, atk: e.atk, def: e.def, spd: e.spd, state: e.state, lootTable: e.loot }); d.battle.story = st.id;
+      d.battle.log = [{ kind: 'urim', text: `${e.name}이(가) 길을 막았어요. 이야기는 전투가 끝난 뒤에 이어져요.` }]; r.battle = { solo: d.battle.id, enemy: e.name }; }
+    else r.log.push({ who: 'urim', text: '지금은 체력이 없어서 싸울 수 없어요. 창고에서 회복한 뒤에 다시 말을 걸어 주세요.' }), r.step -= 1, r.log.splice(-2, 1);
+  }
+}
+const KO_RESULT = { win: '승리했다', lose: '쓰러졌다', run: '달아났다', closed: '흩어졌다' };
+function demoStorySync(st, r) {
+  if (!r.battle) return; const d = db();
+  const b = r.battle.solo ? d.battle : d.party; const id = r.battle.solo || r.battle.party;
+  const over = !b || b.id !== id || (r.battle.solo ? b.over : b.status === 'over');
+  if (!over) return;
+  r.log.push({ who: 'sys', text: `전투 결과 — ${KO_RESULT[(b && b.id === id && b.result) || 'closed']}` }); r.battle = null; demoStoryStep(st, r);
+}
+function demoMember(id, name, s) { return { id, name, hp: s.hp, hpMax: s.hpMax, echo: s.echoLeft ?? 2, down: false, fled: false, online: true, chosen: false, cool: {} }; }
+function demoNewParty(e, storyId) {
+  e = e || ENEMIES[Math.floor(Math.random() * ENEMIES.length)]; const s = db().stats;
+  return { id: rid('pt'), status: 'lobby', turn: 0, result: null, host: 'me', me: 'me', storyId: storyId || null, polls: 0,
+    enemy: { name: e.name, hp: e.hp, hpMax: e.hp, atk: e.atk, def: e.def, spd: e.spd, state: e.state, lootTable: e.loot }, members: [demoMember('me', meName(), s)],
+    log: [{ kind: 'urim', text: '방을 열었어요. 함께할 사람이 들어오면 시작할 수 있어요. (체험 모드에서는 가상의 동료가 들어와요)' }] };
+}
+function demoPartyAct(p, action, text, skill) {
+  const d = db(), s = d.stats, r = (a, z) => a + Math.floor(Math.random() * (z - a + 1)); const E = p.enemy; const parts = [];
+  const meM = p.members[0], bot = p.members[1];
+  const R = AG.SKILL_RULES[skill] || AG.SKILL_RULES.normal;
+  let dmg = action === 'guard' || action === 'run' ? 0 : action === 'echo' ? (meM.echo > 0 ? Math.round(s.echo * 1.4 + 6 - E.def * .35) : 0) : Math.max(3, Math.round(s.atk * .8 * (action === 'attack' ? R.mult : 1) - E.def * .35 + r(-4, 8)));
+  if (action === 'echo') meM.echo = Math.max(0, meM.echo - 1);
+  if (action === 'attack' && skill) { if (R.cooldown) meM.cool[skill] = p.turn + R.cooldown + 1; if (R.perBattle) meM.cool[skill + 'Used'] = (meM.cool[skill + 'Used'] || 0) + 1; }
+  if (action === 'run' && Math.random() < .5) { meM.fled = true; parts.push(`${meM.name}은(는) 전장을 빠져나갔다.`); }
+  else { E.hp = Math.max(0, E.hp - dmg); parts.push(action === 'guard' ? `${meM.name}은(는) 자세를 낮춰 막았다.` : action === 'custom' ? `${meM.name}: ${text} — 피해 ${dmg}.` : action === 'run' ? `${meM.name}은(는) 빠져나가지 못했다.` : `${meM.name}의 공격 — 피해 ${dmg}.`); }
+  if (bot && !bot.down) { const bd = r(14, 26); E.hp = Math.max(0, E.hp - bd); parts.push(`${bot.name}의 공격 — 피해 ${bd}.`); }
+  if (E.hp > 0) { const alive = p.members.filter(x => !x.down && !x.fled); const t = alive[r(0, alive.length - 1)];
+    if (t) { const tk = Math.max(2, Math.round(E.atk * (t === meM && action === 'guard' ? .35 : .8) - (t === meM ? s.def : 14) * .3 + r(-4, 6))); t.hp = Math.max(0, t.hp - tk); parts.push(`${E.name}의 반격 — ${t.name} 피해 ${tk}.`); if (t.hp <= 0) { t.down = true; parts.push(`${t.name}이(가) 쓰러졌다.`); } } }
+  p.log.push({ kind: 'turn', label: `TURN ${String(p.turn).padStart(2, '0')}`, text: parts.join(' ') });
+  s.hp = meM.hp; s.echoLeft = meM.echo;
+  const still = p.members.filter(x => !x.down && !x.fled);
+  if (E.hp <= 0) { p.status = 'over'; p.result = 'win'; const l = (E.lootTable || [])[0]; if (l) d.inventory.push({ id: rid('i'), source: '전리품', ...l });
+    p.log.push({ kind: 'urim', text: `${E.name}을(를) 함께 쓰러뜨렸어요. 전리품은 각자 창고에 넣어 두었어요.` }); }
+  else if (!still.length || meM.down || meM.fled) { p.status = 'over'; p.result = meM.fled ? 'run' : 'lose'; p.log.push({ kind: 'urim', text: meM.fled ? '전장을 벗어났어요.' : '쓰러졌어요. 숙소로 옮겨 놓을게요. 체력을 회복하고 다시 나가요.' }); }
+  else p.turn += 1;
+}
+Object.assign(Dm, {
+  story: {
+    list: () => { const d = db(); d.stories = d.stories || {}; return wait(DEMO_STORIES.map(s => ({ id: s.id, title: s.title, kind: s.kind, intro: s.intro, started: !!d.stories[s.id], done: !!(d.stories[s.id] && d.stories[s.id].done), at: now0 - 2 * H }))); },
+    open: id => { const st = DEMO_STORIES.find(s => s.id === id); if (!st) return fail('not_found'); const d = db(); d.stories = d.stories || {};
+      if (!d.stories[id]) { d.stories[id] = { step: 0, log: [], choices: [], done: false, battle: null }; demoStoryStep(st, d.stories[id]); }
+      demoStorySync(st, d.stories[id]); save(); return wait(demoStoryView(st), 300); },
+    act: (id, text) => { const st = DEMO_STORIES.find(s => s.id === id); const r = st && demoStoryRun(st); if (!r) return fail('not_found');
+      if (!r.done && !r.battle) { r.log.push({ who: 'me', userId: 'me', name: meName(), text }); demoStoryStep(st, r); } save(); return wait(demoStoryView(st), 700); },
+    reset: id => { const d = db(); const st = DEMO_STORIES.find(s => s.id === id); if (d.stories) delete d.stories[id]; save(); return Dm.story.open(id); },
+  },
+  party: {
+    lobby: () => { const d = db(); const p = d.party && d.party.status !== 'over' ? d.party : null; return wait({ mine: p, open: p ? [] : [{ id: 'demo-room', host: nm('hayun'), count: 1, max: 4, enemy: '변이 수집자', story: null }] }); },
+    create: () => { const d = db(); if (d.stats.hp <= 0) return fail('체력이 없어요. 창고에서 회복 아이템을 쓰고 다시 나가요'); d.party = demoNewParty(); save(); return wait(d.party); },
+    get: id => { const d = db(); const p = d.party; if (!p || p.id !== id) return fail('not_found'); p.polls += 1;
+      if (p.status === 'lobby' && p.members.length < 2 && p.polls >= 2) { p.members.push({ id: 'leon', name: nm('leon'), hp: 180, hpMax: 180, echo: 2, down: false, fled: false, online: true, chosen: true }); p.log.push({ kind: 'urim', text: `${nm('leon')} 님이 들어왔어요.` }); }
+      if (p.status === 'lobby' && p.autostart && p.polls >= 2) { p.autostart = false; p.status = 'battle'; p.turn = 1; p.log.push({ kind: 'urim', text: `${p.enemy.name}이(가) 나타났어요. 모두 행동을 고르면 한꺼번에 판정해요.` }); }
+      save(); return wait(p, 100); },
+    join: id => { const d = db(); if (d.stats.hp <= 0) return fail('체력이 없어요. 창고에서 회복 아이템을 쓰고 다시 나가요'); const p = demoNewParty(ENEMIES[0]); p.host = 'hayun'; p.members.unshift({ id: 'hayun', name: nm('hayun'), hp: 170, hpMax: 170, echo: 3, down: false, fled: false, online: true, chosen: true });
+      p.members.reverse(); p.log = [{ kind: 'urim', text: `${nm('hayun')} 님의 방에 들어왔어요. 곧 시작해요.` }]; p.autostart = true; d.party = p; save(); return wait(p); },
+    leave: id => { const d = db(); d.party = null; save(); return wait({ status: 'over', result: 'closed', members: [], log: [], enemy: {} }); },
+    start: id => { const p = db().party; if (!p) return fail('not_found'); if (p.status === 'lobby') { p.status = 'battle'; p.turn = 1; p.enemy.hp = p.enemy.hpMax = Math.round(p.enemy.hp * (0.55 + 0.6 * p.members.length)); p.log.push({ kind: 'urim', text: `${p.enemy.name}이(가) 나타났어요. ${p.members.length}명이 모두 행동을 고르면 한꺼번에 판정해요.` }); } save(); return wait(p); },
+    act: (id, action, text, skill) => { const p = db().party; if (!p || p.status !== 'battle') return fail('전투 중이 아니에요'); demoPartyAct(p, action, text, skill); save(); return wait(p, 600); },
+  },
+});
+
+{ const base = Dm.posts.list;   // 단체 스토리는 타임라인 맨 위의 참여 글로
+  Dm.posts.list = async (...a) => { const l = await base(...a); DEMO_STORIES.filter(s => s.kind === 'group').forEach(s => l.unshift({ id: 'story-' + s.id, userId: 'urim', name: 'URIM', sub: '단체 스토리', text: `【단체 스토리】 ${s.title}\n${s.intro}`, at: now0 - H, editedAt: null, comments: 0, mine: false, story: s.id })); return l; }; }
+
 const impl = AG.mode === 'server' ? S : Dm;
 Object.assign(AG, {
   me: () => impl.me(), users: () => impl.users(), channels: impl.channels, msg: impl.msg, talks: impl.talks, dms: impl.dms,
   stats: (...a) => impl.stats(...a), inventory: impl.inventory, home: impl.home, lines: impl.lines, character: impl.character,
-  account: impl.account, battle: impl.battle, posts: impl.posts,
+  account: impl.account, battle: impl.battle, posts: impl.posts, story: impl.story, party: impl.party,
 });
 AG.auth = {
   async login(username, password) { const j = await rawAuth('/auth/login', username, password); LS.set(TOKEN_KEY, j.token); return j; },
