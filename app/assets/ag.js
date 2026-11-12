@@ -104,7 +104,7 @@ AG.boot = function (opts = {}) {
   };
   addEventListener('resize', fit); fit();
   const q = s => document.querySelector(s);
-  q('[data-action="refresh"]')?.addEventListener('click', () => location.reload());
+  q('[data-action="home"]')?.addEventListener('click', () => { location.href = AG.PAGES.main; });
   q('[data-action="browse"]')?.addEventListener('click', () => AG.browse());
   q('[data-action="back"]')?.addEventListener('click', () => {
     if (history.length > 1 && document.referrer) history.back(); else location.href = AG.PAGES.main;
@@ -396,6 +396,7 @@ const S = {
     return { id: j.user.id, username: j.user.username, character: c, name: c ? c.name : j.user.username, avatar: c && c.avatar, lines: j.profile?.lines || [], raw: j };
   },
   users: () => call('GET', '/users'),
+  urim: messages => call('POST', '/urim', { messages }),
   people: { get: id => call('GET', `/people/${id}`), illust: id => call('GET', `/people/${id}/illust`) },
   illustPut: illust => call('PUT', '/me/illust', { illust }),
   channels: {
@@ -596,6 +597,7 @@ const Dm = {
     illust: () => wait({ illust: null }),
   },
   illustPut: () => wait({ ok: true }),
+  urim: messages => wait({ text: ['체험 모드에서는 정해진 대답만 할 수 있어요. 로그인하면 캐릭터에 맞춰 이야기해 드릴게요.', '전투 진입에서 스토리나 전투를 고를 수 있어요. 체력은 창고의 회복 아이템으로 채워요.', '상단의 가운데 버튼을 누르면 다른 캐릭터를 구경할 수 있어요.'][messages.filter(m => m.role === 'user').length % 3] }, 700),
   channels: {
     list: () => wait(db().channels.map(c => ({ id: c.id, name: c.name, members: c.members, last: lastOf(c.msgs) }))),
     create: name => { const c = { id: rid('c'), name, members: 1, msgs: [] }; db().channels.push(c); save(); return wait({ id: c.id, name, members: 1, last: null }); },
@@ -856,7 +858,7 @@ Object.assign(Dm, {
 
 const impl = AG.mode === 'server' ? S : Dm;
 Object.assign(AG, {
-  me: () => impl.me(), users: () => impl.users(), people: impl.people, channels: impl.channels, msg: impl.msg, talks: impl.talks, dms: impl.dms,
+  me: () => impl.me(), users: () => impl.users(), people: impl.people, urim: m => impl.urim(m), channels: impl.channels, msg: impl.msg, talks: impl.talks, dms: impl.dms,
   stats: (...a) => impl.stats(...a), inventory: impl.inventory, home: impl.home, lines: impl.lines, character: impl.character,
   account: impl.account, battle: impl.battle, posts: impl.posts, story: impl.story, party: impl.party,
 });
@@ -946,3 +948,115 @@ AG.profileSheet = function (p) {
   m.el.querySelector('[data-x]').onclick = m.close;
   return m;
 };
+
+/* ── URIM과 대화: 캐릭터 보조 어시스턴트 (대화는 이 브라우저에 최근 40개까지 남는다) ── */
+AG.urimChat = function () {
+  const KEY = 'ag-urim-chat';
+  let hist = []; try { hist = JSON.parse(localStorage.getItem(KEY) || '[]'); } catch {}
+  const m = AG.sheet(`<h2>URIM</h2><h3>무엇을 도와드릴까요?</h3>
+    <style>.uc-log{flex:1;min-height:420px;max-height:640px;overflow-y:auto;padding-right:14px;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.3) transparent}
+    .uc-m{max-width:78%;margin:0 0 16px;padding:16px 24px;font-size:24px;line-height:1.6;white-space:pre-wrap;word-break:keep-all;overflow-wrap:anywhere;background:rgba(255,255,255,.1)}
+    .uc-m.me{margin-left:auto;background:rgba(242,242,242,.92);color:#1e1e1e}.uc-m.wait{color:#b5b5b5}
+    .uc-in{display:flex;gap:14px;margin-top:20px}.uc-in input{flex:1;height:72px;padding:0 26px;font:inherit;font-size:24px;color:#fff;background:rgba(255,255,255,.09);border:0;outline:0}
+    .uc-hint{font-size:19px;color:#a9a9a9;margin:0 0 14px}</style>
+    <p class="uc-hint">캐릭터 상태, 대사·행동 아이디어, 사이트 사용법을 물어보세요.</p>
+    <div class="uc-log" aria-live="polite"></div>
+    <div class="uc-in"><input maxlength="600" placeholder="URIM에게 말하기" aria-label="URIM에게 말하기"><button class="bw-btn" data-send type="button">보내기</button></div>
+    <div class="bw-btns"><button class="bw-btn" data-x type="button">닫기</button><button class="bw-btn" data-clear type="button">대화 지우기</button></div>`);
+  const log = m.el.querySelector('.uc-log'), input = m.el.querySelector('.uc-in input');
+  let busy = false;
+  const add = (role, text, cls = '') => { const p = document.createElement('p'); p.className = 'uc-m ' + (role === 'user' ? 'me ' : '') + cls; p.textContent = text; log.appendChild(p); log.scrollTop = log.scrollHeight; return p; };
+  const draw = () => { log.innerHTML = ''; if (!hist.length) add('assistant', '안녕하세요. 개인 단말의 URIM이에요. 캐릭터에 대해 궁금한 점이나 막히는 부분을 말씀해 주세요.'); hist.forEach(h => add(h.role, h.content)); };
+  const keep = () => { hist = hist.slice(-40); try { localStorage.setItem(KEY, JSON.stringify(hist)); } catch {} };
+  const send = async () => {
+    const v = input.value.trim(); if (!v || busy) return;
+    input.value = ''; busy = true; hist.push({ role: 'user', content: v }); add('user', v);
+    const w = add('assistant', '…', 'wait');
+    try { const r = await AG.urim(hist.slice(-16)); w.remove(); hist.push({ role: 'assistant', content: r.text }); add('assistant', r.text); keep(); }
+    catch (e) { hist.pop(); w.classList.remove('wait'); w.textContent = e && e.status === 429 ? '잠시 쉬었다가 다시 말을 걸어 주세요.' : '지금은 대답할 수 없어요. 조금 뒤에 다시 시도해 주세요.'; }
+    busy = false; input.focus({ preventScroll: true });
+  };
+  m.el.querySelector('[data-x]').onclick = m.close;
+  m.el.querySelector('[data-clear]').onclick = () => { hist = []; keep(); draw(); };
+  m.el.querySelector('[data-send]').onclick = send;
+  input.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); send(); } e.stopPropagation(); });
+  draw(); setTimeout(() => input.focus({ preventScroll: true }), 50);
+  return m;
+};
+
+/* ── 프로필 사진: 정사각형으로 잘라 내기 (끌어서 위치, 조절바로 크기) ── */
+AG.cropSquare = file => new Promise((res, rej) => {
+  const img = new Image(); const url = URL.createObjectURL(file);
+  img.onerror = () => { URL.revokeObjectURL(url); rej(new Error('bad_image')); };
+  img.onload = () => {
+    const V = 560, base = V / Math.min(img.width, img.height);   // 100% = 짧은 변이 틀에 꼭 맞는 크기
+    const st = { z: 1, x: (V - img.width * base) / 2, y: (V - img.height * base) / 2 };
+    const m = AG.sheet(`<h2>PROFILE PHOTO</h2><h3>사진을 맞춰 주세요</h3>
+      <style>.cs-box{position:relative;width:${V}px;height:${V}px;margin:0 auto;overflow:hidden;background:#111;cursor:grab;touch-action:none}.cs-box.drag{cursor:grabbing}
+      .cs-box img{position:absolute;left:0;top:0;max-width:none;transform-origin:0 0;pointer-events:none;user-select:none}
+      .cs-box::after{content:"";position:absolute;inset:0;box-shadow:inset 0 0 0 3px rgba(255,255,255,.7);pointer-events:none}
+      .cs-z{display:flex;align-items:center;gap:20px;margin:24px auto 0;width:${V}px;font-size:22px;font-weight:700;color:#cfcfcf}.cs-z input{flex:1;accent-color:#e6e6e6;height:30px}</style>
+      <div class="cs-box"><img alt=""></div>
+      <label class="cs-z">크기<input type="range" min="100" max="300" value="100" aria-label="사진 크기"><span>100%</span></label>
+      <div class="bw-btns"><button class="bw-btn" data-x type="button">취소</button><button class="bw-btn" data-ok type="button">이대로 쓰기</button></div>`);
+    const box = m.el.querySelector('.cs-box'), el = box.querySelector('img'), range = m.el.querySelector('.cs-z input'), pct = m.el.querySelector('.cs-z span');
+    el.src = url;
+    const apply = () => {
+      const k = base * st.z, w = img.width * k, h = img.height * k;
+      st.x = Math.min(0, Math.max(V - w, st.x)); st.y = Math.min(0, Math.max(V - h, st.y));
+      el.style.width = img.width + 'px'; el.style.transform = `translate(${st.x}px, ${st.y}px) scale(${k})`;
+      range.value = Math.round(st.z * 100); pct.textContent = Math.round(st.z * 100) + '%';
+    };
+    const zoom = z => { z = Math.min(3, Math.max(1, z)); const c = V / 2, r = z / st.z; st.x = c - (c - st.x) * r; st.y = c - (c - st.y) * r; st.z = z; apply(); };
+    range.addEventListener('input', () => zoom(range.value / 100));
+    let d = null;
+    box.addEventListener('pointerdown', e => { d = { id: e.pointerId, sx: e.clientX, sy: e.clientY, x: st.x, y: st.y, k: box.getBoundingClientRect().width / V }; box.setPointerCapture(e.pointerId); box.classList.add('drag'); });
+    box.addEventListener('pointermove', e => { if (!d || e.pointerId !== d.id) return; st.x = d.x + (e.clientX - d.sx) / d.k; st.y = d.y + (e.clientY - d.sy) / d.k; apply(); });
+    const end = () => { d = null; box.classList.remove('drag'); };
+    box.addEventListener('pointerup', end); box.addEventListener('pointercancel', end);
+    box.addEventListener('wheel', e => { e.preventDefault(); zoom(st.z * Math.exp(-e.deltaY * 0.0015)); }, { passive: false });
+    const done = v => { m.close(); URL.revokeObjectURL(url); v ? res(v) : rej(new Error('cancel')); };
+    m.el.querySelector('[data-x]').onclick = () => done(null);
+    m.el.querySelector('[data-ok]').onclick = () => {
+      const size = 320, max = 190000, k = base * st.z, c = document.createElement('canvas'); c.width = c.height = size;
+      c.getContext('2d').drawImage(img, -st.x / k, -st.y / k, V / k, V / k, 0, 0, size, size);
+      for (const q of [.9, .8, .7, .55, .4]) { const u = c.toDataURL('image/webp', q); if (u.length <= max && u.startsWith('data:image/webp')) return done(u); }
+      const j = c.toDataURL('image/jpeg', .7); j.length <= max ? done(j) : (m.close(), rej(new Error('too_long')));
+    };
+    apply();
+  };
+  img.src = url;
+});
+
+/* ── 배경음악: 화면마다 정해진 곡 (메인·커버·그 밖 = main, 숙소 = myhome, 대화 = chat, 전투 = battle) ──
+   켬/끔은 이 브라우저에 저장되고, 같은 곡이 이어지는 화면으로 넘어가면 듣던 자리부터 이어진다 */
+AG.bgm = (() => {
+  const MAP = { home: 'myhome', group: 'chat', private: 'chat', dm: 'chat', battle: 'battle', party: 'battle' };
+  const page = (location.pathname.split('/').pop() || 'index.html').replace(/\.html$/, '') || 'index';
+  const track = MAP[page] || 'main';
+  const get = k => { try { return localStorage.getItem(k); } catch { return null; } };
+  const a = new Audio(); a.loop = true; a.preload = 'none'; a.volume = .45;
+  let on = get('ag-bgm') !== '0', armed = false;
+  const listeners = [];
+  function play() {
+    if (!on) return;
+    if (!a.src) {
+      a.src = `assets/bgm/${track}.mp3`;
+      let pos = null; try { pos = JSON.parse(sessionStorage.getItem('ag-bgm-pos')); } catch {}
+      if (pos && pos.track === track && pos.t > 0) a.addEventListener('loadedmetadata', () => { try { a.currentTime = pos.t % (a.duration || 1e9); } catch {} }, { once: true });
+    }
+    a.play().catch(() => {   // 브라우저가 자동 재생을 막으면 첫 클릭·키 입력 때 시작
+      if (armed) return; armed = true;
+      const go = () => { armed = false; removeEventListener('pointerdown', go, true); removeEventListener('keydown', go, true); play(); };
+      addEventListener('pointerdown', go, true); addEventListener('keydown', go, true);
+    });
+  }
+  addEventListener('pagehide', () => { try { if (a.src) sessionStorage.setItem('ag-bgm-pos', JSON.stringify({ track, t: a.currentTime })); } catch {} });
+  document.addEventListener('visibilitychange', () => { if (document.hidden) a.pause(); else play(); });
+  play();
+  return {
+    track, get on() { return on; },
+    toggle() { on = !on; try { localStorage.setItem('ag-bgm', on ? '1' : '0'); } catch {} on ? play() : a.pause(); listeners.forEach(f => f(on)); return on; },
+    onChange(f) { listeners.push(f); },
+  };
+})();

@@ -66,8 +66,8 @@ AG.boot();
   $('avaBtn').onclick = $('avaTxt').onclick = () => $('pickAva').click();
   $('pickAva').onchange = async e => {
     const f = e.target.files[0]; e.target.value = ''; if (!f) return;
-    try { const url = await AG.squareImage(f); await AG.character.save({ avatar: url }); $('ava').src = url; $('ava').hidden = false; AG.toast('프로필 사진을 바꿨어요'); }
-    catch (err) { AG.toast(AG.errMsg(err)); }
+    try { const url = await AG.cropSquare(f); await AG.character.save({ avatar: url }); $('ava').src = url; $('ava').hidden = false; AG.toast('프로필 사진을 바꿨어요'); }
+    catch (err) { if (!err || err.message !== 'cancel') AG.toast(AG.errMsg(err)); }
   };
   $('illuBtn').onclick = () => $('pickIllu').click();
   $('pickIllu').onchange = async e => {

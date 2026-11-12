@@ -231,6 +231,12 @@
 
   @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
 
+.zoom-panel { position: absolute; left: 0; bottom: 92px; width: 520px; height: 76px; padding: 0 26px; box-sizing: border-box; display: flex; align-items: center; gap: 18px; border-radius: 38px; background: rgba(40,40,40,.92); color: #e6e6e6; font-size: 22px; font-weight: 700; box-shadow: 0 10px 24px rgba(0,0,0,.35); }
+.zoom-panel[hidden] { display: none; }
+.zoom-panel input { flex: 1; min-width: 0; height: 30px; accent-color: #e6e6e6; }
+.zoom-panel b { width: 70px; text-align: right; font-weight: 900; }
+.zoom-panel button { height: 46px; padding: 0 20px; border-radius: 23px; background: rgba(255,255,255,.14); color: #fff; font-size: 20px; font-weight: 700; white-space: nowrap; }
+.zoom-panel button:hover { background: rgba(255,255,255,.26); }
 /* 다른 캐릭터 구경 (main.html?visit=…): 메뉴를 감추고 간단한 정보만 */
 .vinfo { display: none; }
 .visit .layer, .visit .hit, .visit .sidegrp, .visit .optgrp, .visit .lvl, .visit .urim, .visit .char-hint b { display: none !important; }
@@ -293,10 +299,10 @@ html.ag-wait #stage > :not(.wallpaper):not(.tint) { opacity: 0 !important; will-
 
   <!-- 상단바 -->
   <img class="abs topbar" src="assets/topbar.svg" alt="">
-  <button class="top-btn refresh" data-action="refresh" aria-label="새로고침">
+  <button class="top-btn refresh" data-action="home" aria-label="홈 화면으로">
     <img src="assets/btn-refresh.svg" width="53" height="53" alt="">
-    <span class="glyph"><svg viewBox="0 0 24 24" fill="none" stroke="#1e1e1e" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg></span>
-    <span class="tip">새로고침</span>
+    <span class="glyph"><svg viewBox="0 0 24 24" fill="none" stroke="#1e1e1e" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 11.5 12 4l8.5 7.5"/><path d="M6.5 10v9.5h11V10"/></svg></span>
+    <span class="tip">홈 화면으로</span>
   </button>
   <button class="top-btn browse" data-action="browse" aria-label="다른 캐릭터 프로필 구경가기">
     <img src="assets/btn-browse.svg" width="52" height="53" alt="">
@@ -394,11 +400,15 @@ html.ag-wait #stage > :not(.wallpaper):not(.tint) { opacity: 0 !important; will-
           <img src="assets/opt-refresh.svg" width="73" height="73" alt=""><span class="tip">일러 변경</span>
         </button>
         <button class="opt" id="wallBtn" style="left:171px" aria-label="배경화면 변경">
-          <img src="assets/opt-refresh.svg" width="73" height="73" alt=""><span class="tip">배경화면 변경</span>
+          <img src="assets/opt-wall.svg" width="73" height="73" alt=""><span class="tip">배경화면 변경</span>
         </button>
-        <button class="opt" id="bgmBtn" style="left:258px" aria-label="배경음악 변경">
-          <img src="assets/opt-refresh.svg" width="73" height="73" alt=""><span class="tip">배경음악 변경</span>
+        <button class="opt" id="bgmBtn" style="left:258px" aria-label="배경음악 켜기/끄기">
+          <img src="assets/opt-bgm.svg" width="73" height="73" alt=""><span class="tip">배경음악 켜기·끄기</span>
         </button>
+        <div class="zoom-panel" id="zoomPanel" hidden>
+          <span>크기</span><input type="range" id="zoomRange" min="50" max="150" step="1" value="100" aria-label="일러스트 크기"><b id="zoomPct">100%</b>
+          <button id="zoomReset" type="button">원래대로</button>
+        </div>
       </div>
       <input type="file" id="pickImg" accept="image/*" multiple hidden>
       <input type="file" id="pickWall" accept="image/*" multiple hidden>
@@ -508,16 +518,17 @@ const charBox = document.getElementById('character');
 const charImg = document.getElementById('charImg');
 const charHint = document.getElementById('charHint');
 let images = CONFIG.images.slice(), imgIdx = 0;
-function setImage(src) {
+function setImage(src, fresh) {
   charImg.src = src; charImg.hidden = false;
   charBox.classList.add('has-img'); charHint.hidden = true;
-  resetView();
+  fresh ? resetView() : loadView();   // 새로 고른 그림은 원래 크기부터, 저장된 그림은 조정해 둔 대로
 }
 const filesToUrls = files => [...files].map(f => URL.createObjectURL(f));
-function addImages(files) {
-  const urls = filesToUrls([...files].filter(f => f.type.startsWith('image/')));
-  if (!urls.length) return;
-  images.push(...urls); imgIdx = images.length - urls.length; setImage(images[imgIdx]);
+function addImages(files) {   // 고른 그림으로 바꾸고 저장한다 (다음에 들어와도 그대로, 구경 온 사람에게도 보임)
+  const f = [...files].find(x => x.type.startsWith('image/'));
+  if (!f || VISIT) return;
+  images = [URL.createObjectURL(f)]; imgIdx = 0; setImage(images[0], true);
+  if (window.AG) AG.illust.set(f).then(() => toast('일러스트를 바꿨어요')).catch(err => toast(err && err.message === 'too_long' ? '이미지가 너무 커요. 더 작은 파일로 해 주세요' : '이 기기에는 저장했지만 서버에 올리지 못했어요'));
 }
 charBox.addEventListener('dragover', e => { e.preventDefault(); charBox.classList.add('dragover'); });
 charBox.addEventListener('dragleave', () => charBox.classList.remove('dragover'));
@@ -525,11 +536,7 @@ charBox.addEventListener('drop', e => { e.preventDefault(); charBox.classList.re
 
 /* 일러 변경 */
 const swapBtn = document.getElementById('swapBtn'), pickImg = document.getElementById('pickImg');
-swapBtn.addEventListener('click', () => {
-  spinOnce(swapBtn);
-  if (images.length > 1) { imgIdx = (imgIdx + 1) % images.length; setImage(images[imgIdx]); }
-  else pickImg.click();
-});
+swapBtn.addEventListener('click', () => { spinOnce(swapBtn); pickImg.click(); });
 pickImg.addEventListener('change', () => { addImages(pickImg.files); pickImg.value = ''; });
 
 /* 배경화면 변경: 목록이 2장 이상이면 다음 장, 아니면 파일 선택 */
@@ -542,7 +549,6 @@ function setWall(i) {
 }
 if (walls.length) setWall(0);
 wallBtn.addEventListener('click', () => {
-  spinOnce(wallBtn);
   if (walls.length > 1 || (walls.length === 1 && wallIdx < 0)) setWall((wallIdx + 1) % walls.length);
   else pickWall.click();
 });
@@ -552,56 +558,48 @@ pickWall.addEventListener('change', () => {
   if (urls.length) { walls.push(...urls); setWall(walls.length - urls.length); }
 });
 
-/* 배경음악 변경: 여러 곡이면 다음 곡, 한 곡이면 재생/정지, 없으면 파일 선택 */
-const bgmBtn = document.getElementById('bgmBtn'), pickBgm = document.getElementById('pickBgm'), audio = document.getElementById('bgm');
-let tracks = CONFIG.bgm.map(src => ({ src, name: src.split('/').pop() })), trackIdx = -1;
-function playTrack(i) {
-  trackIdx = i; audio.src = tracks[i].src;
-  audio.play().then(() => { bgmBtn.classList.add('on'); toast(`배경음악 · ${tracks[i].name}`); }).catch(() => toast('배경음악을 재생하지 못했어요'));
+/* 배경음악: 화면마다 정해진 곡이 흐른다 (assets/bgm). 버튼은 켬/끔 */
+const bgmBtn = document.getElementById('bgmBtn');
+if (window.AG && AG.bgm) {
+  bgmBtn.classList.toggle('on', !AG.bgm.on);
+  bgmBtn.addEventListener('click', () => { const on = AG.bgm.toggle(); bgmBtn.classList.toggle('on', !on); toast(on ? '배경음악을 켰어요' : '배경음악을 껐어요'); });
 }
-bgmBtn.addEventListener('click', () => {
-  spinOnce(bgmBtn);
-  if (!tracks.length) return pickBgm.click();
-  if (tracks.length === 1 && trackIdx === 0) {
-    if (audio.paused) { audio.play(); bgmBtn.classList.add('on'); toast('배경음악 재생'); }
-    else { audio.pause(); bgmBtn.classList.remove('on'); toast('배경음악 정지'); }
-    return;
-  }
-  playTrack((trackIdx + 1) % tracks.length);
-});
-pickBgm.addEventListener('change', () => {
-  const files = [...pickBgm.files].filter(f => f.type.startsWith('audio/'));
-  pickBgm.value = '';
-  if (!files.length) return;
-  tracks.push(...files.map(f => ({ src: URL.createObjectURL(f), name: f.name.replace(/\.[^.]+$/, '') })));
-  playTrack(tracks.length - files.length);
-});
 
 /* 일러 크기 조정 및 위치 조정
-   - 버튼: 얼굴 쪽 확대 ↔ 원래대로
-   - 일러 드래그: 위치 이동 / 휠: 크기 조절 / 더블클릭: 원래대로 */
+   - 버튼: 조절바 열기/닫기 (원본의 50% ~ 150%)
+   - 일러 드래그: 위치 이동 / 휠: 크기 조절 / 더블클릭: 원래대로
+   - 조정한 크기와 위치는 이 브라우저에 저장된다 */
 const zoomBtn = document.getElementById('zoomBtn');
 const FRAME_W = 1200, FRAME_H = 1600, VISIBLE_H = 1440 - 145;
-const MIN_S = 1, MAX_S = 3, FOCUS_S = 1.6, FOCUS_Y = 0.18;
+const MIN_S = .5, MAX_S = 1.5, VIEW_KEY = 'ag-illust-view';
+const zoomPanel = document.getElementById('zoomPanel'), zoomRange = document.getElementById('zoomRange'), zoomPct = document.getElementById('zoomPct');
 const view = { s: 1, x: 0, y: 0 };
 function applyView() {
   view.s = Math.min(MAX_S, Math.max(MIN_S, view.s));
-  view.x = Math.min(0, Math.max(FRAME_W - view.s * FRAME_W, view.x));
-  view.y = Math.min(0, Math.max(Math.min(0, VISIBLE_H - view.s * FRAME_H), view.y));
+  const KEEP = 240;   // 화면 밖으로 완전히 나가지 않게 이만큼은 남긴다
+  view.x = Math.min(FRAME_W - KEEP, Math.max(KEEP - view.s * FRAME_W, view.x));
+  view.y = Math.min(VISIBLE_H - KEEP, Math.max(KEEP - view.s * FRAME_H, view.y));
   charImg.style.transform = `translate(${view.x}px, ${view.y}px) scale(${view.s})`;
-  const on = view.s > 1.001;
-  zoomBtn.classList.toggle('on', on); zoomBtn.setAttribute('aria-pressed', on);
+  zoomRange.value = Math.round(view.s * 100); zoomPct.textContent = Math.round(view.s * 100) + '%';
 }
-function resetView() { Object.assign(view, { s: 1, x: 0, y: 0 }); applyView(); }
+let viewTimer;
+function saveView() { if (VISIT) return; clearTimeout(viewTimer); viewTimer = setTimeout(() => { try { localStorage.setItem(VIEW_KEY, JSON.stringify(view)); } catch {} }, 250); }
+function loadView() {
+  let v = null; if (!VISIT) { try { v = JSON.parse(localStorage.getItem(VIEW_KEY)); } catch {} }
+  Object.assign(view, v && isFinite(v.s) && isFinite(v.x) && isFinite(v.y) ? { s: v.s, x: v.x, y: v.y } : { s: 1, x: 0, y: 0 }); applyView();
+}
+function resetView() { Object.assign(view, { s: 1, x: 0, y: 0 }); applyView(); saveView(); }
 function zoomAt(s, px, py) {
   const k = s / view.s;
-  view.x = px - (px - view.x) * k; view.y = py - (py - view.y) * k; view.s = s; applyView();
+  view.x = px - (px - view.x) * k; view.y = py - (py - view.y) * k; view.s = s; applyView(); saveView();
 }
 zoomBtn.addEventListener('click', () => {
-  if (view.s > 1.001) return resetView();
-  Object.assign(view, { s: 1, x: 0, y: 0 });
-  zoomAt(FOCUS_S, FRAME_W / 2, FRAME_H * FOCUS_Y);
+  const open = zoomPanel.hidden; zoomPanel.hidden = !open;
+  zoomBtn.classList.toggle('on', open); zoomBtn.setAttribute('aria-pressed', open);
 });
+zoomRange.addEventListener('input', () => { charImg.style.transition = 'none'; zoomAt(Math.min(MAX_S, Math.max(MIN_S, zoomRange.value / 100)), FRAME_W / 2, VISIBLE_H / 2); });
+zoomRange.addEventListener('change', () => { charImg.style.transition = ''; });
+document.getElementById('zoomReset').addEventListener('click', resetView);
 let drag = null;
 charBox.addEventListener('pointerdown', e => {
   if (!charBox.classList.contains('has-img')) return;
@@ -610,7 +608,7 @@ charBox.addEventListener('pointerdown', e => {
 });
 charBox.addEventListener('pointermove', e => {
   if (!drag || e.pointerId !== drag.id) return;
-  view.x = drag.x + (e.clientX - drag.sx) / drag.k; view.y = drag.y + (e.clientY - drag.sy) / drag.k; applyView();
+  view.x = drag.x + (e.clientX - drag.sx) / drag.k; view.y = drag.y + (e.clientY - drag.sy) / drag.k; applyView(); saveView();
 });
 const endDrag = () => { drag = null; charBox.classList.remove('dragging'); };
 charBox.addEventListener('pointerup', endDrag);
@@ -619,7 +617,7 @@ charBox.addEventListener('wheel', e => {
   if (!charBox.classList.contains('has-img')) return;
   e.preventDefault();
   const r = charBox.getBoundingClientRect(), k = r.width / FRAME_W;
-  zoomAt(view.s * Math.exp(-e.deltaY * 0.0015), (e.clientX - r.left) / k, (e.clientY - r.top) / k);
+  zoomAt(Math.min(MAX_S, Math.max(MIN_S, view.s * Math.exp(-e.deltaY * 0.0015))), (e.clientX - r.left) / k, (e.clientY - r.top) / k);
 }, { passive: false });
 charBox.addEventListener('dblclick', resetView);
 if (images.length) setImage(images[0]);
@@ -683,13 +681,14 @@ addEventListener('pageshow', e => {
 });
 document.querySelectorAll('.side-btn').forEach(b => b.addEventListener('click', () => {
   const k = b.dataset.side;
+  if (k === 'urim' && window.AG && AG.urimChat) { AG.urimChat(); return; }
   document.querySelectorAll('.side-btn').forEach(x => x.classList.toggle('active', x === b));
   if (k === 'notice') { toast('아직 올라온 공지사항이 없어요'); document.querySelectorAll('.side-btn').forEach(x => x.classList.toggle('active', x.dataset.side === 'urim')); return; }
   if (k !== 'urim') go(k);
 }));
 
 /* 상단바 */
-document.querySelector('[data-action="refresh"]').addEventListener('click', () => location.reload());
+document.querySelector('[data-action="home"]').addEventListener('click', () => { location.href = 'main.html'; });
 document.querySelector('[data-action="browse"]').addEventListener('click', () => window.AG ? AG.browse() : go('browse'));
 document.querySelector('[data-action="back"]').addEventListener('click', () => {
   if (history.length > 1) history.back(); else toast('이전 페이지가 없어요');
@@ -823,7 +822,7 @@ document.querySelector('[data-action="back"]').addEventListener('click', () => {
       }
     })();
   }
-  icon.addEventListener('click', () => speak());
+  icon.addEventListener('click', () => window.AG && AG.urimChat ? AG.urimChat() : speak());   // URIM을 누르면 대화창
   /* 들어오면 자동으로 한마디: 이번 접속에서 처음이면 인사, 다시 돌아온 화면이면 가벼운 한마디 */
   lineEl.textContent = '';
   let first = true; try { first = !sessionStorage.getItem('ag-urim-hi'); sessionStorage.setItem('ag-urim-hi', '1'); } catch {}
