@@ -131,7 +131,7 @@
 #tabShape svg { position: absolute; overflow: visible; transition: left .35s cubic-bezier(.2,.8,.2,1); }
 #room:focus-visible { outline: 6px solid rgba(255,255,255,.6); outline-offset: -6px; }
 .char { position: absolute; left: 0; top: 0; width: 100px; height: 150px; transition: left .16s linear, top .16s linear; z-index: 5; pointer-events: none; }
-.char .spr { position: absolute; inset: 0; background: #d9d9d9; image-rendering: pixelated; background-size: contain; background-repeat: no-repeat; background-position: bottom center; }
+.char .spr { position: absolute; inset: 0; background: transparent; image-rendering: pixelated; background-size: contain; background-repeat: no-repeat; background-position: bottom center; }
 .char.has .spr { background-color: transparent; }
 .char.walk .spr { animation: walk .32s steps(2) infinite; }
 @keyframes walk { 50% { translate: 0 -6px; } }
