@@ -35,9 +35,10 @@ AG.boot();
       <small>${m.down ? '쓰러짐' : m.fled ? '이탈' : !m.online ? '접속 끊김' : p.status === 'battle' ? (m.chosen ? '선택 완료' : '고르는 중…') : `HP ${m.hp}`}</small>
       <div class="bar"><u style="width:${Math.max(0, Math.min(1, m.hp / m.hpMax)) * 100}%"></u></div></div>`).join('');
     const E = p.enemy;
+    const est = String(E.state || '').replace(/(?:[,·/()]|\s)*(?:남은\s*)?(?:HP|체력)\s*[:=]?\s*\d+(?:\s*\/\s*\d+)?/gi, '').replace(/^[,\s·/]+|[,\s·/]+$/g, '').replace(/\s*,\s*,+/g, ', ').trim() || (E.hp <= 0 ? '쓰러짐' : '경계 상태');
     $('enName').textContent = E.name || '—'; $('enPic').textContent = E.name ? E.name.slice(0, 1) : '?';
     $('enHp').style.width = Math.max(0, Math.min(1, E.hp / E.hpMax)) * 440 + 'px';
-    $('enTxt').textContent = `HP ${E.hp} / ${E.hpMax} · ${E.state || ''}${E.fxText ? ' · ' + E.fxText : ''}`;
+    $('enTxt').textContent = `HP ${E.hp} / ${E.hpMax}${est ? ' · ' + est : ''}${E.fxText ? ' · ' + E.fxText : ''}`;
     $('turn').textContent = p.status === 'over' ? ({ win: 'VICTORY', lose: 'DEFEAT', run: 'ESCAPED' }[p.result] || 'END') : p.status === 'lobby' ? 'LOBBY' : `TURN ${String(p.turn).padStart(2, '0')}`;
     const m = mine();
     $('foot').innerHTML = p.status === 'over' ? (p.storyId ? `전투가 끝났어요 · <a href="${AG.PAGES.story}?id=${p.storyId}" style="pointer-events:auto;text-decoration:underline">이야기로 돌아가기</a>` : `전투가 끝났어요 · <a href="${AG.PAGES.party}" style="pointer-events:auto;text-decoration:underline">새 방 만들기</a>`)

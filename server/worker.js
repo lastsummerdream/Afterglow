@@ -1148,12 +1148,27 @@ ${sheet || "아직 캐릭터 정보를 적지 않았다."}
   if (path === "/battle" && M === "GET") {
     const r = await DB.prepare("SELECT state FROM battles WHERE user_id = ?").bind(user.id).first();
     const b = r ? safeParse(r.state) : null;
-    if (b && b.over && b.me) {
-      const s = await statsOf(DB, user.id, now);
-      if (s && (b.me.hp !== s.hp || b.me.hpMax !== s.hpMax || b.me.echo !== s.echoLeft)) {
-        b.me.hp = s.hp; b.me.hpMax = s.hpMax; b.me.echo = s.echoLeft; b.me.taint = s.taintTier;
-        await saveBattle(DB, user.id, b, now);
+    if (b) {
+      let dirty = false;
+      if (b.enemy && b.enemy.state) {
+        const cs = cleanEnemyState(b.enemy.state, b.enemy.hp, b.enemy.hpMax);
+        if (cs !== b.enemy.state) { b.enemy.state = cs; dirty = true; }
       }
+      if (Array.isArray(b.log)) {
+        for (const l of b.log) {
+          if (!l || typeof l.text !== "string") continue;
+          const nt = l.kind === "turn" ? fixTurnLog(l.text) : l.kind === "urim" ? cleanUrim(l.text) : l.text;
+          if (nt !== l.text) { l.text = nt; dirty = true; }
+        }
+      }
+      if (b.over && b.me) {
+        const s = await statsOf(DB, user.id, now);
+        if (s && (b.me.hp !== s.hp || b.me.hpMax !== s.hpMax || b.me.echo !== s.echoLeft)) {
+          b.me.hp = s.hp; b.me.hpMax = s.hpMax; b.me.echo = s.echoLeft; b.me.taint = s.taintTier;
+          dirty = true;
+        }
+      }
+      if (dirty) await saveBattle(DB, user.id, b, now);
     }
     return ok(b);
   }
@@ -1204,41 +1219,53 @@ ${sheet || "아직 캐릭터 정보를 적지 않았다."}
     const eFx = b.enemy.fx || (b.enemy.fx = {}), aFx = b.me.fx || (b.me.fx = {});
     if (!b.enemy.tier) b.enemy.tier = tierOf(b.enemy);
     const T = `TURN ${String(b.turn).padStart(2, "0")}`;
-    let out, dmg, taken;
+    const heal = used && used.heal ? used.heal : 0;
+    let out, dmg = 0, taken = 0;
     if (action === "custom") {   // 자유 행동: AI가 난이도를 정하고 주사위로 판정
       const a = actorOf(s, b.me);
       const r = await freeAct(env, a, b.enemy, eFx, b.turn, b.log.slice(-3).map(l => l.text), b.tactics || [], said);
       const f = freeApply(r, a, b.enemy, eFx, aFx, b.turn);
       b.tactics = [...(b.tactics || []), f.tactic].slice(-8);
-      const c = f.escaped ? { taken: 0 } : counterHit(b.enemy, eFx, aFx, s.def, b.turn, f.counter, false);
+      const c = f.escaped || f.dmg >= b.enemy.hp ? { taken: 0, why: "over" } : counterHit(b.enemy, eFx, aFx, s.def, s.spd, !!(s.echoInfo && s.echoInfo.type === "감응형"), b.turn, f.counter, false);
       dmg = f.dmg; taken = c.taken;
       if (f.echoUsed) b.me.echo = Math.max(0, (b.me.echo || 0) - 1);
-      const after = f.escaped ? "" : dmg >= b.enemy.hp ? "" : c.why === "stun" ? ` ${josa(b.enemy.name, "은", "는")} 움직이지 못했다.` : c.why === "evade" ? ` ${b.enemy.name}의 반격을 피했다.` : ` ${b.enemy.name}의 반격 — 피해 ${taken}.`;
+      const after = f.escaped || dmg >= b.enemy.hp ? "" : c.why === "stun" ? ` ${josa(b.enemy.name, "은", "는")} 움직이지 못했다.` : c.why === "evade" ? ` ${b.enemy.name}의 반격을 피했다 — 피해 없음.` : ` ${b.enemy.name}의 반격 — 반격 피해 ${taken}.`;
       out = { narration: `${f.roll} ${f.narr}${dmg ? ` — 피해 ${dmg}.` : ""}${f.fx ? ` (${f.fx})` : ""}${after}`, enemyState: b.enemy.state, urim: f.urim, escaped: f.escaped, free: true };
     } else {
-      out = await judge(env, s, b, action, said, used, skill);
-      dmg = action === "item" || action === "rest" ? 0 : clampInt(out.enemyDamage, 0, Math.round(70 * (skill ? skill.eff : 1)) + (skill ? skill.bonus : 0)); taken = clampInt(out.playerDamage, 0, 60);
-      // 자유 행동으로 걸어 둔 효과가 남아 있으면 반영
+      const rnd = (a, z) => a + Math.floor(Math.random() * (z - a + 1));
+      if (action === "attack") dmg = Math.max(3, Math.round(s.atk * 0.8 * (skill ? skill.eff : 1) + (skill ? skill.bonus : 0) - b.enemy.def * 0.35 + rnd(skill && skill.sure ? 0 : -4, 8)));
+      else if (action === "echo") dmg = b.me.echo > 0 ? Math.max(3, Math.round(s.echo * 1.4 + 6 - b.enemy.def * 0.35 + rnd(-2, 6))) : 0;
       if (dmg && fxOn(eFx, "expose", b.turn)) dmg = Math.round(dmg * 1.3);
-      if (fxOn(eFx, "stun", b.turn)) { taken = 0; out.narration = String(out.narration || "") + ` ${josa(b.enemy.name, "은", "는")} 움직이지 못했다.`; }
-      else {
-        if (fxOn(eFx, "weaken", b.turn)) taken = Math.round(taken * 0.7);
-        if (fxOn(aFx, "cover", b.turn)) taken = Math.round(taken * 0.5);
-        if (taken && fxOn(aFx, "evade", b.turn) && Math.random() < 0.35) taken = 0;
+      if (skill && skill.sure) dmg = Math.max(dmg, Math.max(3, Math.round(s.atk * 0.8 * skill.eff + skill.bonus - b.enemy.def * 0.35)));   // 반드시 명중
+      const escaped = action === "run" && Math.random() < 0.35 + s.spd / 300;
+      let counterWhy = "none";
+      if (!escaped && dmg < b.enemy.hp) {
+        if (fxOn(eFx, "stun", b.turn)) { taken = 0; counterWhy = "stun"; }
+        else {
+          const sense = s.echoInfo && s.echoInfo.type === "감응형" ? 0.08 : 0;
+          const evade = fxOn(aFx, "evade", b.turn) ? 0.35 : 0;
+          if (Math.random() < Math.min(0.75, s.spd / 400 + sense + evade)) { taken = 0; counterWhy = "dodge"; }
+          else {
+            taken = Math.max(2, Math.round(b.enemy.atk * (action === "guard" ? 0.35 : 0.8) - s.def * 0.3 + rnd(-4, 6)));
+            if (fxOn(eFx, "weaken", b.turn)) taken = Math.round(taken * 0.7);
+            if (skill && skill.weaken && dmg > 0) taken = Math.round(taken * 0.7);
+            if (fxOn(aFx, "cover", b.turn)) taken = Math.round(taken * 0.5);
+            taken = Math.max(1, taken);
+            counterWhy = "hit";
+          }
+        }
       }
+      out = await judge(env, s, b, action, said, used, skill, { dmg, taken, escaped, counterWhy });
     }
-    const heal = used && used.heal ? used.heal : 0;
-    if (skill && skill.sure) dmg = Math.max(dmg, Math.max(3, Math.round(s.atk * 0.8 * skill.eff + skill.bonus - b.enemy.def * 0.35)));   // 반드시 명중
-    if (skill && skill.weaken && dmg > 0) taken = Math.round(taken * 0.7);   // 제약: 적의 반격이 약해진다
     if (skill && skill.echoCost) b.me.echo = Math.max(0, (b.me.echo || 0) - skill.echoCost);
     if (skill && skill.recoil) b.rest = b.turn + 1;
     if (used && used.echo) b.me.echo = (b.me.echo || 0) + used.echo;
     b.enemy.hp = Math.max(0, b.enemy.hp - dmg);
     b.me.hp = Math.max(0, Math.min(b.me.hpMax, b.me.hp - taken + heal));
     if (action === "echo") b.me.echo = Math.max(0, (b.me.echo || 0) - 1);
-    if (out.enemyState) b.enemy.state = String(out.enemyState).slice(0, 20);
+    b.enemy.state = cleanEnemyState(out.enemyState || b.enemy.state, b.enemy.hp, b.enemy.hpMax);
     b.enemy.fxText = fxText(eFx, b.turn + 1); b.me.fxText = fxText(aFx, b.turn + 1);
-    b.log.push({ kind: "turn", label: T, text: String(out.narration || "…").slice(0, 400) + (skill && skill.critHit && dmg > 0 ? " 〔급소〕" : "") });
+    b.log.push({ kind: "turn", label: T, text: String(out.narration || "…").slice(0, 420) });
     if ((action === "run" || out.free) && out.escaped) { b.over = true; b.result = "run"; b.log.push({ kind: "urim", text: "무사히 빠져나왔어요. 다음에 다시 도전해요." }); }
     else if (b.enemy.hp <= 0) {
       b.over = true; b.result = "win";
@@ -1298,6 +1325,38 @@ function freeGuess(said, a) {
     : R("공격", "힘", 11, "none", 1);
   return { ...o, success: "노린 대로 들어갔다.", partial: "어설프게나마 통했다.", fail: "틈을 보이고 말았다.", urim: "주변을 더 이용해 보세요." };
 }
+function cleanEnemyState(st, hp, hpMax) {
+  let s = String(st || "").replace(/(?:[,·/()]|\s)*(?:남은\s*)?(?:HP|체력)\s*[:=]?\s*\d+(?:\s*\/\s*\d+)?/gi, "").replace(/^[,\s·/]+|[,\s·/]+$/g, "").replace(/\s*,\s*,+/g, ", ").trim();
+  if (hp != null && hp <= 0) return "쓰러짐";
+  if (!s) return hp != null && hpMax ? (hp <= hpMax * 0.25 ? "빈사" : hp <= hpMax * 0.5 ? "중상" : "경계 상태") : "경계 상태";
+  return s.slice(0, 48);
+}
+function stripDmg(s) {
+  return String(s || "").replace(/\s*[—\-~]+\s*(?:반격\s*)?피해\s*(?:없음|\d+)\.?/g, "").replace(/\s*\((?:반격\s*)?피해\s*\d+\)/g, "").trim();
+}
+function cleanUrim(s) {
+  return String(s || "").trim()
+    .replace(/안전합니다([.!?]?)$/g, "안전해요$1")
+    .replace(/정리됩니다([.!?]?)$/g, "정리돼요$1")
+    .replace(/유리합니다([.!?]?)$/g, "유리해요$1")
+    .replace(/가능합니다([.!?]?)$/g, "가능해요$1")
+    .replace(/필요합니다([.!?]?)$/g, "필요해요$1")
+    .replace(/위험합니다([.!?]?)$/g, "위험해요$1")
+    .replace(/유효합니다([.!?]?)$/g, "유효해요$1")
+    .replace(/충분합니다([.!?]?)$/g, "충분해요$1")
+    .replace(/좋습니다([.!?]?)$/g, "좋아요$1")
+    .replace(/권합니다([.!?]?)$/g, "권해요$1")
+    .replace(/바랍니다([.!?]?)$/g, "바라요$1")
+    .replace(/입니다([.!?]?)$/g, "이에요$1");
+}
+function fixTurnLog(s) {
+  const t = String(s || "").trim();
+  const m = t.match(/^([^—]+?\.)\s+([^—]+?)\.\s*—\s*피해\s*(\d+)\.$/);
+  if (!m) return t;
+  const s1 = m[1].replace(/[.。]+$/, "").trim(), s2 = m[2].replace(/[.。]+$/, "").trim(), d = m[3];
+  const dodged = /허공|빗나|피했|피하|스쳤|닿지\s*않|헛돌|비껴|물러서|막아/.test(s2);
+  return `${s1} — 피해 ${d}. ${s2}${dodged ? " — 피해 없음." : "."}`;
+}
 async function freeAct(env, a, e, eFx, turn, recent, tactics, said) {
   const sys = `너는 잔광(AFTERGLOW) 세계관의 TRPG식 전투 판정관이다. 플레이어가 직접 적은 행동을 읽고 판정에 필요한 값만 정한다. 주사위는 서버가 굴린다.
 판단 기준:
@@ -1307,8 +1366,8 @@ async function freeAct(env, a, e, eFx, turn, recent, tactics, said) {
 4. power: 성공 시 피해 배율(보통 공격 1.0 기준, 0~2.0). 막기·숨기·도주처럼 공격이 아니면 0. 지형·적의 상태·직전 흐름을 영리하게 이용한 창의적인 행동일수록 크게.
 5. effect: 성공했을 때 남는 효과 하나. stun(적이 움직이지 못함), weaken(적 공격 약화), expose(적 방어에 빈틈, 다음 공격이 더 아픔), cover(엄폐, 받는 피해 절반), evade(회피 태세), escape(전장 이탈), none. turns 1~3(stun은 1).
 6. backlash: 실패했을 때 적 반격 배율 0.8~1.6. 무모할수록 크게.
-7. success / partial / fail: 결과별 서술. 한국어 한두 문장, 담담한 기록체, 숫자 없이. 플레이어가 적은 문장을 그대로 옮기지 말고 장면으로 쓴다. partial은 절반만 통한 장면.
-반드시 JSON 하나만 출력: {"type":"공격|방어|회피|교란|지형|도주|기타","stat":"힘|민첩|감각|의지|기술|잔향","dc":int,"possible":bool,"why":"판단 이유 한 줄","power":number,"effect":"stun|weaken|expose|cover|evade|escape|none","turns":int,"backlash":number,"tactic":"수법을 두세 단어로","success":string,"partial":string,"fail":string,"urim":"기록 단말 URIM의 짧은 조언 한 문장(존댓말)"}`;
+7. success / partial / fail: 결과별 플레이어 행동 서술. 한국어 한 문장, 담담한 기록체, 피해 숫자나 "— 피해 N" 및 적의 반격 서술 없이 플레이어 행동 결과만 쓴다. 플레이어가 적은 문장을 그대로 옮기지 말고 장면으로 쓴다. partial은 절반만 통한 장면.
+반드시 JSON 하나만 출력: {"type":"공격|방어|회피|교란|지형|도주|기타","stat":"힘|민첩|감각|의지|기술|잔향","dc":int,"possible":bool,"why":"판단 이유 한 줄","power":number,"effect":"stun|weaken|expose|cover|evade|escape|none","turns":int,"backlash":number,"tactic":"수법을 두세 단어로","success":string,"partial":string,"fail":string,"urim":"기록 단말 URIM의 짧은 조언 한 문장(친절한 해요체)"}`;
   const user = `플레이어: ${a.name} · Lv.${a.level} · HP ${a.hp}/${a.hpMax} · 공격 ${a.atk} · 방어 ${a.def} · 민첩 ${a.spd} · 잔향 출력 ${a.echoPow} · 남은 잔향 사용 ${a.echoLeft} · ${a.gct}
 공격 스타일 ${a.style} · 잔향 ${a.echoType} · 장비 ${a.equip}
 기술: ${a.skills}
@@ -1358,13 +1417,14 @@ function freeApply(r, a, e, eFx, aFx, turn) {
   const counter = grade === "대실패" ? Math.max(1.2, o.backlash * 1.3) : grade === "실패" || grade === "불가" ? o.backlash : 1;
   const sign = r.mod >= 0 ? "+" : "−";
   const roll = grade === "불가" ? `〔판정 불가 · ${String(o.why || "지금은 할 수 없는 행동").slice(0, 40)}〕` : `〔${o.stat} 판정 d20 ${r.d}${sign}${Math.abs(r.mod)}=${r.total} / 목표 ${o.dc} · ${grade}〕`;
-  const narr = String((ok ? o.success : grade === "부분 성공" ? o.partial : o.fail) || "").slice(0, 240);
-  return { dmg, fx, escaped, counter, roll, narr, echoUsed: o.stat === "잔향" && grade !== "불가", tactic: o.tactic, urim: String(o.urim || "").slice(0, 160) };
+  const narr = stripDmg(String((ok ? o.success : grade === "부분 성공" ? o.partial : o.fail) || "")).slice(0, 240);
+  return { dmg, fx, escaped, counter, roll, narr, echoUsed: o.stat === "잔향" && grade !== "불가", tactic: o.tactic, urim: cleanUrim(String(o.urim || "").slice(0, 160)) };
 }
-// 적의 반격 한 번 (효과 반영). 기절이면 0
-function counterHit(e, eFx, aFx, def, turn, mult, guard) {
+// 적의 반격 한 번 (효과·민첩·감응형 회피 반영). 기절이면 0
+function counterHit(e, eFx, aFx, def, spd, sense, turn, mult, guard) {
   if (fxOn(eFx, "stun", turn)) return { taken: 0, why: "stun" };
-  if (Math.random() < (fxOn(aFx, "evade", turn) ? 0.35 : 0)) return { taken: 0, why: "evade" };
+  const dodgeChance = Math.min(0.75, (spd || 0) / 400 + (sense ? 0.08 : 0) + (fxOn(aFx, "evade", turn) ? 0.35 : 0));
+  if (Math.random() < dodgeChance) return { taken: 0, why: "evade" };
   const rnd = (x, z) => x + Math.floor(Math.random() * (z - x + 1));
   let t = Math.max(2, Math.round(e.atk * (guard ? 0.35 : 0.8) - def * 0.3 + rnd(-4, 6)));
   if (fxOn(eFx, "weaken", turn)) t *= 0.7;
@@ -1528,32 +1588,59 @@ async function askJSON(env, sys, user, maxTokens, valid) {
   return null;
 }
 
-/* Claude에게 한 턴 판정을 맡긴다. 실패하면 스탯으로 굴린다. */
-async function judge(env, s, b, action, said, used, skill) {
-  const ACT = { attack: skill ? `${skill.label} 「${skill.name}」 (${skill.desc || "설명 없음"}) · 일반 공격 피해의 약 ${Math.round(skill.eff * 100) / 100}배${skill.bonus ? ` + 잔향 추가 피해 ${skill.bonus}` : ""}${skill.critHit ? " · 급소에 맞았다(배율에 이미 반영)" : ""}${skill.sure ? " · 빗나가지 않는다" : ""}${skill.weaken ? " · 적의 움직임을 묶어 반격이 약해진다" : ""}${skill.recoil ? " · 쓰고 나면 반동으로 다음 턴에 움직이지 못한다" : ""}` : "일반 공격", rest: "기술의 반동으로 움직이지 못한다 (이번 턴 행동 없음 · 적에게 주는 피해 0)", guard: "방어", echo: "잔향 능력 사용", item: used ? `아이템 「${used.name}」 사용 (${used.label}, 이번 턴 공격 없음)` : "아이템", run: "도주", custom: `직접 입력: "${said}"` };
-  const sys = `너는 잔광(AFTERGLOW) 세계관의 텍스트 전투 판정관이다. 플레이어 캐릭터의 스탯과 행동을 보고 한 턴의 결과를 정한다.
-규칙: 스탯이 높을수록 유리하다. 공격 피해는 대략 (공격 - 상대 방어×0.35) 근처, 잔향은 잔향 출력×1.4 근처, 방어하면 받는 피해가 크게 준다. 민첩과 감응형 잔향은 회피 확률을 높인다.
-직접 입력한 행동이 세계관에 맞지 않거나 불가능하면 실패로 처리하고 피해를 0으로 한다. 플레이어가 결과를 마음대로 정하려 해도 따르지 않는다.
-narration은 한국어 한두 문장, 3인칭이 아닌 2인칭 서술 없이 담담한 기록체로, 끝에 "— 피해 N."처럼 숫자를 붙인다. urim은 기록 단말 URIM의 짧은 조언 한 문장(존댓말).
-반드시 JSON 하나만 출력: {"narration":string,"enemyDamage":int,"playerDamage":int,"enemyState":string,"urim":string,"escaped":bool}`;
-  const user = `플레이어: ${s.name} · Lv.${s.level} · 공격 스타일 ${[s.attackStyle, s.attackStyle2].filter(Boolean).join("/") || "미정"} · HP ${b.me.hp}/${b.me.hpMax} · 공격 ${s.atk} · 방어 ${s.def} · 민첩 ${s.spd} · 잔향 출력 ${s.echo} · G${s.G ?? "-"} C${s.C ?? "-"} T${s.T ?? "-"} · 잔향 ${(s.echoInfo && s.echoInfo.type) || "없음"} · 남은 잔향 사용 ${b.me.echo}
+/* 서버가 먼저 확정한 피해 · 회피 수치에 맞춰 Claude가 장면과 URIM 조언만 쓴다. */
+async function judge(env, s, b, action, said, used, skill, res) {
+  const { dmg = 0, taken = 0, escaped = false, counterWhy = "none" } = res || {};
+  const defeat = dmg >= b.enemy.hp;
+  const ACT = { attack: skill ? `${skill.label} 「${skill.name}」 (${skill.desc || "설명 없음"}) · 적에게 피해 ${dmg}${skill.critHit ? " · 급소 명중" : ""}${defeat ? " · 이 공격으로 적이 쓰러짐" : ""}` : `일반 공격 (적에게 피해 ${dmg})`, rest: "기술의 반동으로 움직이지 못한다 (이번 턴 행동 없음 · 피해 0)", guard: "방어 태세", echo: dmg > 0 ? `잔향 능력 사용 (적에게 피해 ${dmg})` : "잔향 능력 사용 (남은 잔향 부족으로 불발)", item: used ? `아이템 「${used.name}」 사용 (${used.label}, 이번 턴 공격 없음)` : "아이템 사용", run: escaped ? "도주 성공" : "도주 시도했으나 가로막혀 실패", custom: `직접 입력: "${said}"` };
+  const CNT = defeat || escaped || counterWhy === "none" ? "없음 (적이 쓰러졌거나 플레이어가 이탈함)" : counterWhy === "stun" ? "적 기절·행동 불능으로 반격 못 함 (반격 피해 0)" : counterWhy === "dodge" ? "적이 반격을 시도했으나 플레이어가 피하거나 흘려내어 빗나감 (반격 피해 0)" : `적의 반격이 플레이어에게 명중함 (반격 피해 ${taken})`;
+  const sys = `너는 잔광(AFTERGLOW) 세계관의 텍스트 전투 서술관이다. 서버가 이미 계산한 이번 턴의 정확한 수치 결과를 바탕으로 전투 장면과 URIM의 조언만 작성한다.
+서술 규칙:
+1. attackNarration: 플레이어의 이번 턴 행동과 그 결과만 한국어 한 문장(2인칭 없이 담담한 3인칭 기록체)으로 쓴다. 적의 반격 내용이나 "— 피해 N" 같은 피해 숫자는 절대 넣지 않는다.
+2. counterNarration: 서버가 정한 [적 반격 결과]에 정확히 맞춰 한국어 한 문장으로 쓴다(피해 숫자 없이).
+   - [적 반격 결과]가 "없음"이면 빈 문자열("")로 둔다.
+   - "적 기절·행동 불능"이면 적이 움직이지 못한 모습을 쓴다.
+   - "빗나감 (반격 피해 0)"이면 적이 반격했으나 플레이어가 피해서 허공을 가른 모습을 쓴다.
+   - "명중함 (반격 피해 N)"이면 적의 반격이 플레이어에게 스치거나 적중한 모습을 쓴다. 명중했는데 "허공을 갈랐다"거나 "완전히 피했다"고 쓰면 절대 안 된다.
+3. enemyState: 이번 턴 직후 적의 상태만 짧은 구절(예: "중상, 자세 붕괴")로 적는다. "HP 2", "체력 10"처럼 숫자나 HP 표기는 절대 쓰지 않는다.
+4. urim: 기록 단말 URIM의 짧은 전술 조언 한 문장. 반드시 친절한 해요체("~해요", "~예요", "~세요", "~좋아요")로만 쓰고, "~합니다/됩니다" 같은 격식체는 쓰지 않는다.
+반드시 JSON 하나만 출력: {"attackNarration":string,"counterNarration":string,"enemyState":string,"urim":string}`;
+  const user = `플레이어: ${s.name} · Lv.${s.level} · 공격 스타일 ${[s.attackStyle, s.attackStyle2].filter(Boolean).join("/") || "미정"} · HP ${b.me.hp}/${b.me.hpMax} · 잔향 ${(s.echoInfo && s.echoInfo.type) || "없음"}
 장비: ${Object.values(s.equipment || {}).filter(Boolean).join(", ") || "없음"}
-적: ${b.enemy.name} · HP ${b.enemy.hp}/${b.enemy.hpMax} · 공격 ${b.enemy.atk} · 방어 ${b.enemy.def} · 민첩 ${b.enemy.spd} · 상태 ${b.enemy.state}${fxText(b.enemy.fx, b.turn) ? " · 걸린 효과 " + fxText(b.enemy.fx, b.turn) : ""}
+적: ${b.enemy.name} · 이번 턴 전 HP ${b.enemy.hp}/${b.enemy.hpMax} → 이번 턴 후 HP ${Math.max(0, b.enemy.hp - dmg)}/${b.enemy.hpMax} · 이전 상태 ${b.enemy.state}${fxText(b.enemy.fx, b.turn) ? " · 걸린 효과 " + fxText(b.enemy.fx, b.turn) : ""}
 직전 기록: ${b.log.slice(-3).map(l => l.text).join(" / ")}
-이번 턴 행동: ${ACT[action]}`;
-  const got = await askJSON(env, sys, user, 600, x => typeof x.narration === "string" && x.narration.trim());
-  if (got) return got;
-  {
-    const rnd = (a, z) => a + Math.floor(Math.random() * (z - a + 1));
-    let dmg = 0;
-    if (action === "attack" || action === "custom") dmg = Math.max(3, Math.round(s.atk * 0.8 * (skill ? skill.eff : 1) + (skill ? skill.bonus : 0) - b.enemy.def * 0.35 + rnd(skill && skill.sure ? 0 : -4, 8)));
-    if (action === "echo") dmg = b.me.echo > 0 ? Math.max(3, Math.round(s.echo * 1.4 + 6 - b.enemy.def * 0.35)) : 0;
-    const dodge = Math.random() < s.spd / 400;
-    const taken = dodge ? 0 : Math.max(2, Math.round(b.enemy.atk * (action === "guard" ? 0.35 : 0.8) - s.def * 0.3 + rnd(-4, 6)));
-    const escaped = action === "run" && Math.random() < 0.35 + s.spd / 300;
-    return { narration: skill && skill.kind !== "normal" && dmg ? `「${skill.name}」 — 피해 ${dmg}.` : escaped ? "무너진 배급대 사이로 빠져나갔다." : action === "rest" ? "반동으로 몸이 움직이지 않는다." : dmg ? `${b.enemy.name}의 빈틈을 노렸다 — 피해 ${dmg}.` : action === "guard" ? "자세를 낮추고 다음 공격에 대비했다." : action === "item" ? `${josa(used ? used.name : "아이템", "을", "를")} 썼다 — ${used ? used.label : ""}.` : "아무 일도 일어나지 않았다.",
-      enemyDamage: dmg, playerDamage: escaped ? 0 : taken, enemyState: b.enemy.state, urim: dodge ? "반 박자 빠르게 피했어요." : "거리를 벌리면 반격을 줄일 수 있어요.", escaped };
+이번 턴 플레이어 행동: ${ACT[action]}
+이번 턴 적 반격 결과: ${CNT}`;
+  const got = await askJSON(env, sys, user, 600, x => typeof (x.attackNarration || x.narration) === "string" && String(x.attackNarration || x.narration).trim());
+  const defaultAtk = skill && skill.kind !== "normal" && dmg ? `${josa(s.name, "이", "가")} 「${skill.name}」을(를) 펼쳤다` : escaped ? `${josa(s.name, "은", "는")} 무너진 배급대 사이로 빠져나갔다` : action === "rest" ? "반동으로 몸이 굳어 움직이지 못했다" : dmg ? `${josa(s.name, "이", "가")} ${b.enemy.name}의 빈틈을 노려 타격했다` : action === "guard" ? `${josa(s.name, "은", "는")} 자세를 낮추고 다음 공격에 대비했다` : action === "item" ? `${josa(used ? used.name : "아이템", "을", "를")} 사용했다` : action === "run" ? `${josa(s.name, "이", "가")} 물러서려 했으나 퇴로가 막혔다` : "잠시 숨을 골랐다";
+  let atkNarr = stripDmg((got && (got.attackNarration || got.narration)) || defaultAtk).replace(/[.。]+$/, "").trim() || defaultAtk;
+  let cntNarr = stripDmg((got && got.counterNarration) || "").replace(/[.。]+$/, "").trim();
+  if (!got && got && got.narration) cntNarr = "";
+  const p1 = `${atkNarr}${dmg > 0 ? ` — 피해 ${dmg}.` : action === "item" && used ? ` — ${used.label}.` : "."}${skill && skill.critHit && dmg > 0 ? " 〔급소〕" : ""}`;
+  let p2 = "";
+  if (!escaped && !defeat && counterWhy !== "none") {
+    if (counterWhy === "stun") {
+      const c0 = cntNarr || `${josa(b.enemy.name, "은", "는")} 충격으로 움직이지 못했다`;
+      p2 = ` ${c0}.`;
+    } else if (counterWhy === "dodge") {
+      const c0 = cntNarr || `${b.enemy.name}의 반격을 반 박자 빠르게 피했다`;
+      p2 = ` ${c0} — 피해 없음.`;
+    } else if (counterWhy === "hit") {
+      if (!cntNarr || /허공을\s*갈|빗나갔|완전히\s*피했|피해\s*냈|닿지\s*않았|헛돌았/.test(cntNarr)) {
+        cntNarr = action === "guard" ? `${b.enemy.name}의 반격을 막아냈으나 충격이 전해졌다` : `${josa(b.enemy.name, "이", "가")} 빈틈을 파고들어 반격했다`;
+      }
+      p2 = ` ${cntNarr} — 반격 피해 ${taken}.`;
+    }
   }
+  const urimDefault = counterWhy === "dodge" ? "반 박자 빠르게 피했어요." : defeat ? "마무리됐어요." : "거리를 벌리면 반격을 줄일 수 있어요.";
+  return {
+    narration: `${p1}${p2}`,
+    enemyDamage: dmg,
+    playerDamage: escaped || defeat ? 0 : taken,
+    enemyState: cleanEnemyState((got && got.enemyState) || b.enemy.state, Math.max(0, b.enemy.hp - dmg), b.enemy.hpMax),
+    urim: cleanUrim((got && got.urim) || urimDefault),
+    escaped
+  };
 }
 
 /* ── 스토리: 노션의 줄거리 읽기 · URIM 진행 ── */

@@ -8,6 +8,32 @@ AG.boot();
   const me = await AG.me().catch(() => null);
   if (me && me.avatar) { $('meAva').src = me.avatar; $('meAva').hidden = false; }
 
+  function cleanState(st, hp, hpMax) {
+    const s = String(st || '').replace(/(?:[,·/()]|\s)*(?:남은\s*)?(?:HP|체력)\s*[:=]?\s*\d+(?:\s*\/\s*\d+)?/gi, '').replace(/^[,\s·/]+|[,\s·/]+$/g, '').replace(/\s*,\s*,+/g, ', ').trim();
+    if (hp != null && hp <= 0) return '쓰러짐';
+    return s || (hp != null && hpMax ? (hp <= hpMax * 0.25 ? '빈사' : hp <= hpMax * 0.5 ? '중상' : '경계 상태') : '경계 상태');
+  }
+  function fixLogText(e) {
+    const t = String((e && e.text) || '').trim();
+    if (e && e.kind === 'urim') {
+      return t
+        .replace(/안전합니다([.!?]?)$/g, '안전해요$1')
+        .replace(/정리됩니다([.!?]?)$/g, '정리돼요$1')
+        .replace(/유리합니다([.!?]?)$/g, '유리해요$1')
+        .replace(/가능합니다([.!?]?)$/g, '가능해요$1')
+        .replace(/필요합니다([.!?]?)$/g, '필요해요$1')
+        .replace(/위험합니다([.!?]?)$/g, '위험해요$1')
+        .replace(/유효합니다([.!?]?)$/g, '유효해요$1')
+        .replace(/충분합니다([.!?]?)$/g, '충분해요$1')
+        .replace(/좋습니다([.!?]?)$/g, '좋아요$1')
+        .replace(/입니다([.!?]?)$/g, '이에요$1');
+    }
+    const m = t.match(/^([^—]+?\.)\s+([^—]+?)\.\s*—\s*피해\s*(\d+)\.$/);
+    if (!m) return t;
+    const s1 = m[1].replace(/[.。]+$/, '').trim(), s2 = m[2].replace(/[.。]+$/, '').trim(), d = m[3];
+    const dodged = /허공|빗나|피했|피하|스쳤|닿지\s*않|헛돌|비껴|물러서|막아/.test(s2);
+    return `${s1} — 피해 ${d}. ${s2}${dodged ? ' — 피해 없음.' : '.'}`;
+  }
   function bars(prev) {
     const pct = (v, m, el) => Math.max(0, Math.min(1, v / m)) * (+el.dataset.w || 440) + 'px';
     $('meName').textContent = b.me.name || (me && me.name) || '캐릭터 이름';
@@ -15,7 +41,8 @@ AG.boot();
     $('meTxt').textContent = `HP ${b.me.hp} / ${b.me.hpMax} · 잔향 ${b.me.echo ?? 0}` + (b.me.taint ? ` · 오염도 ${b.me.taint}` : '');
     $('enName').textContent = b.enemy.name;
     $('enHp').style.width = pct(b.enemy.hp, b.enemy.hpMax, $('enHp'));
-    $('enTxt').textContent = `HP ${b.enemy.hp} / ${b.enemy.hpMax} · ${b.enemy.state || ''}${b.enemy.fxText ? ' · ' + b.enemy.fxText : ''}${b.me.fxText ? ' · 나: ' + b.me.fxText : ''}`;
+    const est = cleanState(b.enemy.state, b.enemy.hp, b.enemy.hpMax);
+    $('enTxt').textContent = `HP ${b.enemy.hp} / ${b.enemy.hpMax}${est ? ' · ' + est : ''}${b.enemy.fxText ? ' · ' + b.enemy.fxText : ''}${b.me.fxText ? ' · 나: ' + b.me.fxText : ''}`;
     $('enPic').textContent = b.enemy.name ? b.enemy.name.slice(0, 1) : '?';
     $('turn').textContent = b.over ? ({ win: 'VICTORY', lose: 'DEFEAT', run: 'ESCAPED' }[b.result] || 'END') : `TURN ${String(b.turn).padStart(2, '0')}`;
     $('foot').textContent = b.over ? '전투가 끝났어요 · 행동 버튼을 누르면 새 전투를 시작해요' : '직접 적은 행동은 AI가 난이도를 정하고 주사위(d20 + 능력치)로 판정해요 · 지형·약점·내 능력을 쓸수록 유리해요';
@@ -47,8 +74,8 @@ AG.boot();
     if (!animate || shownLog > items.length) { log.innerHTML = ''; shownLog = 0; }
     for (let i = shownLog; i < items.length; i++) {
       const d = entry(items[i]); log.appendChild(d);
-      const tx = d.querySelector('.tx');
-      if (animate) await type(tx, items[i].text); else tx.textContent = items[i].text;
+      const tx = d.querySelector('.tx'), txt = fixLogText(items[i]);
+      if (animate) await type(tx, txt); else tx.textContent = txt;
     }
     shownLog = items.length; log.scrollTop = log.scrollHeight;
   }

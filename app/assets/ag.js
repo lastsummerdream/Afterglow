@@ -963,7 +963,7 @@ function demoTurn(b, s, action, text, used, skill) {
   }
   taken = Math.max(2, Math.round(E.atk * (act === 'guard' ? 0.35 : 0.8) - s.def * 0.3 + r(-4, 6)));
   if (Math.random() < s.spd / 400 + (s.echo / 400)) { b.log.push({ kind: 'turn', label: T, text: `${E.name}이(가) 반격했지만 반 박자 빠르게 몸을 틀었다 — 피해 없음.` }); }
-  else { M.hp = Math.max(0, M.hp - taken); b.log.push({ kind: 'turn', label: T, text: `${E.name}이(가) 반격했다 — 피해 ${taken}.` }); }
+  else { M.hp = Math.max(0, M.hp - taken); b.log.push({ kind: 'turn', label: T, text: `${E.name}이(가) 반격했다 — 반격 피해 ${taken}.` }); }
   if (M.hp <= 0) { b.over = true; b.result = 'lose'; b.log.push({ kind: 'urim', text: '쓰러졌어요. 숙소로 옮겨 놓을게요. 체력을 회복하고 다시 나가요.' }); return {}; }
   if (E.hp < E.hpMax * 0.4) E.state = '비틀거림';
   b.log.push({ kind: 'urim', text: E.hp < E.hpMax * 0.4 ? '상대가 많이 지쳤어요. 한두 번이면 쓰러뜨릴 수 있어요.' : M.hp < M.hpMax * 0.35 ? '체력이 낮아요. 방어하거나 아이템을 써 보세요.' : '상대의 움직임이 느려졌어요. 거리를 벌리면 반격을 피할 수 있어요.' });
