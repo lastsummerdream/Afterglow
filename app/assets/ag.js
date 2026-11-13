@@ -674,6 +674,7 @@ function seed() {
       ian: { unread: 0, msgs: [msg('ian', '…', t(50))] },
     },
     stats: { level: 7, exp: 620, expMax: 1000, hp: 184, hpMax: 240, atk: 42, def: 35, spd: 51, echo: 28, statMax: 80,
+      rep: { score: 24, title: '신뢰받는', who: [{ name: '3구역 배급소', v: 12 }, { name: '기록원', v: 8 }, { name: '회수반', v: -6 }], log: [{ story: '배급소의 빈 상자', deed: '굶주린 아이에게 배급을 나눠 줌', score: 3, who: [{ name: '3구역 배급소', d: 6 }] }] },
       registry: { nameEn: '', ageGender: '', origin: 'TB-03 · 3구역', species: '순수 인간', lineage: '', job: '배급소 기록원' },
       G: 4, Gmax: 5, C: 3, Cmax: 5, T: 2, Tmax: 4,
       echoInfo: { type: '감응형', desc: '감응형 — 주변 잔향의 흐름을 읽고 짧게 앞날을 본다. 전투에서 회피와 선제 행동에 보너스.' },

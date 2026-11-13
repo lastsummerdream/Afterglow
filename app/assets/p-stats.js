@@ -51,6 +51,18 @@ AG.boot();
     }, Math.max(1000, st.healAt - Date.now() + 200));
   };
   waitHeal(s);
+  /* 평판: -100 ~ 100, 가운데에서 좌우로 */
+  const rp = s.rep || { score: 0, title: '이름 없는', who: [], log: [] };
+  $('v-rep').textContent = (rp.score > 0 ? '+' : '') + rp.score;
+  $('repLab').textContent = `REP 평판 · ${rp.title}`;
+  requestAnimationFrame(() => { const b = $('b-rep'), w = Math.min(1, Math.abs(rp.score) / 100) * 327.5; b.classList.add(rp.score < 0 ? 'down' : 'up'); b.style.width = w + 'px'; if (rp.score < 0) b.style.left = (2160 - w) + 'px'; });
+  $('repBtn').addEventListener('click', () => {
+    const e = AG.esc, sg = n => (n > 0 ? '+' : '') + n;
+    const who = rp.who.length ? `<dl>${rp.who.map(w => `<dt>${e(w.name)}</dt><dd>${sg(w.v)} · ${w.v >= 20 ? '호의적' : w.v >= 5 ? '우호적' : w.v > -5 ? '무덤덤' : w.v > -20 ? '경계' : '적대'}</dd>`).join('')}</dl>` : '<p class="bw-empty">아직 알고 지내는 세력이나 인물이 없어요.</p>';
+    const log = rp.log.length ? rp.log.map(l => `<div class="bw-row" style="height:auto;min-height:92px;cursor:default"><div class="bw-tx"><b style="white-space:normal">${e(l.deed || '행동이 알려졌다')}</b><small>${e([l.story, l.score ? '평판 ' + sg(l.score) : '', ...(l.who || []).map(w => w.name + ' ' + sg(w.d))].filter(Boolean).join(' · '))}</small></div></div>`).join('') : '<p class="bw-empty">스토리에서 한 행동이 여기에 남아요.<br>도움을 주면 오르고, 배신하면 내려가요.</p>';
+    const m = AG.sheet(`<h2>REPUTATION</h2><h3>평판 ${sg(rp.score)} · ${e(rp.title)}</h3><div class="bw-list"><h4>세력 · 인물</h4>${who}<h4>최근 행동</h4>${log}</div><div class="bw-btns"><button class="bw-btn" data-x>닫기</button></div>`);
+    m.el.querySelector('[data-x]').onclick = m.close;
+  });
   const ei = s.echoInfo || {};
   $('echoTitle').textContent = ei.type ? `ECHO · ${ei.type}` : 'ECHO · 잔향';
   $('echoDesc').textContent = ei.desc || '잔향이 아직 깨어나지 않았어요.';

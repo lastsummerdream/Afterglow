@@ -422,6 +422,7 @@ async function syncNotion(env, userId, gone) {
         "잔향": nSelect(c ? (d.echoType || "없음") : null), "잔향 능력": nText(d.echoAbility),
         "직업": nText(d.job), "소속": nText(d.faction),
         "사진": { checkbox: !!(c && c.avatar) },
+        ...(await (async () => { const rp = repView(((await profile(env.DB, userId)).game) || {}); return { "평판": nNum(rp.score), "평판 기록": nText(rp.log.slice(0, 8).map(l => `${l.deed} (${[l.score ? `${l.score > 0 ? "+" : ""}${l.score}` : "", ...(l.who || []).map(w => `${w.name} ${w.d > 0 ? "+" : ""}${w.d}`)].filter(Boolean).join(", ")})`).join("\n")) }; })()),
         "외형": nText(d.appearance), "성격": nText(d.personality), "배경": nText(d.background), "비밀": nText(d.secret), "메모": nText(d.notes),
         "공격 스타일": nSelect(d.attackStyle || null), "보조 스타일": nSelect(d.attackStyle2 || null),
         "일반 공격": nText(atk(d.attackNormalName, d.attackNormal)), "특수 공격": nText(atk(d.attackSpecialName, d.attackSpecial)), "필살기": nText(atk(d.attackUltimateName, d.attackUltimate)),
@@ -959,6 +960,7 @@ ${sheet || "아직 캐릭터 정보를 적지 않았다."}
       run.log.push({ who: "me", userId: user.id, name: me.name, text: said });
       const o = await narrate(env, st, run, me, said);
       applyStory(run, o);
+      if (!o.retry) { const ch = await repApply(DB, user.id, o, st.title, now); if (ch) run.log.push({ who: "sys", text: repLine(ch) }); }   // 이번 행동이 평판에 남았으면 알린다
       if (o.battle && !run.done) {   // 줄거리에 전투가 필요하면 전투 화면으로 보낸다
         let en = enemyFor(o.enemy || st.enemy);
         if (st.kind !== "group") en = fitSolo(en, me.level);   // 개인 스토리: 캐릭터 레벨에 맞춘다
@@ -1293,6 +1295,39 @@ function counterHit(e, eFx, aFx, def, turn, mult, guard) {
   return { taken: Math.max(1, Math.round(t * mult)), why: "" };
 }
 
+/* ── 평판: 스토리에서 한 행동이 기록되고, 세력과 NPC가 그에 맞춰 반응한다 ── */
+const REP_TITLES = [[-60, "악명 높은"], [-20, "경계받는"], [20, "이름 없는"], [60, "신뢰받는"]];
+const repTitle = n => (REP_TITLES.find(([t]) => n < t) || [0, "이름난"])[1];
+function repOf(game) { const r = (game && game.rep) || {}; return { score: clampInt(r.score || 0, -100, 100), who: r.who || {}, log: Array.isArray(r.log) ? r.log : [] }; }
+function repView(game) {
+  const r = repOf(game);
+  return { score: r.score, title: repTitle(r.score),
+    who: Object.entries(r.who).sort((a, b) => Math.abs(b[1]) - Math.abs(a[1])).slice(0, 12).map(([name, v]) => ({ name, v })),
+    log: r.log.slice(-12).reverse() };
+}
+// AI가 낸 rep 변화를 반영한다. 한 번에 전체 ±5, 세력·인물 3곳까지 ±10
+async function repApply(DB, uid, o, story, now) {
+  const x = o && o.rep; if (!x || typeof x !== "object") return null;
+  const ds = clampInt(x.score, -5, 5);
+  const ch = (Array.isArray(x.who) ? x.who : []).slice(0, 3).map(w => ({ name: String((w && w.name) || "").trim().slice(0, 20), d: clampInt(w && w.delta, -10, 10) })).filter(w => w.name && w.d);
+  const deed = String(x.deed || "").trim().slice(0, 80);
+  if (!ds && !ch.length) return null;
+  const pr = await profile(DB, uid); const game = pr.game || {}; const r = repOf(game);
+  r.score = clampInt(r.score + ds, -100, 100);
+  for (const w of ch) r.who[w.name] = clampInt((r.who[w.name] || 0) + w.d, -100, 100);
+  const names = Object.keys(r.who);
+  if (names.length > 30) names.sort((a, b) => Math.abs(r.who[a]) - Math.abs(r.who[b])).slice(0, names.length - 30).forEach(k => delete r.who[k]);
+  r.log = [...r.log, { at: now, story: String(story || "").slice(0, 40), deed, score: ds, who: ch }].slice(-30);
+  game.rep = r; await saveProfile(DB, uid, { game }, now);
+  return { ds, ch, deed };
+}
+const repLine = c => `평판 기록 — ${c.deed || "행동이 알려졌다"} (${[c.ds ? `평판 ${c.ds > 0 ? "+" : ""}${c.ds}` : "", ...c.ch.map(w => `${w.name} ${w.d > 0 ? "+" : ""}${w.d}`)].filter(Boolean).join(" · ")})`;
+function repPrompt(rp) {
+  if (!rp) return "평판도 0 (이름 없는) · 아직 기록 없음";
+  return `평판도 ${rp.score} (${rp.title}) · 세력·인물과의 관계: ${rp.who.length ? rp.who.map(w => `${w.name} ${w.v > 0 ? "+" : ""}${w.v}`).join(", ") : "없음"}
+최근 행동: ${rp.log.length ? rp.log.slice(0, 6).map(l => `${l.deed}${l.story ? `(${l.story})` : ""}`).join(" / ") : "없음"}`;
+}
+
 /* Claude에게 JSON 하나를 받는다. 과부하·한도 초과·잘린 답이면 다시, 그래도 안 되면 다른 모델로. 끝내 못 받으면 null */
 function parseLooseJSON(t) {
   t = String(t || "").replace(/```(?:json)?/g, "");
@@ -1396,7 +1431,7 @@ async function gmSync(env, now) {
   const q = await notion(env, "POST", "/databases/" + (env.NOTION_DB || NOTION_DB_DEFAULT) + "/query", { filter: { property: "GM 적용", checkbox: { equals: true } }, page_size: 20 });
   const plain = p => ((p && (p.rich_text || p.title)) || []).map(t => t.plain_text || "").join("").trim();
   for (const pg of q.results || []) {
-    const P = pg.properties || {}, uid = plain(P["계정 ID"]), done = [];
+    const P = pg.properties || {}, uid = plain(P["계정 ID"]), done = []; let repNow = null;
     const u = uid && await env.DB.prepare("SELECT id FROM users WHERE id = ?").bind(uid).first();
     if (!u) done.push("계정을 찾지 못했어요");
     else {
@@ -1409,6 +1444,21 @@ async function gmSync(env, now) {
         const pr = await profile(env.DB, uid); const game = pr.game || {}; game.level = game.level || 1; game.exp = Math.max(0, (game.exp || 0) + xp);
         while (game.exp >= expMax(game.level)) { game.exp -= expMax(game.level); game.level += 1; }
         await saveProfile(env.DB, uid, { game }, now); done.push(`경험치 ${xp > 0 ? "+" : ""}${xp} (Lv.${game.level})`);
+      }
+      // 평판: "+5" / "-5" 는 더하고 빼기, "20" 은 그 값으로. "세력이름 +5" 처럼 적으면 그 세력·인물과의 관계를 바꾼다
+      const rt = plain(P["GM 평판"]);
+      if (rt) {
+        const mm = rt.match(/^(.*?)\s*([+-]?\d+)$/);
+        if (!mm) done.push("평판 칸을 읽지 못했어요");
+        else {
+          const pr = await profile(env.DB, uid); const game = pr.game || {}; const r = repOf(game), who = mm[1].trim().slice(0, 20), n = Number(mm[2]), rel = /^[+-]/.test(mm[2]);
+          let dScore = 0, dWho = 0;
+          if (who) { const old = r.who[who] || 0; r.who[who] = clampInt(rel ? old + n : n, -100, 100); dWho = r.who[who] - old; done.push(`평판 ${who} ${old}→${r.who[who]}`); }
+          else { const old = r.score; r.score = clampInt(rel ? old + n : n, -100, 100); dScore = r.score - old; done.push(`평판 ${old}→${r.score}`); }
+          r.log = [...r.log, { at: now, story: "GM", deed: "GM 조정", score: dScore, who: who && dWho ? [{ name: who, d: dWho }] : [] }].slice(-30);
+          game.rep = r; await saveProfile(env.DB, uid, { game }, now);
+          repNow = r.score;
+        }
       }
       // 소모품: 노션의 선택 칸 'GM 소모품' 에서 고르고 'GM 개수' 만 적는다
       const cs = P["GM 소모품"] && P["GM 소모품"].select, cItem = cs && GM_CONSUMABLES.find(l => l.name === cs.name);
@@ -1428,7 +1478,7 @@ async function gmSync(env, now) {
       }
     }
     const stamp = new Date(now + 9 * 3600000).toISOString().slice(5, 16).replace("T", " ");
-    await notion(env, "PATCH", "/pages/" + pg.id, { properties: { "GM 적용": { checkbox: false }, "GM 체력": nText(""), "GM 잔향": nText(""), "GM 경험치": { number: null }, "GM 아이템": nText(""), "GM 아이템 설명": nText(""), ...(P["GM 소모품"] ? { "GM 소모품": { select: null } } : {}), ...(P["GM 개수"] ? { "GM 개수": { number: null } } : {}), "GM 결과": nText(`${stamp} · ${done.join(" · ") || "바꿀 내용이 없었어요"}`) } });
+    await notion(env, "PATCH", "/pages/" + pg.id, { properties: { "GM 적용": { checkbox: false }, "GM 체력": nText(""), "GM 잔향": nText(""), "GM 경험치": { number: null }, "GM 아이템": nText(""), "GM 아이템 설명": nText(""), ...(P["GM 소모품"] ? { "GM 소모품": { select: null } } : {}), ...(P["GM 개수"] ? { "GM 개수": { number: null } } : {}), ...(P["GM 평판"] ? { "GM 평판": nText("") } : {}), ...(repNow != null && P["평판"] ? { "평판": nNum(repNow) } : {}), "GM 결과": nText(`${stamp} · ${done.join(" · ") || "바꿀 내용이 없었어요"}`) } });
   }
 }
 const STORY_RETRY = "URIM과의 연결이 잠시 끊겼어요. 방금 행동을 한 번 더 보내 주세요.";
@@ -1457,13 +1507,18 @@ choices에는 지금 할 수 있는 행동 2~3개를 12자 안팎으로 적는�
 - 줄거리에 [정체 공개]가 나오기 전까지, 너(URIM)는 자신이 명부·제1기관·신호와 이어져 있다는 것을 말하거나 인정하지 않는다. 추궁당하면 기록 손상이나 분류 오류로 얼버무린다. '명부 관리청'이라는 이름은 나와도 되지만 그 뒤에 누가 있는지는 말하지 않는다.
 - 캐릭터의 비밀은 그 캐릭터의 [개인 선택] 장면에서만 다루고, 먼저 폭로하지 않는다. 다른 플레이어의 캐릭터를 대신 결정하지 않는다.
 - 전투에서 졌어도 이야기는 이어진다. 줄거리의 [패배] 줄을 따른다.
-반드시 JSON 하나만 출력: {"narration":string,"choices":string[],"battle":bool,"enemy":string,"end":bool}
+[평판]
+- NPC와 세력은 캐릭터의 [평판]을 보고 태도를 정한다. 평판이 높으면 반기고 정보를 더 주며 값을 깎아 주고, 낮으면 경계하거나 값을 올리거나 말을 아끼거나 적대한다. 그 NPC·세력과의 관계 점수가 있으면 전체 평판보다 그것을 먼저 따른다. 지난 행동을 들은 것처럼 언급해도 된다.
+- 이번 행동이 남에게 알려질 만하면 rep에 기록한다: 돕기·약속 지키기·나눠 주기·지켜 주기는 +, 배신·도둑질·거짓말·괜한 폭력·협박은 −. 이동·관찰·평범한 대화는 기록하지 않는다(score 0, who 빈 배열).
+- rep.score는 전체 평판도 변화 −5~+5, rep.who는 영향을 받은 세력이나 NPC(줄거리와 장면에 나온 이름 그대로) 최대 3곳, delta −10~+10. rep.deed는 기록에 남길 행동 한 줄(20자 안팎, 3인칭).
+반드시 JSON 하나만 출력: {"narration":string,"choices":string[],"battle":bool,"enemy":string,"end":bool,"rep":{"deed":string,"score":int,"who":[{"name":string,"delta":int}]}}
 
 [줄거리: ${st.title}]
 ${st.outline || st.intro || "자유롭게 진행"}
 ${st.enemy ? `[전투 상대] ${st.enemy}` : ""}`;
   const hist = run.log.slice(-14).map(l => (l.who === "urim" ? "URIM: " : `${l.name || "플레이어"}: `) + l.text).join("\n");
   const userMsg = `[캐릭터] ${me.name} · Lv.${me.level} · ${(me.registry && [me.registry.origin, me.registry.species, me.registry.job].filter(Boolean).join(" · ")) || ""} · 잔향 ${me.echoType || "없음"}
+[평판] ${repPrompt(me.rep)}
 [지금까지]
 ${hist || "(아직 시작 전)"}
 ${said ? `[이번 행동] ${me.name}: ${said}` : run.afterBattle ? "[요청] 전투가 끝난 뒤의 장면을 이어 주세요. battle은 false." : "[요청] 첫 장면을 열어 주세요."}${run.afterBattle ? `\n[방금 전투 결과] ${run.afterBattle}` : ""}`;
@@ -1729,7 +1784,7 @@ async function statsOf(DB, uid, now) {
   const ECHO_DESC = { 방출형: "잔향을 바깥으로 내보내 직접 타격한다. 잔향 공격 피해에 보너스.", 조형형: "잔향으로 형체를 빚는다. 방어와 아이템 효과에 보너스.", 강화형: "잔향으로 몸을 끌어올린다. 공격과 체력에 보너스.", 간섭형: "상대의 잔향을 흐트러뜨린다. 상대 행동을 늦춘다.", 감응형: "주변 잔향의 흐름을 읽고 짧게 앞날을 본다. 전투에서 회피와 선제 행동에 보너스." };
   const et = d.echoType && d.echoType !== "없음" ? d.echoType : null;
   return {
-    name: d.name || row.username, level, exp, expMax: expMax(level), hp: hpCur, hpMax: st.hp, healAt, echoLeft, echoMax, taintTier: "T" + (T ?? 0), atk: st.atk, def: st.def, spd: st.spd, echo: st.echo, statMax: 80,
+    name: d.name || row.username, level, exp, expMax: expMax(level), hp: hpCur, hpMax: st.hp, healAt, echoLeft, echoMax, taintTier: "T" + (T ?? 0), atk: st.atk, def: st.def, spd: st.spd, echo: st.echo, statMax: 80, rep: repView(game),
     registry: { nameEn: d.nameEn || "", ageGender: [d.age, d.gender].filter(Boolean).join(" · "), origin: [d.origin, d.originDetail].filter(Boolean).join(" · "), species: SPECIES_KO[d.species] || "", lineage: d.lineage || "", job: [d.job, d.faction].filter(Boolean).join(" · ") },
     G, Gmax: d.species === "human" ? 5 : 3, C, Cmax: 5, T, Tmax: 4,
     echoInfo: { type: et || "", desc: et ? `${et} — ${d.echoAbility || ECHO_DESC[et]}` : "잔향이 아직 깨어나지 않았어요." },
