@@ -124,6 +124,20 @@ AG.boot();
     const k = { 1: 'attack', 2: 'guard', 3: 'echo', 4: 'item', 5: 'run' }[e.key]; if (k) act(k);
   });
 
+  // 전투가 끝난 뒤 화면을 켜 둔 채 30분이 지나면 체력 회복을 바로 반영
+  setInterval(async () => {
+    if (document.hidden || busy || (b && !b.over)) return;
+    const s = await AG.stats().catch(() => null);
+    if (!s) return;
+    if (b && b.me) {
+      const hp = Math.min(b.me.hpMax, s.hp);
+      if (hp !== b.me.hp) { b.me.hp = hp; bars(); }
+    } else if (!b) {
+      $('meTxt').textContent = `HP ${s.hp} / ${s.hpMax} · 잔향 ${s.echoLeft ?? 0} · 오염도 ${s.taintTier || 'T0'}`;
+      $('meHp').style.width = Math.max(0, Math.min(1, s.hp / s.hpMax)) * 453 + 'px';
+    }
+  }, 30000);
+
   try { b = await AG.battle.state(); if (!b) b = await AG.battle.start(); }
   catch (e) {
     // 체력이 0이면 전투를 시작할 수 없다: 지금 상태만 보여 주고 창고로 안내

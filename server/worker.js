@@ -1572,11 +1572,7 @@ async function partyResolve(env, DB, p, now) {
     }
   }
   p.log.push({ kind: "turn", label: T, text: parts.join(" ") });
-<<<<<<< Updated upstream
-=======
   p.enemy.fxText = fxText(eFx, p.turn + 1);
-  for (const x of act) { x.choice = null; await saveVitals(DB, x.id, { hp: x.hp, echo: x.echo }, now); }
->>>>>>> Stashed changes
   const still = p.members.filter(x => !x.left && !x.down && !x.fled);
   const over = p.enemy.hp <= 0 || !still.length;
   for (const x of act) { x.choice = null; await saveVitals(DB, x.id, { hp: x.hp, echo: x.echo, ...(over || x.down || x.fled ? { battleEndAt: now } : {}) }, now); }
