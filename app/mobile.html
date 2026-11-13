@@ -8,16 +8,17 @@
 <style>
 /* PC에서 모바일(세로) 화면을 폰 크기 그대로 띄워 놓고 눌러 보는 확인용 도구 */
 * { box-sizing: border-box; margin: 0; }
-html, body { height: 100%; }
-body { display: flex; flex-direction: column; background: #121212; color: #e8e8e8; font: 14px/1.4 system-ui, "Noto Sans KR", sans-serif; }
-header { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; padding: 10px 16px; background: #1b1b1b; border-bottom: 1px solid #2c2c2c; }
+html, body { min-height: 100%; }
+body { display: flex; flex-direction: column; min-height: 100vh; background: #121212; color: #e8e8e8; font: 14px/1.4 system-ui, "Noto Sans KR", sans-serif; }
+header { position: sticky; top: 0; z-index: 2; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; padding: 10px 16px; background: #1b1b1b; border-bottom: 1px solid #2c2c2c; }
 header b { font-size: 15px; letter-spacing: .08em; margin-right: 6px; }
 select, button, input { font: inherit; color: #e8e8e8; background: #2a2a2a; border: 1px solid #3a3a3a; border-radius: 6px; padding: 6px 10px; }
 button { cursor: pointer; } button:hover { background: #383838; } button.on { background: #e8e8e8; color: #121212; border-color: #e8e8e8; }
-input[type=number] { width: 72px; }
+input[type=number] { width: 72px; } input[type=checkbox] { padding: 0; vertical-align: -2px; }
 .pages { display: flex; flex-wrap: wrap; gap: 6px; padding: 8px 16px; background: #171717; border-bottom: 1px solid #2c2c2c; }
 .pages button { padding: 4px 9px; font-size: 13px; }
-main { flex: 1; min-height: 0; display: grid; place-items: center; overflow: hidden; padding: 16px; }
+main { flex: 1; display: flex; justify-content: center; align-items: flex-start; padding: 24px 16px 60px; }
+body.fit { height: 100vh; } body.fit main { min-height: 0; overflow: hidden; align-items: center; }
 .slot { position: relative; }
 .phone { position: absolute; left: 0; top: 0; transform-origin: 0 0; border-radius: 34px; padding: 12px; background: #050505; box-shadow: 0 0 0 2px #333, 0 30px 60px rgba(0,0,0,.6); transform-origin: center; }
 .phone iframe { display: block; border: 0; border-radius: 24px; background: #000; }
@@ -36,6 +37,7 @@ main { flex: 1; min-height: 0; display: grid; place-items: center; overflow: hid
     <option value="custom">직접 입력</option>
   </select></label>
   <span id="custom" hidden><input type="number" id="cw" value="390" min="280" max="820"> × <input type="number" id="ch" value="844" min="480" max="1400"></span>
+  <label><input type="checkbox" id="fitChk"> 화면에 맞춰 줄이기</label>
   <button id="demo" type="button">체험 모드</button>
   <button id="reload" type="button">새로고침</button>
   <button id="open" type="button">새 탭으로 열기</button>
@@ -52,7 +54,8 @@ function size() { const v = $('dev').value; $('custom').hidden = v !== 'custom';
 function fit() {   // 화면에 다 안 들어가면 통째로 줄여서 보여 준다 (안쪽 크기는 그대로)
   const [w, h] = size(), box = document.querySelector('main').getBoundingClientRect();
   view.style.width = w + 'px'; view.style.height = h + 'px';
-  const k = Math.min(1, (box.width - 32) / (w + 24), (box.height - 56) / (h + 24));
+  const shrink = $('fitChk').checked; document.body.classList.toggle('fit', shrink); if (shrink) scrollTo(0, 0);
+  const k = shrink ? Math.min(1, (box.width - 32) / (w + 24), (innerHeight - document.querySelector('main').offsetTop - 60) / (h + 24)) : Math.min(1, (box.width - 32) / (w + 24));   // 기본은 실제 크기 그대로 두고 페이지를 스크롤한다
   phone.style.transform = `scale(${k})`; $('slot').style.width = (w + 24) * k + 'px'; $('slot').style.height = (h + 24) * k + 'px';
   $('info').textContent = `${w} × ${h} · ${Math.round(k * 100)}% 로 표시`;
 }
@@ -65,7 +68,7 @@ $('reload').addEventListener('click', () => view.contentWindow.location.reload()
 $('open').addEventListener('click', () => open(page + '.html', '_blank'));
 $('demo').addEventListener('click', () => { try { demoState() ? localStorage.removeItem('ag-demo') : localStorage.setItem('ag-demo', '1'); } catch {} demoState(); go(page); });
 view.addEventListener('load', () => { try { const f = view.contentWindow.location.pathname.split('/').pop().replace('.html', '') || 'index'; document.querySelectorAll('#pages button').forEach(b => b.classList.toggle('on', b.dataset.p === f)); } catch {} });
-addEventListener('resize', fit);
+addEventListener('resize', fit); $('fitChk').addEventListener('change', fit);
 demoState(); fit(); go(page);
 </script>
 </body>
