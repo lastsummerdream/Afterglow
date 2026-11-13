@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AFTERGLOW · 모바일 화면 확인</title>
+<link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
+<style>
+/* PC에서 모바일(세로) 화면을 폰 크기 그대로 띄워 놓고 눌러 보는 확인용 도구 */
+* { box-sizing: border-box; margin: 0; }
+html, body { height: 100%; }
+body { display: flex; flex-direction: column; background: #121212; color: #e8e8e8; font: 14px/1.4 system-ui, "Noto Sans KR", sans-serif; }
+header { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; padding: 10px 16px; background: #1b1b1b; border-bottom: 1px solid #2c2c2c; }
+header b { font-size: 15px; letter-spacing: .08em; margin-right: 6px; }
+select, button, input { font: inherit; color: #e8e8e8; background: #2a2a2a; border: 1px solid #3a3a3a; border-radius: 6px; padding: 6px 10px; }
+button { cursor: pointer; } button:hover { background: #383838; } button.on { background: #e8e8e8; color: #121212; border-color: #e8e8e8; }
+input[type=number] { width: 72px; }
+.pages { display: flex; flex-wrap: wrap; gap: 6px; padding: 8px 16px; background: #171717; border-bottom: 1px solid #2c2c2c; }
+.pages button { padding: 4px 9px; font-size: 13px; }
+main { flex: 1; min-height: 0; display: grid; place-items: center; overflow: hidden; padding: 16px; }
+.slot { position: relative; }
+.phone { position: absolute; left: 0; top: 0; transform-origin: 0 0; border-radius: 34px; padding: 12px; background: #050505; box-shadow: 0 0 0 2px #333, 0 30px 60px rgba(0,0,0,.6); transform-origin: center; }
+.phone iframe { display: block; border: 0; border-radius: 24px; background: #000; }
+.info { color: #9a9a9a; font-size: 12px; margin-left: auto; }
+</style>
+</head>
+<body>
+<header>
+  <b>모바일 화면 확인</b>
+  <label>기기 <select id="dev">
+    <option value="360x640">작은 폰 360 × 640</option>
+    <option value="390x664">아이폰 · 주소창 보임 390 × 664</option>
+    <option value="390x844" selected>아이폰 14 390 × 844</option>
+    <option value="412x915">갤럭시 S 412 × 915</option>
+    <option value="430x932">아이폰 Pro Max 430 × 932</option>
+    <option value="custom">직접 입력</option>
+  </select></label>
+  <span id="custom" hidden><input type="number" id="cw" value="390" min="280" max="820"> × <input type="number" id="ch" value="844" min="480" max="1400"></span>
+  <button id="demo" type="button">체험 모드</button>
+  <button id="reload" type="button">새로고침</button>
+  <button id="open" type="button">새 탭으로 열기</button>
+  <span class="info" id="info"></span>
+</header>
+<div class="pages" id="pages"></div>
+<main><div class="slot" id="slot"><div class="phone" id="phone"><iframe id="view" title="모바일 화면" allow="autoplay"></iframe></div></div></main>
+<script>
+const PAGES = [['index','커버'],['main','메인'],['group','단체 단말'],['private','개인 연락망'],['dm','개인 단말'],['stats','스탯'],['enter','전투 진입'],['story','스토리'],['battle','전투'],['party','파티 전투'],['inventory','창고'],['home','숙소'],['settings','설정'],['timeline','타임라인']];
+const $ = id => document.getElementById(id), view = $('view'), phone = $('phone');
+let page = new URLSearchParams(location.search).get('p') || 'main';
+$('pages').innerHTML = PAGES.map(([k, l]) => `<button type="button" data-p="${k}">${l}</button>`).join('');
+function size() { const v = $('dev').value; $('custom').hidden = v !== 'custom'; return v === 'custom' ? [+$('cw').value || 390, +$('ch').value || 844] : v.split('x').map(Number); }
+function fit() {   // 화면에 다 안 들어가면 통째로 줄여서 보여 준다 (안쪽 크기는 그대로)
+  const [w, h] = size(), box = document.querySelector('main').getBoundingClientRect();
+  view.style.width = w + 'px'; view.style.height = h + 'px';
+  const k = Math.min(1, (box.width - 32) / (w + 24), (box.height - 56) / (h + 24));
+  phone.style.transform = `scale(${k})`; $('slot').style.width = (w + 24) * k + 'px'; $('slot').style.height = (h + 24) * k + 'px';
+  $('info').textContent = `${w} × ${h} · ${Math.round(k * 100)}% 로 표시`;
+}
+function go(p) { page = p; view.src = p + '.html'; document.querySelectorAll('#pages button').forEach(b => b.classList.toggle('on', b.dataset.p === p)); history.replaceState(null, '', '?p=' + p); }
+function demoState() { let on = false; try { on = localStorage.getItem('ag-demo') === '1'; } catch {} $('demo').classList.toggle('on', on); $('demo').textContent = on ? '체험 모드 켜짐' : '체험 모드'; return on; }
+$('pages').addEventListener('click', e => { const b = e.target.closest('button'); if (b) go(b.dataset.p); });
+$('dev').addEventListener('change', () => { fit(); view.contentWindow.location.reload(); });
+$('cw').addEventListener('change', () => { fit(); view.contentWindow.location.reload(); }); $('ch').addEventListener('change', () => { fit(); view.contentWindow.location.reload(); });
+$('reload').addEventListener('click', () => view.contentWindow.location.reload());
+$('open').addEventListener('click', () => open(page + '.html', '_blank'));
+$('demo').addEventListener('click', () => { try { demoState() ? localStorage.removeItem('ag-demo') : localStorage.setItem('ag-demo', '1'); } catch {} demoState(); go(page); });
+view.addEventListener('load', () => { try { const f = view.contentWindow.location.pathname.split('/').pop().replace('.html', '') || 'index'; document.querySelectorAll('#pages button').forEach(b => b.classList.toggle('on', b.dataset.p === f)); } catch {} });
+addEventListener('resize', fit);
+demoState(); fit(); go(page);
+</script>
+</body>
+</html>

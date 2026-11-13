@@ -105,7 +105,7 @@ AG.M_PAGES = { index: { css: 1 }, main: { css: 1 },
   enter: { css: 1 }, story: { css: 1 },
   group: { drawers: { left: '채널', right: '접속' }, mid: '대화', fit: ['center'] },
   private: { drawers: { left: '대화 목록', right: '정보' }, mid: '대화', fit: ['center'] },
-  dm: { drawers: { left: '연락처', right: '프로필' }, mid: '신호', fit: ['center'] } };
+  dm: { fitTop: 312, drawers: { left: '연락처', right: '프로필' }, mid: '신호', fit: ['center'] } };
 AG.page = (location.pathname.split('/').pop() || 'index.html').replace(/\.html$/, '') || 'index';
 AG.M = !!AG.M_PAGES[AG.page] && innerWidth < innerHeight && innerWidth <= 820;
 if (AG.M) document.documentElement.classList.add('m', 'm-' + AG.page);
@@ -135,36 +135,43 @@ AG.mobileSetup = function () {
   const cfg = AG.M_PAGES[AG.page] || {}, stage = document.getElementById('stage'), root = document.documentElement;
   const sr = stage.getBoundingClientRect(), S = AG.scale;
   // 영역의 실제 크기: 바탕 도형 + 그 위의 글씨·버튼 (화면 밖으로 나간 부분은 뺀다)
-  const box = (r, contentOnly) => {
+  const box = (r, contentOnly, shapeOnly) => {
     let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9;
     const add = (x, y, w, h) => { if (!(w > 0 && h > 0)) return; x = Math.max(0, x); y = Math.max(0, y); const xe = Math.min(2560, x + w), ye = Math.min(1440, y + h); if (xe <= x || ye <= y) return; x0 = Math.min(x0, x); y0 = Math.min(y0, y); x1 = Math.max(x1, xe); y1 = Math.max(y1, ye); };
     document.querySelectorAll(`#stage .L[data-r="${r}"]`).forEach(L => {
       const svg = L.querySelector(':scope > svg.sh'); if (svg && !contentOnly) { try { const b = svg.getBBox(); add(b.x, b.y, b.width, b.height); } catch {} }
-      [...L.children].forEach(c => { if (c === svg || c.hidden) return; const b = c.getBoundingClientRect(); add((b.left - sr.left) / S, (b.top - sr.top) / S, b.width / S, b.height / S); });
+      if (!shapeOnly) [...L.children].forEach(c => { if (c === svg || c.hidden) return; const b = c.getBoundingClientRect(); add((b.left - sr.left) / S, (b.top - sr.top) / S, b.width / S, b.height / S); });
     });
     return x1 > x0 ? { x: x0, y: y0, width: x1 - x0, height: y1 - y0 } : null;
   };
   const regions = [...new Set([...document.querySelectorAll('#stage .L[data-r]')].map(L => L.dataset.r))];
   const src = {}; regions.forEach(r => src[r] = box(r)); AG._boxes = src;
+  Object.keys(cfg.drawers || {}).forEach(r => {   // 서랍은 패널 바탕(가장 큰 도형들) 기준으로 맞춘다
+    const svg = document.querySelector(`#stage .L[data-r="${r}"]:not([id]) > svg.sh`); if (!svg) return;
+    const bs = [...svg.children].filter(c => c.tagName !== 'defs').map(c => { try { return c.getBBox(); } catch { return null; } }).filter(b => b && b.width > 0);
+    const mh = Math.max(0, ...bs.map(b => b.height)), big = bs.filter(b => b.height >= mh * .5); if (!big.length) return;
+    const x0 = Math.max(0, Math.min(...big.map(b => b.x))), x1 = Math.min(2560, Math.max(...big.map(b => b.x + b.width))), y0 = Math.max(0, Math.min(...big.map(b => b.y))), y1 = Math.min(1440, Math.max(...big.map(b => b.y + b.height)));
+    if (x1 > x0 && y1 > y0) src[r] = { x: x0, y: y0, width: x1 - x0, height: y1 - y0 };
+  });
   const put = (r, tx, ty, k, shapeOnly) => document.querySelectorAll(`#stage .L[data-r="${r}"]${shapeOnly ? ':not([id])' : ''}`).forEach(L => L.style.transform = `translate(${tx}px, ${ty}px) scale(${k})`);
   (cfg.panes || []).forEach(p => { if (p.content) p.stack.forEach(r => { const b = box(r, true); if (b) src[r] = { x: b.x - 30, y: b.y - 30, width: b.width + 60, height: b.height + 60 }; }); });   // 바탕이 화면 밖까지 뻗은 패널은 내용 크기로 맞춘다
   if (cfg.panes) cfg.panes = cfg.panes.filter(p => p.stack.some(r => src[r]) || (p.free || []).length);   // 이 화면에 없는 영역만 있는 칸은 뺀다
   const TOP = cfg.top || 190, BOT = cfg.panes || cfg.drawers ? 124 : 30;
   AG.mobileLayout = () => {
-    if (src.tabs && !cfg.css) { const b = src.tabs, k = Math.min(1, (AG.MW - 80) / b.width); put('tabs', 40 - b.x * k, 150 - b.y * k, k); }
+    if (src.tabs && !cfg.css) { const b = src.tabs, k = Math.min(1, (AG.MW - 80) / b.width); put('tabs', 40 - b.x * k, 204 - b.y * k, k); }
     for (const r of Object.keys(cfg.drawers || {})) {   // 서랍: 패널을 원래 크기로 화면 가운데 위쪽에
       const b = src[r]; if (!b) continue;
-      const k = Math.min(1, (AG.MW - 40) / b.width, (AG.mh - 170 - 124) / b.height);
+      const k = Math.min(1.35, (AG.MW - 40) / b.width, (AG.mh - 170 - 124) / b.height);
       put(r, (AG.MW - b.width * k) / 2 - b.x * k, 170 - b.y * k, k);
     }
     for (const r of cfg.fit || []) {   // 본문 바탕: 모양을 화면 크기에 맞게 늘린다 (내용은 CSS로 배치)
       const svg = document.querySelector(`#stage .L[data-r="${r}"]:not([id]) > svg.sh`); let b; try { b = svg.getBBox(); } catch {} if (!b || !b.width) continue;
-      const x = 24, y = 196, w = AG.MW - 48, h = AG.mh - y - 250;
+      const x = 24, y = cfg.fitTop || 214, w = AG.MW - 48, h = AG.mh - y - 250; root.style.setProperty('--ft', y + 'px');
       document.querySelectorAll(`#stage .L[data-r="${r}"]:not([id])`).forEach(L => L.style.transform = `translate(${x - b.x * w / b.width}px, ${y - b.y * h / b.height}px) scale(${w / b.width}, ${h / b.height})`);
     }
     (cfg.panes || []).forEach(p => {   // 칸: 영역들을 위에서 아래로 쌓고 화면 폭에 맞춘다
       const rs = p.stack.filter(r => src[r]); if (!rs.length) return;
-      const gap = p.gap ?? 26, maxK = p.max || 1.3, availH = AG.mh - TOP - BOT - (src.tabs ? 70 : 0) - (cfg.reserve || 0), top0 = TOP + (src.tabs ? 70 : 0);
+      const gap = p.gap ?? 26, maxK = p.max || 1.3, availH = AG.mh - TOP - BOT - (src.tabs ? 104 : 0) - (cfg.reserve || 0), top0 = TOP + (src.tabs ? 104 : 0);
       let ks = rs.map(r => Math.min(maxK, (AG.MW - 40) / src[r].width));
       const total = () => rs.reduce((a, r, i) => a + src[r].height * ks[i], 0) + gap * (rs.length - 1);
       if (total() > availH) { const f = (availH - gap * (rs.length - 1)) / (total() - gap * (rs.length - 1)); ks = ks.map(k => k * f); }
@@ -481,7 +488,20 @@ AG.mode = token() ? 'server' : 'demo';
 AG.toCover = () => location.replace(AG.PAGES.cover);
 if (!window.AG_NO_GATE && !token() && (AG.PROD || LS.get('ag-demo') !== '1')) AG.toCover();
 
+/* 자주 묻는 것(/me · /stats · /users · /stories)은 30초 동안 기억해 두고 바로 돌려준다. 화면을 넘길 때마다 서버를 기다리지 않게.
+   돌려준 뒤 뒤에서 새로 받아 두고, 무언가를 바꾸는 요청이 나가면 기억을 지운다. */
+const CACHEABLE = ['/me', '/stats', '/users', '/stories'], CK = 'ag-c:';
 async function call(method, path, body) {
+  if (method === 'GET' && CACHEABLE.includes(path)) {
+    let hit = null; try { hit = JSON.parse(sessionStorage.getItem(CK + path)); } catch {}
+    const fresh = rawCall(method, path).then(j => { try { sessionStorage.setItem(CK + path, JSON.stringify({ t: Date.now(), k: token().slice(-12), j })); } catch {} return j; });
+    if (hit && hit.k === token().slice(-12) && Date.now() - hit.t < 30000) { fresh.catch(() => {}); return hit.j; }
+    return fresh;
+  }
+  if (method !== 'GET') { try { Object.keys(sessionStorage).filter(k => k.startsWith(CK)).forEach(k => sessionStorage.removeItem(k)); } catch {} }
+  return rawCall(method, path, body);
+}
+async function rawCall(method, path, body) {
   let r;
   try {
     r = await fetch(API + path, {
@@ -1187,3 +1207,6 @@ addEventListener('load', () => {
   const run = () => [...new Set(Object.values(AG.PAGES))].filter(h => h && !location.pathname.endsWith('/' + h)).forEach(h => { const l = document.createElement('link'); l.rel = 'prefetch'; l.href = h; document.head.appendChild(l); });
   (window.requestIdleCallback || (f => setTimeout(f, 1200)))(run, { timeout: 3000 });
 });
+
+/* ── 정적 파일을 기기에 저장해 두고 바로 꺼내 쓴다 (sw.js). 새 버전은 뒤에서 받아 다음 이동 때 반영 ── */
+if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});

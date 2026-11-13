@@ -35,7 +35,7 @@ html.m .cs-box { scale: 1; }
 
 /* ── 대화 화면 (단체 단말 · 개인 연락망 · 개인 단말) ── */
 html:is(.m-group, .m-private, .m-dm) .L[data-r="bottom"]:not([id]) { display: none; }
-html:is(.m-group, .m-private, .m-dm) #msgs { left: 44px !important; top: 206px !important; width: 942px !important; height: calc(var(--mh) - 206px - 262px) !important; padding: 20px 14px 30px 14px !important; box-sizing: border-box; }
+html:is(.m-group, .m-private, .m-dm) #msgs { left: 60px !important; top: calc(var(--ft, 214px) + 64px) !important; width: 916px !important; height: calc(var(--mh) - var(--ft, 214px) - 64px - 262px) !important; padding: 10px 14px 30px 14px !important; box-sizing: border-box; }
 html:is(.m-group, .m-private, .m-dm) .msg { margin-bottom: 54px; padding: 4px 0 0 92px; min-height: 72px; }
 html:is(.m-group, .m-private, .m-dm) .msg .av { width: 72px; height: 72px; font-size: 28px; }
 html:is(.m-group, .m-private, .m-dm) .msg .hd { gap: 18px; height: auto; flex-wrap: wrap; }
@@ -104,8 +104,6 @@ html.m-story #sendBtn { left: 816px !important; top: calc(var(--mh) - 180px) !im
 html.m-story .strip { padding: 0 44px; }
 html.m .modal.battle-items { width: 950px; padding: 44px 60px; }
 html.m .modal .row { width: auto !important; height: auto !important; }
-/* 개인 단말: 탭(DM · 캐릭터 스탯) 아래에서 대화가 시작되게 */
-html.m-dm #msgs { top: 276px !important; height: calc(var(--mh) - 276px - 262px) !important; }
 
 /* ── 창고: 가로 4열 (칸은 CSS로 그린다) ── */
 html.m-inventory .L[data-r="center"]:not([id]) { display: none; }
@@ -115,9 +113,7 @@ html.m-inventory #grid .selmark { display: none; }
 html.m-inventory .cellbtn { position: relative; left: auto !important; top: auto !important; border-radius: 18px; background: repeating-conic-gradient(rgba(0,0,0,.14) 0 25%, transparent 0 50%) 0 0 / 44px 44px, rgba(30,30,30,.5); box-shadow: inset 0 0 0 2px rgba(255,255,255,.14); }
 html.m-inventory .cellbtn.sel { background-color: rgba(120,120,120,.6); box-shadow: inset 0 0 0 4px rgba(255,255,255,.8); }
 
-/* ── 모바일은 빠르게: 진입 애니메이션과 페이지 전환 효과를 모두 뺀다 ── */
-html.m #stage *, html.m #stage *::before, html.m #stage *::after { animation: none !important; }
+/* ── 모바일은 빠르게: 화면 진입 애니메이션과 페이지 전환 효과는 뺀다 (팝업 · 서랍이 뜨는 효과는 유지) ── */
+html.m #stage *:not(.L, .bw-back, .bw-back *, .modal-back, .modal-back *), html.m #stage *::before, html.m #stage *::after { animation: none !important; }
 html.m .L, html.m .L.mo, html.m .L.in { animation: none !important; }
-html.m[data-drawer] .L { animation: none !important; }
-html.m .bw-back, html.m .bw, html.m .modal-back, html.m .modal { animation: none !important; }
 @media (orientation: portrait) and (max-width: 820px) { @view-transition { navigation: none; } }
