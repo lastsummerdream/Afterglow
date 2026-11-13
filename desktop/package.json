@@ -9,7 +9,8 @@
   "private": true,
   "scripts": {
     "start": "electron .",
-    "dist:mac": "electron-builder --mac dmg --publish never",
+    "dist:mac": "electron-builder --mac dmg zip --publish never",
+    "dist:mac:linux": "electron-builder --mac zip dir --arm64 --publish never",
     "dist:win": "electron-builder --win nsis portable --publish never"
   },
   "devDependencies": {
