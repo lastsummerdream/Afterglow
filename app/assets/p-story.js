@@ -38,7 +38,7 @@ AG.boot();
   function controls() {
     const off = !run || run.done || !!run.battle;
     input.disabled = send.disabled = off || busy;
-    input.placeholder = !run ? '왼쪽에서 이야기를 골라 주세요' : run.done ? '이야기가 끝났어요' : run.battle ? '전투가 먼저예요' : '캐릭터의 행동이나 대사를 적어 주세요';
+    input.placeholder = !run ? '목록에서 이야기를 골라 주세요' : run.done ? '이야기가 끝났어요' : run.battle ? '전투가 먼저예요' : '캐릭터의 행동이나 대사를 적어 주세요';
     choices.innerHTML = !run ? '' : run.done ? (run.kind === 'group' ? '' : '<button class="strip" data-reset type="button">처음부터 다시</button>') + '<a class="strip" href="' + AG.PAGES.enter + '">돌아가기</a>'
       : run.battle ? '<button class="strip" data-battle type="button">전투 화면으로</button>'
       : run.choices.map(c => `<button class="strip" data-c type="button">${AG.esc(c)}</button>`).join('');
@@ -84,7 +84,7 @@ AG.boot();
 
   try { list = await AG.story.list(); } catch (e) { AG.toast(AG.errMsg(e)); }
   renderList(); controls();
-  log.innerHTML = '<p class="sl empty">왼쪽에서 이야기를 골라 주세요.<br>하던 이야기는 멈춘 곳에서 이어져요.</p>';
+  log.innerHTML = '<p class="sl empty">목록에서 이야기를 골라 주세요.<br>하던 이야기는 멈춘 곳에서 이어져요.</p>';
   const first = qid && list.find(s => s.id === qid) ? qid : null;
   if (first) open(first);
   // 단체 스토리는 다른 사람의 진행이 보이도록 주기적으로 새로 읽는다

@@ -17,7 +17,7 @@ html.m .L[data-r="title"] .title-grad { top: 86px !important; }
 html.m .demo-chip { left: 440px !important; top: 14px !important; }
 html.m .page-toast { top: 170px; font-size: 26px; padding: 18px 34px; max-width: 900px; white-space: normal; text-align: center; z-index: 80; }
 /* 서랍 */
-html.m .L[data-r="left"], html.m .L[data-r="right"] { visibility: hidden; z-index: 46; }
+html.m-dr .L[data-r="left"], html.m-dr .L[data-r="right"] { visibility: hidden; z-index: 46; }
 html.m[data-drawer="left"] .L[data-r="left"], html.m[data-drawer="right"] .L[data-r="right"] { visibility: visible; animation: m-drawer .28s cubic-bezier(.2,.8,.2,1) backwards !important; }
 @keyframes m-drawer { from { opacity: 0; translate: 0 40px; } }
 .m-back { position: absolute; inset: 0; z-index: 45; background: rgba(10,10,10,.86); opacity: 0; pointer-events: none; transition: opacity .2s; }
@@ -34,22 +34,22 @@ html.m .bw dl { grid-template-columns: 150px 1fr; }
 html.m .cs-box { scale: 1; }
 
 /* ── 대화 화면 (단체 단말 · 개인 연락망 · 개인 단말) ── */
-html.m .L[data-r="bottom"]:not([id]) { display: none; }
-html.m .L[data-r="tabs"]:not([id]) { display: none; }
-html.m #L-tabs { transform: translate(-1266px, 6px) !important; }
-html.m #L-tabs .t { color: #e6e6e6; }
-html.m #msgs { left: 44px !important; top: 206px !important; width: 942px !important; height: calc(var(--mh) - 206px - 262px) !important; padding: 20px 14px 30px 14px !important; box-sizing: border-box; }
-html.m .msg { margin-bottom: 54px; padding: 4px 0 0 92px; min-height: 72px; }
-html.m .msg .av { width: 72px; height: 72px; font-size: 28px; }
-html.m .msg .hd { gap: 18px; height: auto; flex-wrap: wrap; }
-html.m .msg .bd { width: auto; }
-html.m .msg.me { margin-bottom: 36px; padding: 0; }
-html.m .msg.me .bub { width: 700px; margin-right: 0; }
-html.m .msg.me .bd { width: auto; padding: 34px 64px 34px 56px; }
-html.m #L-bottom::before { content: ""; position: absolute; left: 24px; top: calc(var(--mh) - 232px); width: 982px; height: 100px; clip-path: polygon(0 0, calc(100% - 22px) 0, 100% 100%, 22px 100%); background: linear-gradient(90deg, rgba(12,12,12,.94), rgba(70,70,70,.9)); }
-html.m #msgInput { left: 74px !important; top: calc(var(--mh) - 214px) !important; width: 790px !important; height: 64px !important; font-size: 26px !important; }
-html.m #sendBtn { left: 890px !important; top: calc(var(--mh) - 220px) !important; width: 76px !important; height: 76px !important; border-radius: 50%; background: #e6e6e6; }
-html.m #sendBtn::before { content: ""; width: 26px; height: 26px; background: #1e1e1e; clip-path: polygon(0 0, 100% 50%, 0 100%, 24% 50%); margin-left: 6px; }
+html:is(.m-group, .m-private, .m-dm) .L[data-r="bottom"]:not([id]) { display: none; }
+html:is(.m-group, .m-private, .m-dm) .L[data-r="tabs"]:not([id]) { display: none; }
+html:is(.m-group, .m-private, .m-dm) #L-tabs { transform: translate(-1266px, 6px) !important; }
+html:is(.m-group, .m-private, .m-dm) #L-tabs .t { color: #e6e6e6; }
+html:is(.m-group, .m-private, .m-dm) #msgs { left: 44px !important; top: 206px !important; width: 942px !important; height: calc(var(--mh) - 206px - 262px) !important; padding: 20px 14px 30px 14px !important; box-sizing: border-box; }
+html:is(.m-group, .m-private, .m-dm) .msg { margin-bottom: 54px; padding: 4px 0 0 92px; min-height: 72px; }
+html:is(.m-group, .m-private, .m-dm) .msg .av { width: 72px; height: 72px; font-size: 28px; }
+html:is(.m-group, .m-private, .m-dm) .msg .hd { gap: 18px; height: auto; flex-wrap: wrap; }
+html:is(.m-group, .m-private, .m-dm) .msg .bd { width: auto; }
+html:is(.m-group, .m-private, .m-dm) .msg.me { margin-bottom: 36px; padding: 0; }
+html:is(.m-group, .m-private, .m-dm) .msg.me .bub { width: 700px; margin-right: 0; }
+html:is(.m-group, .m-private, .m-dm) .msg.me .bd { width: auto; padding: 34px 64px 34px 56px; }
+html:is(.m-group, .m-private, .m-dm) #L-bottom::before { content: ""; position: absolute; left: 24px; top: calc(var(--mh) - 232px); width: 982px; height: 100px; clip-path: polygon(0 0, calc(100% - 22px) 0, 100% 100%, 22px 100%); background: linear-gradient(90deg, rgba(12,12,12,.94), rgba(70,70,70,.9)); }
+html:is(.m-group, .m-private, .m-dm) #msgInput { left: 74px !important; top: calc(var(--mh) - 214px) !important; width: 790px !important; height: 64px !important; font-size: 26px !important; }
+html:is(.m-group, .m-private, .m-dm) #sendBtn { left: 890px !important; top: calc(var(--mh) - 220px) !important; width: 76px !important; height: 76px !important; border-radius: 50%; background: #e6e6e6; }
+html:is(.m-group, .m-private, .m-dm) #sendBtn::before { content: ""; width: 26px; height: 26px; background: #1e1e1e; clip-path: polygon(0 0, 100% 50%, 0 100%, 24% 50%); margin-left: 6px; }
 
 /* ── 커버 (로딩 · 로그인 · 회원가입): 가운데 묶음을 화면 가운데로 ── */
 html.m-index .L.cv { scale: .7 !important; transform-origin: 1280px 720px !important; transform: translate(calc(-765px / .7), calc((var(--mh) / 2 - 720px) / .7)); animation: m-in .5s ease-out backwards !important; }
@@ -61,3 +61,49 @@ html.m-index .dim { width: var(--mw); height: var(--mh); }
 html.m .modal .row { gap: 16px; }
 html.m .modal .row button { flex: 1 1 0; min-width: 0; width: auto; padding-left: 10px; padding-right: 10px; }
 html.m .modal input, html.m .modal textarea, html.m .modal select { max-width: 100%; box-sizing: border-box; }
+
+html.m .L.m-off { visibility: hidden !important; pointer-events: none !important; }
+html.m .L.m-off * { pointer-events: none !important; }
+
+/* ── 전투 · 파티 전투: 적 / 아군 패널은 그대로 쌓고, 기록과 행동 버튼은 화면에 맞게 다시 배치 ── */
+html:is(.m-battle, .m-party) .L[data-r="center"]:not([id]), html:is(.m-battle, .m-party) .L[data-r="bottom"]:not([id]) { display: none; }
+html:is(.m-battle, .m-party) #turn { left: 355px !important; top: 1030px !important; color: #f2f2f2; text-shadow: 0 2px 10px rgba(0,0,0,.6); }
+html:is(.m-battle, .m-party) #L-center > p.t:not(#turn) { left: 60px !important; top: 1104px !important; color: #e6e6e6; }
+html:is(.m-battle, .m-party) #log { left: 40px !important; top: 1150px !important; width: 950px !important; height: 440px !important; padding: 26px 30px 30px !important; box-sizing: border-box; background: rgba(222,222,222,.78); }
+html:is(.m-battle, .m-party) .ent { margin-bottom: 30px; flex-direction: column; }
+html:is(.m-battle, .m-party) .ent .lb { width: auto; }
+html:is(.m-battle, .m-party) .ent .tx { width: auto; }
+html:is(.m-battle, .m-party) #L-bottom > p.t:not(#foot) { display: none; }
+html:is(.m-battle, .m-party) #L-bottom .hb[data-act] { top: 1622px !important; width: 182px !important; height: 92px !important; clip-path: polygon(14px 0, 100% 0, calc(100% - 14px) 100%, 0 100%) !important; background: repeating-conic-gradient(rgba(0,0,0,.18) 0 25%, transparent 0 50%) 0 0 / 26px 26px, linear-gradient(98deg, #1a1a1a, #5c5c5c); }
+html:is(.m-battle, .m-party) #L-bottom .hb[data-act]::after { content: attr(aria-label); font-size: 30px; font-weight: 900; color: #f2f2f2; }
+html:is(.m-battle, .m-party) #L-bottom .hb[data-act]:nth-of-type(1) { left: 40px !important; }
+html:is(.m-battle, .m-party) #L-bottom .hb[data-act]:nth-of-type(2) { left: 232px !important; }
+html:is(.m-battle, .m-party) #L-bottom .hb[data-act]:nth-of-type(3) { left: 424px !important; }
+html:is(.m-battle, .m-party) #L-bottom .hb[data-act]:nth-of-type(4) { left: 616px !important; }
+html:is(.m-battle, .m-party) #L-bottom .hb[data-act]:nth-of-type(5) { left: 808px !important; }
+html:is(.m-battle, .m-party) #L-bottom::before { content: ""; position: absolute; left: 30px; top: 1744px; width: 970px; height: 96px; clip-path: polygon(0 0, calc(100% - 22px) 0, 100% 100%, 22px 100%); background: linear-gradient(90deg, rgba(12,12,12,.94), rgba(70,70,70,.9)); }
+html:is(.m-battle, .m-party) #actInput { left: 80px !important; top: 1760px !important; width: 780px !important; height: 64px !important; font-size: 26px !important; }
+html:is(.m-battle, .m-party) #sendBtn { left: 892px !important; top: 1754px !important; width: 76px !important; height: 76px !important; border-radius: 50%; background: #e6e6e6; }
+html:is(.m-battle, .m-party) #sendBtn::before { content: ""; width: 26px; height: 26px; background: #1e1e1e; clip-path: polygon(0 0, 100% 50%, 0 100%, 24% 50%); margin-left: 6px; }
+html:is(.m-battle, .m-party) #foot { left: 44px !important; top: 1868px !important; width: 940px; white-space: normal !important; color: #dcdcdc !important; font-size: 22px !important; line-height: 1.4; }
+html.m-party #lobby { left: 40px !important; top: 330px !important; width: 950px !important; }
+html.m .battle-items .bi, html.m .battle-items .sk { max-width: 100%; }
+
+/* ── 전투 진입: 두 카드를 위아래로 ── */
+html.m-enter #cStory, html.m-enter #cBattle { left: 40px !important; width: 950px !important; height: 620px !important; padding: 60px 110px 0 110px; }
+html.m-enter #cStory { top: 250px !important; }
+html.m-enter #cBattle { top: 920px !important; }
+html.m-enter .card .go, html.m-enter .card .btns { left: 110px; bottom: 54px; }
+html.m-enter .card .big { font-size: 96px; }
+
+/* ── 스토리: 목록 / 이야기 / 선택지 / 입력 ── */
+html.m-story #sList { left: 40px !important; top: 200px !important; width: 950px !important; height: 380px !important; }
+html.m-story #sMain { left: 40px !important; top: 606px !important; width: 950px !important; height: 940px !important; }
+html.m-story .sl.me { padding-left: 90px; }
+html.m-story #choices { left: 40px !important; top: 1566px !important; width: 950px !important; gap: 12px; }
+html.m-story #choices .strip { height: 70px; padding: 0 34px; font-size: 26px; }
+html.m-story #stage #actInput { left: 40px !important; top: 1800px !important; width: 760px !important; }
+html.m-story #sendBtn { left: 816px !important; top: 1800px !important; }
+html.m-story .strip { padding: 0 44px; }
+html.m .modal.battle-items { width: 950px; padding: 44px 60px; }
+html.m .modal .row { width: auto !important; height: auto !important; }
