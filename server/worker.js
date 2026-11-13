@@ -941,8 +941,8 @@ ${sheet || "아직 캐릭터 정보를 적지 않았다."}
       if (st.kind === "group") return bad("단체 스토리는 다시 시작할 수 없어요");
       await DB.prepare("DELETE FROM story_runs WHERE id = ?").bind(rid).run(); run = null;
     }
-    if (!run) {   // 처음 열면 URIM이 첫 장면을 연다
-      run = { step: 0, log: [], choices: [], done: false, battle: null };
+    if (!run || (!run.done && !run.battle && !run.log.some(l => l.who === "urim"))) {   // 처음 열면 URIM이 첫 장면을 연다 (지난번에 못 열었으면 다시)
+      run = run || { step: 0, log: [], choices: [], done: false, battle: null };
       const o = await narrate(env, st, run, me, null);
       applyStory(run, o);
       await save();
@@ -1237,18 +1237,7 @@ async function freeAct(env, a, e, eFx, turn, recent, tactics, said) {
 직전 기록: ${recent.join(" / ") || "없음"}
 이번 전투에서 쓴 수법: ${tactics.join(", ") || "없음"}
 이번 턴 행동: "${said}"`;
-  let o = null;
-  try {
-    if (!env.ANTHROPIC_API_KEY) throw 0;
-    const r = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: { "content-type": "application/json", "x-api-key": env.ANTHROPIC_API_KEY, "anthropic-version": "2023-06-01" },
-      body: JSON.stringify({ model: MODELS[0], max_tokens: 700, system: sys, messages: [{ role: "user", content: user }] }),
-    });
-    const j = await r.json(), t = (j.content || []).map(c => c.text || "").join("");
-    o = JSON.parse(t.slice(t.indexOf("{"), t.lastIndexOf("}") + 1));
-    if (typeof o.success !== "string") throw 0;
-  } catch { o = freeGuess(said, a); }
+  const o = (await askJSON(env, sys, user, 900, x => typeof x.success === "string")) || freeGuess(said, a);
   // 값 다듬기 (AI가 엉뚱한 값을 내도 규칙 안에 머물게)
   const num = (v, lo, hi, d) => { const n = Number(v); return Number.isFinite(n) ? Math.max(lo, Math.min(hi, n)) : d; };
   o.stat = FREE_STATS.includes(o.stat) ? o.stat : "힘";
@@ -1304,6 +1293,44 @@ function counterHit(e, eFx, aFx, def, turn, mult, guard) {
   return { taken: Math.max(1, Math.round(t * mult)), why: "" };
 }
 
+/* Claude에게 JSON 하나를 받는다. 과부하·한도 초과·잘린 답이면 다시, 그래도 안 되면 다른 모델로. 끝내 못 받으면 null */
+function parseLooseJSON(t) {
+  t = String(t || "").replace(/```(?:json)?/g, "");
+  const a = t.indexOf("{"), z = t.lastIndexOf("}");
+  if (a < 0 || z <= a) return null;
+  const src = t.slice(a, z + 1);
+  try { return JSON.parse(src); } catch {}
+  let out = "", inStr = false, esc = false;   // 문자열 안의 줄바꿈 · 탭을 이스케이프해서 한 번 더
+  for (const ch of src) {
+    if (inStr) {
+      if (esc) { esc = false; out += ch; continue; }
+      if (ch === "\\") { esc = true; out += ch; continue; }
+      if (ch === '"') { inStr = false; out += ch; continue; }
+      if (ch === "\n") { out += "\\n"; continue; }
+      if (ch === "\r") continue;
+      if (ch === "\t") { out += "\\t"; continue; }
+      out += ch;
+    } else { if (ch === '"') inStr = true; out += ch; }
+  }
+  try { return JSON.parse(out); } catch { return null; }
+}
+async function askJSON(env, sys, user, maxTokens, valid) {
+  if (!env.ANTHROPIC_API_KEY) return null;
+  const tries = [[MODELS[0], maxTokens], [MODELS[0], Math.round(maxTokens * 1.6)], [MODELS[1] || MODELS[0], Math.round(maxTokens * 1.6)]];
+  for (const [model, max] of tries) {
+    try {
+      const r = await fetch("https://api.anthropic.com/v1/messages", { method: "POST",
+        headers: { "content-type": "application/json", "x-api-key": env.ANTHROPIC_API_KEY, "anthropic-version": "2023-06-01" },
+        body: JSON.stringify({ model, max_tokens: max, system: sys, messages: [{ role: "user", content: user }] }) });
+      if (!r.ok) { if (r.status === 429 || r.status >= 500) await new Promise(res => setTimeout(res, 800)); continue; }
+      const j = await r.json();
+      const o = parseLooseJSON((j.content || []).map(c => c.text || "").join(""));
+      if (o && (!valid || valid(o))) return o;
+    } catch {}
+  }
+  return null;
+}
+
 /* Claude에게 한 턴 판정을 맡긴다. 실패하면 스탯으로 굴린다. */
 async function judge(env, s, b, action, said, used, skill) {
   const ACT = { attack: skill ? `${skill.label} 「${skill.name}」 (${skill.desc || "설명 없음"}) · 일반 공격 피해의 약 ${Math.round(skill.eff * 100) / 100}배${skill.bonus ? ` + 잔향 추가 피해 ${skill.bonus}` : ""}${skill.critHit ? " · 급소에 맞았다(배율에 이미 반영)" : ""}${skill.sure ? " · 빗나가지 않는다" : ""}${skill.weaken ? " · 적의 움직임을 묶어 반격이 약해진다" : ""}${skill.recoil ? " · 쓰고 나면 반동으로 다음 턴에 움직이지 못한다" : ""}` : "일반 공격", rest: "기술의 반동으로 움직이지 못한다 (이번 턴 행동 없음 · 적에게 주는 피해 0)", guard: "방어", echo: "잔향 능력 사용", item: used ? `아이템 「${used.name}」 사용 (${used.label}, 이번 턴 공격 없음)` : "아이템", run: "도주", custom: `직접 입력: "${said}"` };
@@ -1317,19 +1344,9 @@ narration은 한국어 한두 문장, 3인칭이 아닌 2인칭 서술 없이 �
 적: ${b.enemy.name} · HP ${b.enemy.hp}/${b.enemy.hpMax} · 공격 ${b.enemy.atk} · 방어 ${b.enemy.def} · 민첩 ${b.enemy.spd} · 상태 ${b.enemy.state}${fxText(b.enemy.fx, b.turn) ? " · 걸린 효과 " + fxText(b.enemy.fx, b.turn) : ""}
 직전 기록: ${b.log.slice(-3).map(l => l.text).join(" / ")}
 이번 턴 행동: ${ACT[action]}`;
-  try {
-    if (!env.ANTHROPIC_API_KEY) throw 0;
-    const r = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: { "content-type": "application/json", "x-api-key": env.ANTHROPIC_API_KEY, "anthropic-version": "2023-06-01" },
-      body: JSON.stringify({ model: MODELS[0], max_tokens: 400, system: sys, messages: [{ role: "user", content: user }] }),
-    });
-    const j = await r.json();
-    const t = (j.content || []).map(c => c.text || "").join("");
-    const o = JSON.parse(t.slice(t.indexOf("{"), t.lastIndexOf("}") + 1));
-    if (typeof o.narration !== "string") throw 0;
-    return o;
-  } catch {
+  const got = await askJSON(env, sys, user, 600, x => typeof x.narration === "string" && x.narration.trim());
+  if (got) return got;
+  {
     const rnd = (a, z) => a + Math.floor(Math.random() * (z - a + 1));
     let dmg = 0;
     if (action === "attack" || action === "custom") dmg = Math.max(3, Math.round(s.atk * 0.8 * (skill ? skill.eff : 1) + (skill ? skill.bonus : 0) - b.enemy.def * 0.35 + rnd(skill && skill.sure ? 0 : -4, 8)));
@@ -1414,7 +1431,13 @@ async function gmSync(env, now) {
     await notion(env, "PATCH", "/pages/" + pg.id, { properties: { "GM 적용": { checkbox: false }, "GM 체력": nText(""), "GM 잔향": nText(""), "GM 경험치": { number: null }, "GM 아이템": nText(""), "GM 아이템 설명": nText(""), ...(P["GM 소모품"] ? { "GM 소모품": { select: null } } : {}), ...(P["GM 개수"] ? { "GM 개수": { number: null } } : {}), "GM 결과": nText(`${stamp} · ${done.join(" · ") || "바꿀 내용이 없었어요"}`) } });
   }
 }
+const STORY_RETRY = "URIM과의 연결이 잠시 끊겼어요. 방금 행동을 한 번 더 보내 주세요.";
 function applyStory(run, o) {
+  if (o.retry) {   // 이번 행동은 없던 것으로 하고 다시 받는다
+    if (run.log.length && run.log[run.log.length - 1].who === "me") run.log.pop();
+    if (!run.log.length || run.log[run.log.length - 1].text !== STORY_RETRY) run.log.push({ who: "sys", text: STORY_RETRY });
+    return;
+  }
   run.step = (run.step || 0) + 1;
   run.log.push({ who: "urim", text: String(o.narration || "…").slice(0, 1200) });
   run.choices = Array.isArray(o.choices) ? o.choices.filter(c => typeof c === "string" && c.trim()).slice(0, 3).map(c => c.slice(0, 60)) : [];
@@ -1444,18 +1467,10 @@ ${st.enemy ? `[전투 상대] ${st.enemy}` : ""}`;
 [지금까지]
 ${hist || "(아직 시작 전)"}
 ${said ? `[이번 행동] ${me.name}: ${said}` : run.afterBattle ? "[요청] 전투가 끝난 뒤의 장면을 이어 주세요. battle은 false." : "[요청] 첫 장면을 열어 주세요."}${run.afterBattle ? `\n[방금 전투 결과] ${run.afterBattle}` : ""}`;
-  try {
-    if (!env.ANTHROPIC_API_KEY) throw 0;
-    const r = await fetch("https://api.anthropic.com/v1/messages", { method: "POST",
-      headers: { "content-type": "application/json", "x-api-key": env.ANTHROPIC_API_KEY, "anthropic-version": "2023-06-01" },
-      body: JSON.stringify({ model: MODELS[0], max_tokens: 900, system: sys, messages: [{ role: "user", content: userMsg }] }) });
-    const j = await r.json();
-    const t = (j.content || []).map(c => c.text || "").join("");
-    const o = JSON.parse(t.slice(t.indexOf("{"), t.lastIndexOf("}") + 1));
-    if (typeof o.narration !== "string") throw 0;
-    run.afterBattle = null;
-    return o;
-  } catch {
+  const got = await askJSON(env, sys, userMsg, 1400, x => typeof x.narration === "string" && x.narration.trim());
+  if (got) { run.afterBattle = null; return got; }
+  if (env.ANTHROPIC_API_KEY) return { retry: true };   // 잠깐 끊긴 것: 줄거리 지시문을 그대로 보여 주지 않고 다시 보내 달라고 한다
+  {
     // AI를 쓸 수 없을 때: 줄거리의 번호 줄을 한 줄씩 읽어 준다
     const lines = String(st.outline || "").split("\n").map(x => x.trim()).filter(x => /^(\d+\.|-)\s/.test(x)).map(x => x.replace(/^(\d+\.|-)\s*/, ""));
     const i = Math.min(run.step || 0, lines.length);
