@@ -121,7 +121,7 @@ AG.fitStage = function (stage) {
   }
   AG.vh0 = Math.max(AG.vh0 || 0, innerHeight);                    // 키보드가 올라와도 배치와 크기는 그대로
   const s = innerWidth / AG.MW; AG.scale = s; AG.mh = Math.max(1500, AG.vh0 / s);
-  document.documentElement.style.setProperty('--mh', AG.mh + 'px');
+  document.documentElement.style.setProperty('--mh', AG.mh + 'px'); document.documentElement.style.setProperty('--mhn', AG.mh);
   let y = 0;
   const vv = window.visualViewport;
   if (vv && vv.height < AG.vh0 - 120) y = Math.min(0, vv.offsetTop + vv.height - AG.mh * s);   // 키보드가 가리면 아래쪽(입력창)이 보이게 위로 민다

@@ -53,10 +53,11 @@ html:is(.m-group, .m-private, .m-dm) .msg.me .bub { width: fit-content; max-widt
   background: repeating-conic-gradient(rgba(0,0,0,.16) 0 25%, transparent 0 50%) 0 0 / 28px 28px, linear-gradient(90deg, #8f8f8f, #3a3a3a 62%, #1d1d1d); }
 html:is(.m-group, .m-private, .m-dm) .msg.me .bub > svg { display: none; }
 html:is(.m-group, .m-private, .m-dm) .msg.me .bd { width: auto; margin: 0; padding: 30px 54px 34px 62px; text-align: left; }
-/* ── 커버 (로딩 · 로그인 · 회원가입): 가운데 묶음을 화면 가운데로 ── */
-html.m-index .L.cv { scale: .7 !important; transform-origin: 1280px 720px !important; transform: translate(calc(-765px / .7), calc((var(--mh) / 2 - 720px) / .7)); animation: m-in .5s ease-out backwards !important; }
-html.m-index .L.panel { scale: 1.04 !important; transform-origin: 1280px 720px !important; transform: translate(calc(-779px / 1.04), calc((var(--mh) / 2 - 720px) / 1.04)); animation: none !important; }
-html.m-index #signupP { transform: translate(calc(-779px / 1.04), calc((var(--mh) / 2 - 700px) / 1.04)); }
+/* ── 커버 (로딩 · 로그인 · 회원가입): 가운데 묶음을 화면 폭에 꽉 차게 키워 화면 가운데에 ── */
+html.m-index { --cs: .95; --ps: min(1.38, calc((var(--mhn, 1900) - 120) / 1180)); }   /* 로고 묶음 / 로그인 창의 배율 (창은 화면 높이를 넘지 않게) */
+html.m-index .L.cv { scale: var(--cs) !important; transform-origin: 1280px 720px !important; transform: translate(calc(-765px / var(--cs)), calc((var(--mh) / 2 - 760px) / var(--cs))); animation: none !important; }
+html.m-index .L.panel { scale: var(--ps) !important; transform-origin: 1280px 720px !important; transform: translate(calc(-779px / var(--ps)), calc((var(--mh) / 2 - 720px) / var(--ps))); }
+html.m-index #signupP { transform: translate(calc(-779px / var(--ps)), calc((var(--mh) / 2 - 700px) / var(--ps))); }
 html.m-index .L.cv:last-of-type > p { display: none; }
 html.m-index #demoBtn { left: 1030px !important; top: 1290px !important; width: 500px; text-align: center; font-size: 30px !important; }
 html.m-index .dim { width: var(--mw); height: var(--mh); }
