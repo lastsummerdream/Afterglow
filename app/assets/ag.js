@@ -1171,12 +1171,12 @@ AG.bgm = (() => {
   };
 })();
 
-/* ── 마우스 커서: 비스듬한 화살촉 + 네 갈래 별 (누를 수 있는 곳에서는 밝은 색) ── */
+/* ── 마우스 커서: 입체로 깎은 네 갈래 별 + 불꽃 (누를 수 있는 곳에서는 불꽃이 달아오른다). 가리키는 점은 별의 한가운데 ── */
 if (matchMedia('(pointer: fine)').matches) {
   const st = document.createElement('style');
-  st.textContent = `html, body, #stage { cursor: url(assets/cursor.png) 2 2, auto; }
-a, button, select, summary, label[for], [role="button"], [role="link"], [role="option"], [tabindex="0"], [data-menu], .hb, .opt, .side-btn, .top-btn, .row, .post, .cellbtn, .strip, .bw-row, .bw-btn, .tablink { cursor: url(assets/cursor-on.png) 2 2, pointer !important; }
-button:disabled, [disabled] { cursor: url(assets/cursor.png) 2 2, not-allowed !important; }
+  st.textContent = `html, body, #stage { cursor: url(assets/cursor.png) 12 12, auto; }
+a, button, select, summary, label[for], [role="button"], [role="link"], [role="option"], [tabindex="0"], [data-menu], .hb, .opt, .side-btn, .top-btn, .row, .post, .cellbtn, .strip, .bw-row, .bw-btn, .tablink { cursor: url(assets/cursor-on.png) 12 12, pointer !important; }
+button:disabled, [disabled] { cursor: url(assets/cursor.png) 12 12, not-allowed !important; }
 input:not([type="range"]):not([type="checkbox"]):not([type="radio"]), textarea, [contenteditable] { cursor: text; }`;
   document.head.appendChild(st);
 }

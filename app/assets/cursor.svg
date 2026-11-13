@@ -1,5 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
-<defs><linearGradient id="c" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0c0c0c"/><stop offset="1" stop-color="#6a6a6a"/></linearGradient></defs>
-<path d="M2.5 2.5 L20.5 9.5 L13.6 12.4 L19.2 19.6 L16.4 21.8 L10.8 14.6 L7.2 20.6 Z" fill="url(#c)" stroke="#f4f4f4" stroke-width="1.6" stroke-linejoin="miter"/>
-<path d="M24 19 Q24.6 23.4 29 24 Q24.6 24.6 24 29 Q23.4 24.6 19 24 Q23.4 23.4 24 19 Z" fill="#0c0c0c" stroke="#f4f4f4" stroke-width=".8"/>
-</svg>
+<defs><linearGradient id="fl" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e9e9e9"/><stop offset="1" stop-color="#8f8f8f"/></linearGradient>
+<filter id="sh" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0.6" dy="1" stdDeviation="0.7" flood-color="#000" flood-opacity=".55"/></filter></defs>
+<g filter="url(#sh)">
+<path d="M24.6 16.2 C25.4 19 28.8 20.4 28.8 24.6 C28.8 27.8 26.6 30 23.8 30 C21 30 18.8 27.9 18.8 25 C18.8 23 19.9 21.8 20.6 20.4 C21 21.8 21.6 22.4 22.4 22.5 C22.2 20.2 23 18 24.6 16.2 Z" fill="url(#fl)"/>
+<path d="M24 23.2 C24.4 24.6 26.2 25.4 26.2 27.2 C26.2 28.6 25.2 29.6 23.9 29.6 C22.6 29.6 21.6 28.6 21.6 27.3 C21.6 26.4 22.1 25.8 22.5 25.2 C22.7 25.8 23 26.1 23.4 26.1 C23.3 25.1 23.5 24.1 24 23.2 Z" fill="#ffffff"/>
+<path d="M12.5,12.5 L10.00,10.00 L12.50,1.00 Z" fill="#ffffff"/><path d="M12.5,12.5 L12.50,1.00 L15.00,10.00 Z" fill="#3a3a3a"/><path d="M12.5,12.5 L15.00,10.00 L22.39,12.50 Z" fill="#d9d9d9"/><path d="M12.5,12.5 L22.39,12.50 L15.00,15.00 Z" fill="#3a3a3a"/><path d="M12.5,12.5 L15.00,15.00 L12.50,23.08 Z" fill="#1c1c1c"/><path d="M12.5,12.5 L12.50,23.08 L10.00,15.00 Z" fill="#0a0a0a"/><path d="M12.5,12.5 L10.00,15.00 L2.61,12.50 Z" fill="#ffffff"/><path d="M12.5,12.5 L2.61,12.50 L10.00,10.00 Z" fill="#1c1c1c"/>
+</g></svg>
