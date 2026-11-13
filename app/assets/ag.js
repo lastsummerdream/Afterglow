@@ -97,11 +97,11 @@ AG.stretchSides = function () {
    좌우 패널은 피그마 모양 그대로 서랍처럼 꺼내 본다. */
 AG.M_PAGES = { index: { css: 1 }, main: { css: 1 },
   stats: { start: 1, panes: [{ label: '일러스트', stack: ['left'] }, { label: '명부', stack: ['center', 'bottom'] }, { label: '전투 스탯', stack: ['right'] }] },
-  battle: { panes: [{ label: '전투', stack: ['right', 'left'] }] }, party: { panes: [{ label: '전투', stack: ['right', 'left'] }] },
+  battle: { reserve: 740, panes: [{ label: '전투', stack: ['right', 'left'] }] }, party: { reserve: 740, panes: [{ label: '전투', stack: ['right', 'left'] }] },
   inventory: { jump: ['.cellbtn', 1], panes: [{ label: '목록', stack: [], free: ['center'] }, { label: '상세', stack: ['right'] }] },
   home: { panes: [{ label: '방', stack: ['center', 'bottom'] }, { label: '가구', stack: ['right'] }] },
   settings: { panes: [{ label: '계정', stack: ['left'] }, { label: '캐릭터', stack: ['center', 'bottom'] }, { label: '대사', stack: ['right'] }] },
-  timeline: { start: 1, jump: ['.post:not(.story)', 2], panes: [{ label: '글쓰기', stack: ['left'] }, { label: '글', stack: ['center', 'bottom'] }, { label: '댓글', stack: ['right'] }] },
+  timeline: { start: 1, jump: ['.post:not(.story)', 2], panes: [{ label: '글쓰기', stack: ['left'], content: true }, { label: '글', stack: ['center'], fill: true }, { label: '댓글', stack: ['right'] }] },
   enter: { css: 1 }, story: { css: 1 },
   group: { drawers: { left: '채널', right: '접속' }, mid: '대화', fit: ['center'] },
   private: { drawers: { left: '대화 목록', right: '정보' }, mid: '대화', fit: ['center'] },
@@ -111,7 +111,7 @@ AG.M = !!AG.M_PAGES[AG.page] && innerWidth < innerHeight && innerWidth <= 820;
 if (AG.M) document.documentElement.classList.add('m', 'm-' + AG.page);
 if (AG.M && AG.M_PAGES[AG.page].drawers) document.documentElement.classList.add('m-dr');
 { const w0 = innerWidth; addEventListener('resize', () => { if (Math.abs(innerWidth - w0) > 120) location.reload(); }); }   // 화면을 돌리면 배치를 새로
-AG.MW = 1030; AG.MH = 1980;   // 세로 캔버스: 어떤 폰에서도 이 비율 그대로 줄이거나 늘려서 보여 준다
+AG.MW = 1030;   // 세로 캔버스의 폭. 항상 화면 폭에 꽉 맞추고(양옆 여백 없음), 높이는 화면 비율만큼 — 위쪽은 위에, 아래쪽은 아래에 붙여 배치한다
 AG.fitStage = function (stage) {
   if (!AG.M) {
     const s = Math.min(innerWidth / 2560, innerHeight / 1440);
@@ -120,12 +120,13 @@ AG.fitStage = function (stage) {
     return;
   }
   AG.vh0 = Math.max(AG.vh0 || 0, innerHeight);                    // 키보드가 올라와도 배치와 크기는 그대로
-  const s = Math.min(innerWidth / AG.MW, AG.vh0 / AG.MH); AG.scale = s; AG.mh = AG.MH;
-  let y = (AG.vh0 - AG.MH * s) / 2;
+  const s = innerWidth / AG.MW; AG.scale = s; AG.mh = Math.max(1500, AG.vh0 / s);
+  document.documentElement.style.setProperty('--mh', AG.mh + 'px');
+  let y = 0;
   const vv = window.visualViewport;
-  if (vv && vv.height < AG.vh0 - 120) y = Math.min(y, vv.offsetTop + vv.height - AG.MH * s);   // 키보드가 가리면 아래쪽(입력창)이 보이게 위로 민다
-  stage.style.width = AG.MW + 'px'; stage.style.height = AG.MH + 'px';
-  stage.style.transform = `translate(${(innerWidth - AG.MW * s) / 2}px, ${y}px) scale(${s})`;
+  if (vv && vv.height < AG.vh0 - 120) y = Math.min(0, vv.offsetTop + vv.height - AG.mh * s);   // 키보드가 가리면 아래쪽(입력창)이 보이게 위로 민다
+  stage.style.width = AG.MW + 'px'; stage.style.height = AG.mh + 'px';
+  stage.style.transform = `translate(0px, ${y}px) scale(${s})`;
   AG.mobileLayout && AG.mobileLayout();
 };
 if (AG.M) { const st = document.getElementById('stage'); if (st) { AG.fitStage(st); addEventListener('resize', () => AG.fitStage(st)); } }
@@ -134,11 +135,11 @@ AG.mobileSetup = function () {
   const cfg = AG.M_PAGES[AG.page] || {}, stage = document.getElementById('stage'), root = document.documentElement;
   const sr = stage.getBoundingClientRect(), S = AG.scale;
   // 영역의 실제 크기: 바탕 도형 + 그 위의 글씨·버튼 (화면 밖으로 나간 부분은 뺀다)
-  const box = r => {
+  const box = (r, contentOnly) => {
     let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9;
     const add = (x, y, w, h) => { if (!(w > 0 && h > 0)) return; x = Math.max(0, x); y = Math.max(0, y); const xe = Math.min(2560, x + w), ye = Math.min(1440, y + h); if (xe <= x || ye <= y) return; x0 = Math.min(x0, x); y0 = Math.min(y0, y); x1 = Math.max(x1, xe); y1 = Math.max(y1, ye); };
     document.querySelectorAll(`#stage .L[data-r="${r}"]`).forEach(L => {
-      const svg = L.querySelector(':scope > svg.sh'); if (svg) { try { const b = svg.getBBox(); add(b.x, b.y, b.width, b.height); } catch {} }
+      const svg = L.querySelector(':scope > svg.sh'); if (svg && !contentOnly) { try { const b = svg.getBBox(); add(b.x, b.y, b.width, b.height); } catch {} }
       [...L.children].forEach(c => { if (c === svg || c.hidden) return; const b = c.getBoundingClientRect(); add((b.left - sr.left) / S, (b.top - sr.top) / S, b.width / S, b.height / S); });
     });
     return x1 > x0 ? { x: x0, y: y0, width: x1 - x0, height: y1 - y0 } : null;
@@ -146,28 +147,39 @@ AG.mobileSetup = function () {
   const regions = [...new Set([...document.querySelectorAll('#stage .L[data-r]')].map(L => L.dataset.r))];
   const src = {}; regions.forEach(r => src[r] = box(r)); AG._boxes = src;
   const put = (r, tx, ty, k, shapeOnly) => document.querySelectorAll(`#stage .L[data-r="${r}"]${shapeOnly ? ':not([id])' : ''}`).forEach(L => L.style.transform = `translate(${tx}px, ${ty}px) scale(${k})`);
+  (cfg.panes || []).forEach(p => { if (p.content) p.stack.forEach(r => { const b = box(r, true); if (b) src[r] = { x: b.x - 30, y: b.y - 30, width: b.width + 60, height: b.height + 60 }; }); });   // 바탕이 화면 밖까지 뻗은 패널은 내용 크기로 맞춘다
   if (cfg.panes) cfg.panes = cfg.panes.filter(p => p.stack.some(r => src[r]) || (p.free || []).length);   // 이 화면에 없는 영역만 있는 칸은 뺀다
   const TOP = cfg.top || 190, BOT = cfg.panes || cfg.drawers ? 124 : 30;
   AG.mobileLayout = () => {
     if (src.tabs && !cfg.css) { const b = src.tabs, k = Math.min(1, (AG.MW - 80) / b.width); put('tabs', 40 - b.x * k, 150 - b.y * k, k); }
     for (const r of Object.keys(cfg.drawers || {})) {   // 서랍: 패널을 원래 크기로 화면 가운데 위쪽에
       const b = src[r]; if (!b) continue;
-      const k = Math.min(1, (AG.MW - 40) / b.width, (AG.MH - 170 - 124) / b.height);
+      const k = Math.min(1, (AG.MW - 40) / b.width, (AG.mh - 170 - 124) / b.height);
       put(r, (AG.MW - b.width * k) / 2 - b.x * k, 170 - b.y * k, k);
     }
     for (const r of cfg.fit || []) {   // 본문 바탕: 모양을 화면 크기에 맞게 늘린다 (내용은 CSS로 배치)
       const svg = document.querySelector(`#stage .L[data-r="${r}"]:not([id]) > svg.sh`); let b; try { b = svg.getBBox(); } catch {} if (!b || !b.width) continue;
-      const x = 24, y = 196, w = AG.MW - 48, h = AG.MH - y - 250;
+      const x = 24, y = 196, w = AG.MW - 48, h = AG.mh - y - 250;
       document.querySelectorAll(`#stage .L[data-r="${r}"]:not([id])`).forEach(L => L.style.transform = `translate(${x - b.x * w / b.width}px, ${y - b.y * h / b.height}px) scale(${w / b.width}, ${h / b.height})`);
     }
     (cfg.panes || []).forEach(p => {   // 칸: 영역들을 위에서 아래로 쌓고 화면 폭에 맞춘다
       const rs = p.stack.filter(r => src[r]); if (!rs.length) return;
-      const gap = p.gap ?? 26, maxK = p.max || 1.3, availH = AG.MH - TOP - BOT - (src.tabs ? 70 : 0), top0 = TOP + (src.tabs ? 70 : 0);
+      const gap = p.gap ?? 26, maxK = p.max || 1.3, availH = AG.mh - TOP - BOT - (src.tabs ? 70 : 0) - (cfg.reserve || 0), top0 = TOP + (src.tabs ? 70 : 0);
       let ks = rs.map(r => Math.min(maxK, (AG.MW - 40) / src[r].width));
       const total = () => rs.reduce((a, r, i) => a + src[r].height * ks[i], 0) + gap * (rs.length - 1);
       if (total() > availH) { const f = (availH - gap * (rs.length - 1)) / (total() - gap * (rs.length - 1)); ks = ks.map(k => k * f); }
       let y = top0 + (p.center ? Math.max(0, (availH - total()) / 2) : 0);
+      if (p.fill && rs.length === 1) {   // 세로로 화면 끝까지: 바탕은 늘리고 목록은 그만큼 길게
+        const r = rs[0], b = src[r], k = ks[0], sy = Math.max(1, availH / (b.height * k)), tx = (AG.MW - b.width * k) / 2 - b.x * k;
+        document.querySelectorAll(`#stage .L[data-r="${r}"]`).forEach(L => {
+          if (L.id) { L.style.transform = `translate(${tx}px, ${y - b.y * k}px) scale(${k})`;
+            L.querySelectorAll('.scroll').forEach(el => { el.dataset.h0 = el.dataset.h0 || el.offsetHeight; el.style.height = (+el.dataset.h0 + (availH - b.height * k) / k) + 'px'; }); }
+          else L.style.transform = `translate(${tx}px, ${y - b.y * k * sy}px) scale(${k}, ${k * sy})`;
+        });
+        root.style.setProperty('--se', (y + availH) + 'px'); return;
+      }
       rs.forEach((r, i) => { const b = src[r], k = ks[i]; put(r, (AG.MW - b.width * k) / 2 - b.x * k, y - b.y * k, k); y += b.height * k + gap; });
+      root.style.setProperty('--se', y + 'px');   // 쌓은 영역이 끝나는 높이 (그 아래에 CSS로 배치하는 것들이 쓴다)
     });
   };
   const tabs = cfg.panes ? cfg.panes.map((p, i) => [String(i), p.label]) : cfg.drawers ? (() => { const it = Object.entries(cfg.drawers), mid = ['', cfg.mid || '본문']; return it.length > 1 ? [it[0], mid, ...it.slice(1)] : [mid, ...it]; })() : null;

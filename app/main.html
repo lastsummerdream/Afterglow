@@ -237,7 +237,7 @@
 .zoom-panel b { width: 70px; text-align: right; font-weight: 900; }
 .zoom-panel button { height: 46px; padding: 0 20px; border-radius: 23px; background: rgba(255,255,255,.14); color: #fff; font-size: 20px; font-weight: 700; white-space: nowrap; }
 .zoom-panel button:hover { background: rgba(255,255,255,.26); }
-/* ── 모바일(세로): 1030 × 1980 고정 캔버스. 위에서부터 URIM · 레벨 / 일러스트(+사이드 메뉴) / 대사창 / 하단 메뉴 ── */
+/* ── 모바일(세로): 폭 1030 캔버스(화면 폭에 꽉 맞춤, 높이는 화면 비율대로). 위에서부터 URIM · 레벨 / 일러스트(+사이드 메뉴) / 대사창 / 하단 메뉴 ── */
 .m-menu { display: none; }
 html.m .play, html.m .canvas { width: var(--mw); height: var(--mh); }
 html.m .urim { left: 30px; top: 112px; scale: .66; transform-origin: 0 0; }
@@ -245,18 +245,18 @@ html.m .urim-line { font-size: 36px; }
 html.m .namegrp { display: none; }
 html.m .lvl { left: 566px; top: 210px; scale: .74; transform-origin: 0 0; }
 html.m .chargrp { left: 95px; top: 370px; scale: .7; transform-origin: 0 0; }
-html.m .sidegrp { left: -84px; top: 196px; scale: .68; transform-origin: 0 0; }
+html.m .sidegrp { left: -170px; top: 150px; scale: .78; transform-origin: 0 0; }
 html.m .sidegrp > img { display: none; }
 html.m .side-btn .txt { font-size: 30px; }
-html.m .optgrp { left: 702px; top: 1276px; scale: .9; transform-origin: 0 0; }
+html.m .optgrp { left: 702px; top: calc(var(--mh) - 704px); scale: .9; transform-origin: 0 0; }
 html.m .zoom-panel { left: auto; right: 0; width: 470px; }
-html.m .dlggrp { left: 156px; top: 1376px; scale: .62; transform-origin: 0 0; }
+html.m .dlggrp { left: 156px; top: calc(var(--mh) - 604px); scale: .62; transform-origin: 0 0; }
 html.m .dialogue .line { font-size: 44px; line-height: 1.4; }
 html.m .nameplate { font-size: 40px; }
 html.m .layer, html.m .hit { display: none !important; }   /* 가로 화면용 메인 메뉴는 숨기고 아래 메뉴를 쓴다 */
 html.m .side-btn .tip, html.m .opt .tip { display: none; }
 /* 하단 메뉴: 큰 띠 하나(전투 진입) + 작은 칸 넷. 어두운 사선 띠 · 체크 무늬 · 위에서 아래로 밝아지는 글씨 */
-html.m .m-menu { display: block; position: absolute; left: 0; top: 1558px; width: var(--mw); height: 422px; z-index: 12; pointer-events: none; animation: mmUp .7s cubic-bezier(.2,.8,.2,1) .35s backwards; }
+html.m .m-menu { display: block; position: absolute; left: 0; top: calc(var(--mh) - 422px); width: var(--mw); height: 422px; z-index: 12; pointer-events: none; animation: mmUp .7s cubic-bezier(.2,.8,.2,1) .35s backwards; }
 html.m.visit .m-menu { display: none; }
 @keyframes mmUp { from { opacity: 0; translate: 0 80px; } }
 .m-menu::before { content: ""; position: absolute; left: 0; right: 0; top: 60px; bottom: 0; background: linear-gradient(180deg, rgba(14,14,14,0), rgba(14,14,14,.82) 38%, #0e0e0e); }
@@ -274,8 +274,8 @@ html.m.visit .m-menu { display: none; }
 .m-menu .mm-sub:nth-of-type(odd) { --bg: linear-gradient(100deg, #2b2b2b, #636363); }
 .m-menu .mm-sub b { font-size: 44px; margin: 0 auto; }
 .m-menu .mm-sub small { font-size: 17px; margin-top: 12px; letter-spacing: .22em; }
-html.m.visit .vinfo { left: 175px; top: 1380px; width: 680px; scale: 1; padding: 34px 70px 36px; }
-html.m.visit .dlggrp { top: 1210px; }
+html.m.visit .vinfo { left: 175px; top: calc(var(--mh) - 600px); width: 680px; scale: 1; padding: 34px 70px 36px; }
+html.m.visit .dlggrp { top: calc(var(--mh) - 770px); }
 html.m.visit .chargrp { top: 230px; }
 /* 다른 캐릭터 구경 (main.html?visit=…): 메뉴를 감추고 간단한 정보만 */
 .vinfo { display: none; }

@@ -1,5 +1,5 @@
-/* 모바일(세로) 화면: html.m 일 때만. 고정 비율 캔버스 1030 × 1980 (화면에 맞춰 통째로 줄인다) */
-html.m { --mw: 1030px; --mh: 1980px; }
+/* 모바일(세로) 화면: html.m 일 때만. 폭 1030 캔버스를 화면 폭에 꽉 맞춘다. 높이 var(--mh)는 화면 비율에 따라 달라지므로 아래쪽 요소는 아래에 붙인다 */
+html.m { --mw: 1030px; }
 html.m, html.m body { background: #0e0e0e; touch-action: manipulation; }
 /* 화면 비율이 캔버스와 다르면 남는 자리는 흐린 배경으로 채운다 */
 html.m body::before { content: ""; position: fixed; inset: -60px; background: url(bg.jpg) 62% center / cover; filter: blur(26px) brightness(.5); }
@@ -64,25 +64,25 @@ html.m .L.m-off * { pointer-events: none !important; }
 
 /* ── 전투 · 파티 전투: 적 / 아군 패널은 그대로 쌓고, 기록과 행동 버튼은 화면에 맞게 다시 배치 ── */
 html:is(.m-battle, .m-party) .L[data-r="center"]:not([id]), html:is(.m-battle, .m-party) .L[data-r="bottom"]:not([id]) { display: none; }
-html:is(.m-battle, .m-party) #turn { left: 355px !important; top: 1030px !important; color: #f2f2f2; text-shadow: 0 2px 10px rgba(0,0,0,.6); }
-html:is(.m-battle, .m-party) #L-center > p.t:not(#turn) { left: 60px !important; top: 1104px !important; color: #e6e6e6; }
-html:is(.m-battle, .m-party) #log { left: 40px !important; top: 1150px !important; width: 950px !important; height: 440px !important; padding: 26px 30px 30px !important; box-sizing: border-box; background: rgba(222,222,222,.78); }
+html:is(.m-battle, .m-party) #turn { left: 355px !important; top: calc(var(--se) - 6px) !important; color: #f2f2f2; text-shadow: 0 2px 10px rgba(0,0,0,.6); }
+html:is(.m-battle, .m-party) #L-center > p.t:not(#turn) { left: 60px !important; top: calc(var(--se) + 64px) !important; color: #e6e6e6; }
+html:is(.m-battle, .m-party) #log { left: 40px !important; top: calc(var(--se) + 108px) !important; width: 950px !important; height: calc(var(--mh) - var(--se) - 108px - 386px) !important; padding: 26px 30px 30px !important; box-sizing: border-box; background: rgba(222,222,222,.78); }
 html:is(.m-battle, .m-party) .ent { margin-bottom: 30px; flex-direction: column; }
 html:is(.m-battle, .m-party) .ent .lb { width: auto; }
 html:is(.m-battle, .m-party) .ent .tx { width: auto; }
 html:is(.m-battle, .m-party) #L-bottom > p.t:not(#foot) { display: none; }
-html:is(.m-battle, .m-party) #L-bottom .hb[data-act] { top: 1622px !important; width: 182px !important; height: 92px !important; clip-path: polygon(14px 0, 100% 0, calc(100% - 14px) 100%, 0 100%) !important; background: repeating-conic-gradient(rgba(0,0,0,.18) 0 25%, transparent 0 50%) 0 0 / 26px 26px, linear-gradient(98deg, #1a1a1a, #5c5c5c); }
+html:is(.m-battle, .m-party) #L-bottom .hb[data-act] { top: calc(var(--mh) - 358px) !important; width: 182px !important; height: 92px !important; clip-path: polygon(14px 0, 100% 0, calc(100% - 14px) 100%, 0 100%) !important; background: repeating-conic-gradient(rgba(0,0,0,.18) 0 25%, transparent 0 50%) 0 0 / 26px 26px, linear-gradient(98deg, #1a1a1a, #5c5c5c); }
 html:is(.m-battle, .m-party) #L-bottom .hb[data-act]::after { content: attr(aria-label); font-size: 30px; font-weight: 900; color: #f2f2f2; }
 html:is(.m-battle, .m-party) #L-bottom .hb[data-act]:nth-of-type(1) { left: 40px !important; }
 html:is(.m-battle, .m-party) #L-bottom .hb[data-act]:nth-of-type(2) { left: 232px !important; }
 html:is(.m-battle, .m-party) #L-bottom .hb[data-act]:nth-of-type(3) { left: 424px !important; }
 html:is(.m-battle, .m-party) #L-bottom .hb[data-act]:nth-of-type(4) { left: 616px !important; }
 html:is(.m-battle, .m-party) #L-bottom .hb[data-act]:nth-of-type(5) { left: 808px !important; }
-html:is(.m-battle, .m-party) #L-bottom::before { content: ""; position: absolute; left: 30px; top: 1744px; width: 970px; height: 96px; clip-path: polygon(0 0, calc(100% - 22px) 0, 100% 100%, 22px 100%); background: linear-gradient(90deg, rgba(12,12,12,.94), rgba(70,70,70,.9)); }
-html:is(.m-battle, .m-party) #actInput { left: 80px !important; top: 1760px !important; width: 780px !important; height: 64px !important; font-size: 26px !important; }
-html:is(.m-battle, .m-party) #sendBtn { left: 892px !important; top: 1754px !important; width: 76px !important; height: 76px !important; border-radius: 50%; background: #e6e6e6; }
+html:is(.m-battle, .m-party) #L-bottom::before { content: ""; position: absolute; left: 30px; top: calc(var(--mh) - 236px); width: 970px; height: 96px; clip-path: polygon(0 0, calc(100% - 22px) 0, 100% 100%, 22px 100%); background: linear-gradient(90deg, rgba(12,12,12,.94), rgba(70,70,70,.9)); }
+html:is(.m-battle, .m-party) #actInput { left: 80px !important; top: calc(var(--mh) - 220px) !important; width: 780px !important; height: 64px !important; font-size: 26px !important; }
+html:is(.m-battle, .m-party) #sendBtn { left: 892px !important; top: calc(var(--mh) - 226px) !important; width: 76px !important; height: 76px !important; border-radius: 50%; background: #e6e6e6; }
 html:is(.m-battle, .m-party) #sendBtn::before { content: ""; width: 26px; height: 26px; background: #1e1e1e; clip-path: polygon(0 0, 100% 50%, 0 100%, 24% 50%); margin-left: 6px; }
-html:is(.m-battle, .m-party) #foot { left: 44px !important; top: 1868px !important; width: 940px; white-space: normal !important; color: #dcdcdc !important; font-size: 22px !important; line-height: 1.4; }
+html:is(.m-battle, .m-party) #foot { left: 44px !important; top: calc(var(--mh) - 112px) !important; width: 940px; white-space: normal !important; color: #dcdcdc !important; font-size: 22px !important; line-height: 1.4; }
 html.m-party #lobby { left: 40px !important; top: 330px !important; width: 950px !important; }
 html.m .battle-items .bi, html.m .battle-items .sk { max-width: 100%; }
 
@@ -95,12 +95,12 @@ html.m-enter .card .big { font-size: 96px; }
 
 /* ── 스토리: 목록 / 이야기 / 선택지 / 입력 ── */
 html.m-story #sList { left: 40px !important; top: 200px !important; width: 950px !important; height: 380px !important; }
-html.m-story #sMain { left: 40px !important; top: 606px !important; width: 950px !important; height: 940px !important; }
+html.m-story #sMain { left: 40px !important; top: 606px !important; width: 950px !important; height: calc(var(--mh) - 606px - 434px) !important; }
 html.m-story .sl.me { padding-left: 90px; }
-html.m-story #choices { left: 40px !important; top: 1566px !important; width: 950px !important; gap: 12px; }
+html.m-story #choices { left: 40px !important; top: calc(var(--mh) - 414px) !important; width: 950px !important; gap: 12px; }
 html.m-story #choices .strip { height: 70px; padding: 0 34px; font-size: 26px; }
-html.m-story #stage #actInput { left: 40px !important; top: 1800px !important; width: 760px !important; }
-html.m-story #sendBtn { left: 816px !important; top: 1800px !important; }
+html.m-story #stage #actInput { left: 40px !important; top: calc(var(--mh) - 180px) !important; width: 760px !important; }
+html.m-story #sendBtn { left: 816px !important; top: calc(var(--mh) - 180px) !important; }
 html.m-story .strip { padding: 0 44px; }
 html.m .modal.battle-items { width: 950px; padding: 44px 60px; }
 html.m .modal .row { width: auto !important; height: auto !important; }
