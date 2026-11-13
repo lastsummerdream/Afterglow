@@ -552,7 +552,7 @@ function ep1(name, L, tier, type, state, loot) {
   if (type === "raider") spd += 10;
   if (type === "signal") { spd += 15; def -= 6; }
   if (type === "idol") atk *= 0.4;
-  return { name, level: L, tier, hp: Math.round(hp), atk: Math.round(atk), def: Math.round(def), spd: Math.round(spd), state, loot };
+  return { name, level: L, tier, type, hp: Math.round(hp), atk: Math.round(atk), def: Math.round(def), spd: Math.round(spd), state, loot };
 }
 const L1 = EP1_LOOT;
 const EP1_ENEMIES = [
@@ -589,6 +589,22 @@ const EP1_ENEMIES = [
   ep1("제1기관의 파편 · 몸", 20, "boss", "machine", "갈빗대 방벽", [CLUE("12 THUMMIM의 첫 파형", "몸의 방어체 안에서 새어 나온 파형. 214년 만에 따로 뛰는 박자다.")]),
 ];
 ENEMIES.push(...EP1_ENEMIES);
+/* 개인 전투 상대: 캐릭터 레벨에 맞춘다. 레벨대가 비슷한 일반 적(가끔 정예)을 고르고, 수치는 캐릭터 레벨로 다시 계산한다. 보스는 나오지 않는다. */
+function soloEnemy(level) {
+  const L = Math.max(1, Math.min(20, level || 1)), near = Math.max(5, L);
+  const pick = (tier, gap) => EP1_ENEMIES.filter(e => e.tier === tier && Math.abs(e.level - near) <= gap && e.name !== "사드락 보티건" && e.type !== "idol");
+  let pool = L >= 5 && Math.random() < 0.15 ? pick("elite", 3) : [];
+  for (let g = 2; !pool.length && g <= 20; g++) pool = pick("normal", g);
+  const t = pool[Math.floor(Math.random() * pool.length)];
+  return ep1(t.name, L, t.tier, t.type, t.state, t.loot);
+}
+// 정해진 상대(스토리)를 혼자 싸울 때: 수치를 캐릭터 레벨로 다시 계산하고, 정예·보스는 혼자서도 싸울 만하게 줄인다
+function fitSolo(e, level) {
+  const L = Math.max(1, Math.min(20, level || 1)), r = ep1(e.name, L, e.tier || "normal", e.type || "", e.state, e.loot);
+  if (r.tier === "elite") r.hp = Math.round(r.hp * 0.6);
+  if (r.tier === "boss") { r.hp = Math.round(r.hp * 0.4); r.atk = Math.round(r.atk * 0.85); }
+  return r;
+}
 // GM이 노션에서 골라 줄 수 있는 소모품 (명부의 'GM 소모품' 선택지와 이름이 같아야 한다)
 const GM_CONSUMABLES = [{ name: "붕대", rarity: "COMMON", kind: "소모품", desc: "전투 중 체력을 30 회복한다." }, ...Object.values(EP1_LOOT)];
 
@@ -943,14 +959,15 @@ ${sheet || "아직 캐릭터 정보를 적지 않았다."}
       const o = await narrate(env, st, run, me, said);
       applyStory(run, o);
       if (o.battle && !run.done) {   // 줄거리에 전투가 필요하면 전투 화면으로 보낸다
-        const en = enemyFor(o.enemy || st.enemy);
+        let en = enemyFor(o.enemy || st.enemy);
+        if (st.kind !== "group") en = fitSolo(en, me.level);   // 개인 스토리: 캐릭터 레벨에 맞춘다
         if (st.kind === "group") {
           const p = newParty(user.id, me, st.id, en);
           await DB.prepare("INSERT INTO parties (id, host_id, story_id, state, status, updated_at) VALUES (?, ?, ?, ?, 'lobby', ?)").bind(p.id, user.id, st.id, JSON.stringify(p), now).run();
           run.battle = { party: p.id, enemy: en.name };
         } else if (me.hp > 0) {
           const b = { id: randomId(), turn: 1, over: false, result: null, story: st.id, me: { name: me.name, hp: me.hp, hpMax: me.hpMax, echo: me.echoLeft, taint: me.taintTier },
-            enemy: { name: en.name, hp: en.hp, hpMax: en.hp, atk: en.atk, def: en.def, spd: en.spd, state: en.state },
+            enemy: { name: en.name, level: en.level, hp: en.hp, hpMax: en.hp, atk: en.atk, def: en.def, spd: en.spd, state: en.state },
             log: [{ kind: "urim", text: `${en.name}이(가) 길을 막았어요. 이야기는 전투가 끝난 뒤에 이어져요.` }] };
           await saveBattle(DB, user.id, b, now);
           run.battle = { solo: b.id, enemy: en.name };
@@ -978,7 +995,7 @@ ${sheet || "아직 캐릭터 정보를 적지 않았다."}
   if (path === "/party" && M === "POST") {
     const me = await statsOf(DB, user.id, now);
     if (me.hp <= 0) return bad("체력이 없어요. 창고에서 회복 아이템을 쓰고 다시 나가요");
-    const p = newParty(user.id, me, null, enemyFor(null));
+    const p = newParty(user.id, me, null, soloEnemy(me.level));   // 방장 레벨에 맞춘 상대
     await DB.prepare("INSERT INTO parties (id, host_id, story_id, state, status, updated_at) VALUES (?, ?, NULL, ?, 'lobby', ?)").bind(p.id, user.id, JSON.stringify(p), now).run();
     return ok(partyView(p, user.id, now));
   }
@@ -1051,10 +1068,10 @@ ${sheet || "아직 캐릭터 정보를 적지 않았다."}
   if (path === "/battle/start" && M === "POST") {
     const s = await statsOf(DB, user.id, now);
     if (s.hp <= 0) return bad("체력이 없어요. 창고에서 회복 아이템을 쓰고 다시 나가요");
-    const e = ENEMIES[Math.floor(Math.random() * ENEMIES.length)];
+    const e = soloEnemy(s.level);
     const b = { id: randomId(), turn: 1, over: false, result: null, me: { name: s.name, hp: s.hp, hpMax: s.hpMax, echo: s.echoLeft, taint: s.taintTier },
-      enemy: { name: e.name, hp: e.hp, hpMax: e.hp, atk: e.atk, def: e.def, spd: e.spd, state: e.state },
-      log: [{ kind: "urim", text: `${e.name}이(가) 나타났어요. 행동을 고르거나 직접 입력해 주세요.` }] };
+      enemy: { name: e.name, level: e.level, hp: e.hp, hpMax: e.hp, atk: e.atk, def: e.def, spd: e.spd, state: e.state },
+      log: [{ kind: "urim", text: `Lv.${e.level} ${e.name}이(가) 나타났어요. 행동을 고르거나 직접 입력해 주세요.` }] };
     await saveBattle(DB, user.id, b, now);
     return ok(b);
   }
@@ -1296,7 +1313,7 @@ ${said ? `[이번 행동] ${me.name}: ${said}` : run.afterBattle ? "[요청] 전
 function enemyFor(name) {
   const known = ENEMIES.find(e => name && e.name === String(name).trim());
   if (known) return known;
-  const base = ENEMIES[Math.floor(Math.random() * ENEMIES.length)];
+  const pool = ENEMIES.filter(e => e.tier !== "boss" && e.tier !== "elite"), base = pool[Math.floor(Math.random() * pool.length)];
   return name && String(name).trim() ? { ...base, name: String(name).trim().slice(0, 24), state: "경계 상태" } : base;
 }
 const RESULT_KO = { win: "승리했다", lose: "쓰러졌다", run: "달아났다", closed: "흩어졌다" };
