@@ -485,6 +485,9 @@ AG.battleUse = it => {
   if ((m = d.match(/잔향\s*\+(\d+)\s*\(전투 1회\)/))) return { echo: 1, label: '잔향 사용 +1' };
   return null;
 };
+/* 최종 전투가 끝난 뒤 30분마다 최대 체력의 75%씩 회복 (최대 체력을 넘을 수 없다) */
+AG.HEAL_MS = 30 * 60 * 1000;
+AG.HEAL_RATE = 0.75;
 
 /* 200자 미리보기 (공백 포함) */
 AG.preview = (text, n = 200) => {
@@ -508,7 +511,8 @@ async function call(method, path, body) {
   if (method === 'GET' && CACHEABLE.includes(path)) {
     let hit = null; try { hit = JSON.parse(sessionStorage.getItem(CK + path)); } catch {}
     const fresh = rawCall(method, path).then(j => { try { sessionStorage.setItem(CK + path, JSON.stringify({ t: Date.now(), k: token().slice(-12), j })); } catch {} return j; });
-    if (hit && hit.k === token().slice(-12) && Date.now() - hit.t < 30000) { fresh.catch(() => {}); return hit.j; }
+    const due = path === '/stats' && hit && hit.j && hit.j.healAt && Date.now() >= hit.j.healAt;
+    if (!due && hit && hit.k === token().slice(-12) && Date.now() - hit.t < 30000) { fresh.catch(() => {}); return hit.j; }
     return fresh;
   }
   if (method !== 'GET') { try { Object.keys(sessionStorage).filter(k => k.startsWith(CK)).forEach(k => sessionStorage.removeItem(k)); } catch {} }
@@ -702,10 +706,27 @@ function seed() {
   };
 }
 let D = null;
+function syncDemoHeal(d) {
+  const s = d && d.stats;
+  if (!s) return;
+  if (s.hp >= s.hpMax) { s.hp = s.hpMax; if (s.battleEndAt) { s.battleEndAt = null; save(); } return; }
+  if ((d.battle && !d.battle.over) || (d.party && d.party.status === 'battle')) return;
+  const now = Date.now();
+  if (s.battleEndAt === undefined) { s.battleEndAt = now; save(); }
+  if (!s.battleEndAt || now - s.battleEndAt < AG.HEAL_MS) return;
+  const steps = Math.floor((now - s.battleEndAt) / AG.HEAL_MS);
+  const healAmt = Math.max(1, Math.round(s.hpMax * AG.HEAL_RATE));
+  s.hp = Math.min(s.hpMax, s.hp + steps * healAmt);
+  s.battleEndAt = s.hp >= s.hpMax ? null : s.battleEndAt + steps * AG.HEAL_MS;
+  if (d.battle && d.battle.over && d.battle.me) d.battle.me.hp = s.hp;
+  save();
+}
 function db() {
-  if (D) return D;
-  try { D = JSON.parse(LS.get(DEMO_KEY)); } catch {}
-  if (!D || D.v !== 2) D = seed();
+  if (!D) {
+    try { D = JSON.parse(LS.get(DEMO_KEY)); } catch {}
+    if (!D || D.v !== 2) D = seed();
+  }
+  syncDemoHeal(D);
   return D;
 }
 const save = () => LS.set(DEMO_KEY, JSON.stringify(D));
@@ -772,7 +793,8 @@ const Dm = {
   },
   stats: () => { const d = db(); const s = d.stats; const c = d.character || {};
     if (s.echoLeft == null) s.echoLeft = 2;
-    const r = { ...s, echoMax: 2, taintTier: demoTier(), name: meName(), registry: { ...s.registry, ...(c.origin ? { origin: c.origin } : {}), ...(c.species ? { species: AG.SPECIES[c.species] || c.species } : {}) },
+    const healAt = s.hp < s.hpMax && s.battleEndAt ? s.battleEndAt + AG.HEAL_MS : null;
+    const r = { ...s, healAt, echoMax: 2, taintTier: demoTier(), name: meName(), registry: { ...s.registry, ...(c.origin ? { origin: c.origin } : {}), ...(c.species ? { species: AG.SPECIES[c.species] || c.species } : {}) },
       equipment: Object.fromEntries(Object.entries(s.equipment).map(([k, v]) => [k, v && d.inventory.find(i => i.id === v)?.name || null])), skills: demoSkills() };
     return wait(r); },
   inventory: {
@@ -820,9 +842,10 @@ const Dm = {
       }
       const echoBefore = d.battle.me.echo;
       const out = demoTurn(d.battle, d.stats, action, text, used, skill); if (out.loot) d.inventory.push(out.loot);
-      // 체력 · 잔향 · 오염도는 전투가 끝나도 그대로 남는다
+      // 체력 · 잔향 · 오염도는 전투가 끝나도 그대로 남고, 최종 전투 종료 30분 뒤마다 최대 체력의 75%씩 회복
       const S = d.stats, M = d.battle.me;
-      S.hp = M.hp; S.echoLeft = M.echo;
+      S.hp = Math.min(S.hpMax, M.hp); S.echoLeft = M.echo;
+      if (d.battle.over) S.battleEndAt = Date.now();
       M.taint = demoTier();
       save(); return wait(d.battle, 700); },
   },
@@ -847,7 +870,7 @@ const ENEMIES = [
 const demoTier = () => { const d = db(); const t = (d.character && d.character.T) ?? d.stats.T; return 'T' + (t ?? 0); };   // 오염도 = 캐릭터의 LCS 지수(T)
 function newBattle() {
   const e = ENEMIES[Math.floor(Math.random() * ENEMIES.length)];
-  const s = db().stats;
+  const s = db().stats; s.battleEndAt = null;
   return { id: rid('b'), turn: 1, over: false, result: null, me: { name: meName(), hp: s.hp, hpMax: s.hpMax, echo: s.echoLeft ?? 2, taint: demoTier() },
     enemy: { name: e.name, hp: e.hp, hpMax: e.hp, atk: e.atk, def: e.def, spd: e.spd, state: e.state, lootTable: e.loot },
     log: [{ kind: 'urim', text: `${e.name}이(가) 나타났어요. 행동을 고르거나 직접 입력해 주세요.` }] };
@@ -964,11 +987,11 @@ function demoPartyAct(p, action, text, skill) {
   if (E.hp > 0) { const alive = p.members.filter(x => !x.down && !x.fled); const t = alive[r(0, alive.length - 1)];
     if (t) { const tk = Math.max(2, Math.round(E.atk * (t === meM && action === 'guard' ? .35 : .8) - (t === meM ? s.def : 14) * .3 + r(-4, 6))); t.hp = Math.max(0, t.hp - tk); parts.push(`${E.name}의 반격 — ${t.name} 피해 ${tk}.`); if (t.hp <= 0) { t.down = true; parts.push(`${t.name}이(가) 쓰러졌다.`); } } }
   p.log.push({ kind: 'turn', label: `TURN ${String(p.turn).padStart(2, '0')}`, text: parts.join(' ') });
-  s.hp = meM.hp; s.echoLeft = meM.echo;
+  s.hp = Math.min(s.hpMax, meM.hp); s.echoLeft = meM.echo;
   const still = p.members.filter(x => !x.down && !x.fled);
-  if (E.hp <= 0) { p.status = 'over'; p.result = 'win'; const l = (E.lootTable || [])[0]; if (l) d.inventory.push({ id: rid('i'), source: '전리품', ...l });
+  if (E.hp <= 0) { p.status = 'over'; p.result = 'win'; s.battleEndAt = Date.now(); const l = (E.lootTable || [])[0]; if (l) d.inventory.push({ id: rid('i'), source: '전리품', ...l });
     p.log.push({ kind: 'urim', text: `${E.name}을(를) 함께 쓰러뜨렸어요. 전리품은 각자 창고에 넣어 두었어요.` }); }
-  else if (!still.length || meM.down || meM.fled) { p.status = 'over'; p.result = meM.fled ? 'run' : 'lose'; p.log.push({ kind: 'urim', text: meM.fled ? '전장을 벗어났어요.' : '쓰러졌어요. 숙소로 옮겨 놓을게요. 체력을 회복하고 다시 나가요.' }); }
+  else if (!still.length || meM.down || meM.fled) { p.status = 'over'; p.result = meM.fled ? 'run' : 'lose'; s.battleEndAt = Date.now(); p.log.push({ kind: 'urim', text: meM.fled ? '전장을 벗어났어요.' : '쓰러졌어요. 숙소로 옮겨 놓을게요. 체력을 회복하고 다시 나가요.' }); }
   else p.turn += 1;
 }
 Object.assign(Dm, {
@@ -986,12 +1009,12 @@ Object.assign(Dm, {
     create: () => { const d = db(); if (d.stats.hp <= 0) return fail('체력이 없어요. 창고에서 회복 아이템을 쓰고 다시 나가요'); d.party = demoNewParty(); save(); return wait(d.party); },
     get: id => { const d = db(); const p = d.party; if (!p || p.id !== id) return fail('not_found'); p.polls += 1;
       if (p.status === 'lobby' && p.members.length < 2 && p.polls >= 2) { p.members.push({ id: 'leon', name: nm('leon'), hp: 180, hpMax: 180, echo: 2, down: false, fled: false, online: true, chosen: true }); p.log.push({ kind: 'urim', text: `${nm('leon')} 님이 들어왔어요.` }); }
-      if (p.status === 'lobby' && p.autostart && p.polls >= 2) { p.autostart = false; p.status = 'battle'; p.turn = 1; p.log.push({ kind: 'urim', text: `${p.enemy.name}이(가) 나타났어요. 모두 행동을 고르면 한꺼번에 판정해요.` }); }
+      if (p.status === 'lobby' && p.autostart && p.polls >= 2) { p.autostart = false; p.status = 'battle'; p.turn = 1; d.stats.battleEndAt = null; p.log.push({ kind: 'urim', text: `${p.enemy.name}이(가) 나타났어요. 모두 행동을 고르면 한꺼번에 판정해요.` }); }
       save(); return wait(p, 100); },
     join: id => { const d = db(); if (d.stats.hp <= 0) return fail('체력이 없어요. 창고에서 회복 아이템을 쓰고 다시 나가요'); const p = demoNewParty(ENEMIES[0]); p.host = 'hayun'; p.members.unshift({ id: 'hayun', name: nm('hayun'), hp: 170, hpMax: 170, echo: 3, down: false, fled: false, online: true, chosen: true });
       p.members.reverse(); p.log = [{ kind: 'urim', text: `${nm('hayun')} 님의 방에 들어왔어요. 곧 시작해요.` }]; p.autostart = true; d.party = p; save(); return wait(p); },
-    leave: id => { const d = db(); d.party = null; save(); return wait({ status: 'over', result: 'closed', members: [], log: [], enemy: {} }); },
-    start: id => { const p = db().party; if (!p) return fail('not_found'); if (p.status === 'lobby') { p.status = 'battle'; p.turn = 1; p.enemy.hp = p.enemy.hpMax = Math.round(p.enemy.hp * (0.55 + 0.6 * p.members.length)); p.log.push({ kind: 'urim', text: `${p.enemy.name}이(가) 나타났어요. ${p.members.length}명이 모두 행동을 고르면 한꺼번에 판정해요.` }); } save(); return wait(p); },
+    leave: id => { const d = db(); if (d.party && d.party.status === 'battle') d.stats.battleEndAt = Date.now(); d.party = null; save(); return wait({ status: 'over', result: 'closed', members: [], log: [], enemy: {} }); },
+    start: id => { const d = db(), p = d.party; if (!p) return fail('not_found'); if (p.status === 'lobby') { p.status = 'battle'; p.turn = 1; d.stats.battleEndAt = null; p.enemy.hp = p.enemy.hpMax = Math.round(p.enemy.hp * (0.55 + 0.6 * p.members.length)); p.log.push({ kind: 'urim', text: `${p.enemy.name}이(가) 나타났어요. ${p.members.length}명이 모두 행동을 고르면 한꺼번에 판정해요.` }); } save(); return wait(p); },
     act: (id, action, text, skill) => { const p = db().party; if (!p || p.status !== 'battle') return fail('전투 중이 아니에요'); demoPartyAct(p, action, text, skill); save(); return wait(p, 600); },
   },
 });

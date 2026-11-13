@@ -514,6 +514,7 @@ function rollSkill(fx, s, name, desc) {
 }
 const SPECIES_KO = { human: "순수 인간", later: "레이터", mixed: "혼혈", uc: "언섹션" };
 const ONLINE_MS = 5 * 60 * 1000;
+const HEAL_MS = 30 * 60 * 1000, HEAL_RATE = 0.75;   // 최종 전투 종료 30분 뒤마다 최대 체력의 75%씩 회복 (최대 체력 상한)
 const ENEMIES = [
   { name: "변이 수집자", hp: 160, atk: 30, def: 18, spd: 34, state: "경계 상태", loot: [
     { name: "녹슨 갈고리", rarity: "RARE", kind: "무기", slot: "weapon", desc: "변이 수집자에게서 얻었다. 끝이 무뎌졌지만 아직 쓸 만하다.\n공격 +6 · 민첩 -2" },
@@ -970,6 +971,7 @@ ${sheet || "아직 캐릭터 정보를 적지 않았다."}
             enemy: { name: en.name, level: en.level, hp: en.hp, hpMax: en.hp, atk: en.atk, def: en.def, spd: en.spd, state: en.state },
             log: [{ kind: "urim", text: `${en.name}이(가) 길을 막았어요. 이야기는 전투가 끝난 뒤에 이어져요.` }] };
           await saveBattle(DB, user.id, b, now);
+          await saveVitals(DB, user.id, { battleEndAt: null }, now);
           run.battle = { solo: b.id, enemy: en.name };
         } else {
           run.log.push({ who: "urim", text: "지금은 체력이 없어서 싸울 수 없어요. 창고에서 회복한 뒤에 다시 말을 걸어 주세요." });
@@ -1017,7 +1019,9 @@ ${sheet || "아직 캐릭터 정보를 적지 않았다."}
       if (err) return bad(err);
       if (mem) mem.seen = now;
       if (m[2] === "/leave" && M === "POST") {
+        const wasBattle = p.status === "battle";
         mem.left = true; p.log.push({ kind: "urim", text: `${mem.name} 님이 나갔어요.` });
+        if (wasBattle) await saveVitals(DB, user.id, { hp: mem.hp, echo: mem.echo, battleEndAt: now }, now);
         const rest = p.members.filter(x => !x.left);
         if (!rest.length) { p.status = "over"; p.result = p.result || "closed"; }
         else if (p.hostId === user.id) p.hostId = rest[0].id;
@@ -1028,6 +1032,7 @@ ${sheet || "아직 캐릭터 정보를 적지 않았다."}
           p.members = p.members.filter(x => !x.left && now - (x.seen || 0) < PARTY_ONLINE);
           const n = p.members.length; p.enemy.hp = p.enemy.hpMax = Math.round(p.enemy.hp * (0.55 + 0.6 * n));
           p.status = "battle"; p.turn = 1;
+          for (const x of p.members) await saveVitals(DB, x.id, { battleEndAt: null }, now);
           p.log.push({ kind: "urim", text: `${p.enemy.name}이(가) 나타났어요. ${n}명이 모두 행동을 고르면 한꺼번에 판정해요.` });
         }
       }
@@ -1063,7 +1068,15 @@ ${sheet || "아직 캐릭터 정보를 적지 않았다."}
   /* ── 전투 (Claude 판정) ── */
   if (path === "/battle" && M === "GET") {
     const r = await DB.prepare("SELECT state FROM battles WHERE user_id = ?").bind(user.id).first();
-    return ok(r ? safeParse(r.state) : null);
+    const b = r ? safeParse(r.state) : null;
+    if (b && b.over && b.me) {
+      const s = await statsOf(DB, user.id, now);
+      if (s && (b.me.hp !== s.hp || b.me.hpMax !== s.hpMax || b.me.echo !== s.echoLeft)) {
+        b.me.hp = s.hp; b.me.hpMax = s.hpMax; b.me.echo = s.echoLeft; b.me.taint = s.taintTier;
+        await saveBattle(DB, user.id, b, now);
+      }
+    }
+    return ok(b);
   }
   if (path === "/battle/start" && M === "POST") {
     const s = await statsOf(DB, user.id, now);
@@ -1073,6 +1086,7 @@ ${sheet || "아직 캐릭터 정보를 적지 않았다."}
       enemy: { name: e.name, level: e.level, hp: e.hp, hpMax: e.hp, atk: e.atk, def: e.def, spd: e.spd, state: e.state },
       log: [{ kind: "urim", text: `Lv.${e.level} ${e.name}이(가) 나타났어요. 행동을 고르거나 직접 입력해 주세요.` }] };
     await saveBattle(DB, user.id, b, now);
+    await saveVitals(DB, user.id, { battleEndAt: null }, now);
     return ok(b);
   }
   if (path === "/battle/turn" && M === "POST") {
@@ -1119,7 +1133,6 @@ ${sheet || "아직 캐릭터 정보를 적지 않았다."}
     b.enemy.hp = Math.max(0, b.enemy.hp - dmg);
     b.me.hp = Math.max(0, Math.min(b.me.hpMax, b.me.hp - taken + heal));
     if (action === "echo") b.me.echo = Math.max(0, (b.me.echo || 0) - 1);
-    await saveVitals(DB, user.id, { hp: b.me.hp, echo: b.me.echo }, now);
     if (out.enemyState) b.enemy.state = String(out.enemyState).slice(0, 20);
     b.log.push({ kind: "turn", label: T, text: String(out.narration || "…").slice(0, 400) + (skill && skill.critHit && dmg > 0 ? " 〔급소〕" : "") });
     if (action === "run" && out.escaped) { b.over = true; b.result = "run"; b.log.push({ kind: "urim", text: "무사히 빠져나왔어요. 다음에 다시 도전해요." }); }
@@ -1140,6 +1153,7 @@ ${sheet || "아직 캐릭터 정보를 적지 않았다."}
       else if (out.urim) b.log.push({ kind: "urim", text: String(out.urim).slice(0, 200) });
       b.turn += 1;
     }
+    await saveVitals(DB, user.id, { hp: b.me.hp, echo: b.me.echo, battleEndAt: b.over ? now : null }, now);
     b.log = b.log.slice(-40);
     await saveBattle(DB, user.id, b, now);
     if (b.over && b.story) await storyBattleDone(DB, user.id, b.story, b, now);   // 스토리 중 전투였으면 이야기로 돌아간다
@@ -1397,8 +1411,12 @@ async function partyResolve(env, DB, p, now) {
     }
   }
   p.log.push({ kind: "turn", label: T, text: parts.join(" ") });
-  for (const x of act) { x.choice = null; await saveVitals(DB, x.id, { hp: x.hp, echo: x.echo }, now); }
   const still = p.members.filter(x => !x.left && !x.down && !x.fled);
+  const over = p.enemy.hp <= 0 || !still.length;
+  for (const x of act) { x.choice = null; await saveVitals(DB, x.id, { hp: x.hp, echo: x.echo, ...(over || x.down || x.fled ? { battleEndAt: now } : {}) }, now); }
+  if (over) {
+    for (const x of p.members.filter(y => !y.left && !act.includes(y))) await saveVitals(DB, x.id, { battleEndAt: now }, now);
+  }
   if (p.enemy.hp <= 0) {
     p.status = "over"; p.result = "win";
     const enemy = ENEMIES.find(e => e.name === p.enemy.name) || ENEMIES[0];
@@ -1480,6 +1498,7 @@ async function saveVitals(DB, uid, v, now) {
   const pr = await profile(DB, uid); const game = pr.game || {};
   if (v.hp != null) game.hpCur = Math.max(0, Math.round(v.hp));
   if (v.echo != null) game.echoCur = clampInt(v.echo, 0, 9);
+  if (v.battleEndAt !== undefined) game.battleEndAt = v.battleEndAt;
   await saveProfile(DB, uid, { game }, now);
   return game;
 }
@@ -1504,14 +1523,36 @@ async function statsOf(DB, uid, now) {
     names[k] = it.name;
     for (const mm of String(it.descr || "").matchAll(/(공격|방어|민첩|잔향|체력)\s*([+-]\d+)/g)) st[KEY[mm[1]]] += Number(mm[2]);
   }
-  // 현재 체력 · 남은 잔향 · 오염도: 전투가 끝나도 그대로 남는다 (아이템으로만 회복)
+  // 현재 체력 · 남은 잔향 · 오염도: 전투가 끝나도 그대로 남고, 최종 전투 종료 30분 뒤마다 최대 체력의 75%씩 회복 (최대 체력 상한)
   const echoMax = T || 0;
-  const hpCur = game.hpCur == null ? st.hp : clampInt(game.hpCur, 0, st.hp);
+  let hpCur = game.hpCur == null ? st.hp : clampInt(game.hpCur, 0, st.hp);
+  if (hpCur < st.hp) {
+    let endAt = game.battleEndAt;
+    if (endAt === undefined) {
+      const br = await DB.prepare("SELECT state, updated_at FROM battles WHERE user_id = ?").bind(uid).first();
+      const b = br && safeParse(br.state);
+      endAt = b && !b.over ? null : (br && br.updated_at) || now;
+      game.battleEndAt = endAt;
+      await saveProfile(DB, uid, { game }, now);
+    }
+    if (endAt && now - endAt >= HEAL_MS) {
+      const steps = Math.floor((now - endAt) / HEAL_MS);
+      const healAmt = Math.max(1, Math.round(st.hp * HEAL_RATE));
+      hpCur = Math.min(st.hp, hpCur + steps * healAmt);
+      game.hpCur = hpCur;
+      game.battleEndAt = hpCur >= st.hp ? null : endAt + steps * HEAL_MS;
+      await saveProfile(DB, uid, { game }, now);
+    }
+  } else if (game.battleEndAt) {
+    game.battleEndAt = null;
+    await saveProfile(DB, uid, { game }, now);
+  }
   const echoLeft = game.echoCur == null ? echoMax : clampInt(game.echoCur, 0, 9);
+  const healAt = hpCur < st.hp && game.battleEndAt ? game.battleEndAt + HEAL_MS : null;
   const ECHO_DESC = { 방출형: "잔향을 바깥으로 내보내 직접 타격한다. 잔향 공격 피해에 보너스.", 조형형: "잔향으로 형체를 빚는다. 방어와 아이템 효과에 보너스.", 강화형: "잔향으로 몸을 끌어올린다. 공격과 체력에 보너스.", 간섭형: "상대의 잔향을 흐트러뜨린다. 상대 행동을 늦춘다.", 감응형: "주변 잔향의 흐름을 읽고 짧게 앞날을 본다. 전투에서 회피와 선제 행동에 보너스." };
   const et = d.echoType && d.echoType !== "없음" ? d.echoType : null;
   return {
-    name: d.name || row.username, level, exp, expMax: expMax(level), hp: hpCur, hpMax: st.hp, echoLeft, echoMax, taintTier: "T" + (T ?? 0), atk: st.atk, def: st.def, spd: st.spd, echo: st.echo, statMax: 80,
+    name: d.name || row.username, level, exp, expMax: expMax(level), hp: hpCur, hpMax: st.hp, healAt, echoLeft, echoMax, taintTier: "T" + (T ?? 0), atk: st.atk, def: st.def, spd: st.spd, echo: st.echo, statMax: 80,
     registry: { nameEn: d.nameEn || "", ageGender: [d.age, d.gender].filter(Boolean).join(" · "), origin: [d.origin, d.originDetail].filter(Boolean).join(" · "), species: SPECIES_KO[d.species] || "", lineage: d.lineage || "", job: [d.job, d.faction].filter(Boolean).join(" · ") },
     G, Gmax: d.species === "human" ? 5 : 3, C, Cmax: 5, T, Tmax: 4,
     echoInfo: { type: et || "", desc: et ? `${et} — ${d.echoAbility || ECHO_DESC[et]}` : "잔향이 아직 깨어나지 않았어요." },
