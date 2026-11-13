@@ -1,6 +1,6 @@
 /* AFTERGLOW: 화면 파일(HTML · CSS · JS · 그림 · 글꼴)을 기기에 저장해 두고 먼저 보여 준 뒤, 뒤에서 새 것을 받아 바꿔 둔다.
    서버 요청(API)과 음악은 건드리지 않는다. */
-const V = 'ag-v1';
+const V = 'ag-v2';
 self.addEventListener('install', () => self.skipWaiting());
 self.addEventListener('activate', e => e.waitUntil((async () => { for (const k of await caches.keys()) if (k !== V) await caches.delete(k); await self.clients.claim(); })()));
 self.addEventListener('fetch', e => {
