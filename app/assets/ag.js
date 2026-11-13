@@ -1180,3 +1180,10 @@ button:disabled, [disabled] { cursor: url(assets/cursor.png) 1 1, not-allowed !i
 input:not([type="range"]):not([type="checkbox"]):not([type="radio"]), textarea, [contenteditable] { cursor: text; }`;
   document.head.appendChild(st);
 }
+
+/* ── 다음 화면을 미리 받아 둔다 (화면이 한가할 때, 데이터 절약 모드가 아니면) ── */
+addEventListener('load', () => {
+  const c = navigator.connection; if (c && (c.saveData || /2g/.test(c.effectiveType || ''))) return;
+  const run = () => [...new Set(Object.values(AG.PAGES))].filter(h => h && !location.pathname.endsWith('/' + h)).forEach(h => { const l = document.createElement('link'); l.rel = 'prefetch'; l.href = h; document.head.appendChild(l); });
+  (window.requestIdleCallback || (f => setTimeout(f, 1200)))(run, { timeout: 3000 });
+});

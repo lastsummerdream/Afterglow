@@ -17,10 +17,11 @@
   var started = false;
   function start() {
     if (started) return; started = true;
-    requestAnimationFrame(function () { requestAnimationFrame(function () {
+    var go = function () {
       d.classList.remove('ag-wait'); d.classList.add('ag-intro');
       setTimeout(function () { d.classList.remove('ag-intro'); }, 2600);
-    }); });
+    };
+    if (innerWidth < innerHeight && innerWidth <= 820) go(); else requestAnimationFrame(function () { requestAnimationFrame(go); });
   }
   function frame() { return new Promise(function (r) { requestAnimationFrame(function () { r(); }); }); }
   var img = new Image(); img.src = 'assets/bg.jpg';
@@ -32,8 +33,9 @@
     return Promise.all(f.map(function (x) { return document.fonts.load(x, '가나다 AFTERGLOW').catch(function () {}); }))
       .then(function () { return document.fonts.ready; });
   });
-  Promise.all([pImg, pFont]).then(start, start);
-  setTimeout(start, 2500);
+  var M = innerWidth < innerHeight && innerWidth <= 820;   // 모바일(세로)은 기다리지 않고 바로 보여 준다
+  if (M) pDom.then(start); else Promise.all([pImg, pFont]).then(start, start);
+  setTimeout(start, M ? 300 : 2500);
   addEventListener('pageshow', function (e) { if (e.persisted) { started = true; d.classList.remove('ag-wait', 'ag-intro'); } });
 })();
 </script>
