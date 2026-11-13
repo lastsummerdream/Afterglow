@@ -106,3 +106,11 @@ html.m .modal.battle-items { width: 950px; padding: 44px 60px; }
 html.m .modal .row { width: auto !important; height: auto !important; }
 /* 개인 단말: 탭(DM · 캐릭터 스탯) 아래에서 대화가 시작되게 */
 html.m-dm #msgs { top: 276px !important; height: calc(var(--mh) - 276px - 262px) !important; }
+
+/* ── 창고: 가로 4열 (칸은 CSS로 그린다) ── */
+html.m-inventory .L[data-r="center"]:not([id]) { display: none; }
+html.m-inventory #count { left: 126px !important; top: 250px !important; color: #e6e6e6; }
+html.m-inventory #grid { left: 125px !important; top: 300px !important; width: 952px; display: grid; grid-template-columns: repeat(4, 220px); gap: 24px; scale: .82; transform-origin: 0 0; }
+html.m-inventory #grid .selmark { display: none; }
+html.m-inventory .cellbtn { position: relative; left: auto !important; top: auto !important; border-radius: 18px; background: repeating-conic-gradient(rgba(0,0,0,.14) 0 25%, transparent 0 50%) 0 0 / 44px 44px, rgba(30,30,30,.5); box-shadow: inset 0 0 0 2px rgba(255,255,255,.14); }
+html.m-inventory .cellbtn.sel { background-color: rgba(120,120,120,.6); box-shadow: inset 0 0 0 4px rgba(255,255,255,.8); }

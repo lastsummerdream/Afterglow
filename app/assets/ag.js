@@ -98,7 +98,7 @@ AG.stretchSides = function () {
 AG.M_PAGES = { index: { css: 1 }, main: { css: 1 },
   stats: { start: 1, panes: [{ label: '일러스트', stack: ['left'] }, { label: '명부', stack: ['center', 'bottom'] }, { label: '전투 스탯', stack: ['right'] }] },
   battle: { panes: [{ label: '전투', stack: ['right', 'left'] }] }, party: { panes: [{ label: '전투', stack: ['right', 'left'] }] },
-  inventory: { jump: ['.cellbtn', 1], panes: [{ label: '목록', stack: ['center', 'bottom'] }, { label: '상세', stack: ['right'] }] },
+  inventory: { jump: ['.cellbtn', 1], panes: [{ label: '목록', stack: [], free: ['center'] }, { label: '상세', stack: ['right'] }] },
   home: { panes: [{ label: '방', stack: ['center', 'bottom'] }, { label: '가구', stack: ['right'] }] },
   settings: { panes: [{ label: '계정', stack: ['left'] }, { label: '캐릭터', stack: ['center', 'bottom'] }, { label: '대사', stack: ['right'] }] },
   timeline: { start: 1, jump: ['.post:not(.story)', 2], panes: [{ label: '글쓰기', stack: ['left'] }, { label: '글', stack: ['center', 'bottom'] }, { label: '댓글', stack: ['right'] }] },
@@ -146,7 +146,7 @@ AG.mobileSetup = function () {
   const regions = [...new Set([...document.querySelectorAll('#stage .L[data-r]')].map(L => L.dataset.r))];
   const src = {}; regions.forEach(r => src[r] = box(r)); AG._boxes = src;
   const put = (r, tx, ty, k, shapeOnly) => document.querySelectorAll(`#stage .L[data-r="${r}"]${shapeOnly ? ':not([id])' : ''}`).forEach(L => L.style.transform = `translate(${tx}px, ${ty}px) scale(${k})`);
-  if (cfg.panes) cfg.panes = cfg.panes.filter(p => p.stack.some(r => src[r]));   // 이 화면에 없는 영역만 있는 칸은 뺀다
+  if (cfg.panes) cfg.panes = cfg.panes.filter(p => p.stack.some(r => src[r]) || (p.free || []).length);   // 이 화면에 없는 영역만 있는 칸은 뺀다
   const TOP = cfg.top || 190, BOT = cfg.panes || cfg.drawers ? 124 : 30;
   AG.mobileLayout = () => {
     if (src.tabs && !cfg.css) { const b = src.tabs, k = Math.min(1, (AG.MW - 80) / b.width); put('tabs', 40 - b.x * k, 150 - b.y * k, k); }
@@ -177,7 +177,7 @@ AG.mobileSetup = function () {
     stage.append(nav);
     if (cfg.panes) {
       const set = i => { root.setAttribute('data-pane', i); nav.querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.d === String(i)));
-        cfg.panes.forEach((p, n) => p.stack.forEach(r => document.querySelectorAll(`#stage .L[data-r="${r}"]`).forEach(L => L.classList.toggle('m-off', n !== +i)))); };
+        cfg.panes.forEach((p, n) => [...p.stack, ...(p.free || [])].forEach(r => document.querySelectorAll(`#stage .L[data-r="${r}"]`).forEach(L => L.classList.toggle('m-off', n !== +i)))); };
       nav.addEventListener('click', e => { const b = e.target.closest('button'); if (b) set(b.dataset.d); });
       AG.mobilePane = set; set(cfg.start || 0);
       if (cfg.jump) stage.addEventListener('click', e => { if (e.target.closest(cfg.jump[0]) && !e.target.closest('.acts, .edit-box, .edit-row, button.more')) setTimeout(() => set(cfg.jump[1]), 120); });   // 고르면 상세 칸으로
