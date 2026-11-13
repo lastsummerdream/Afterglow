@@ -30,14 +30,6 @@
       "icon": "icon.icns",
       "category": "public.app-category.role-playing-games",
       "identity": null,
-      "target": [
-        {
-          "target": "dmg",
-          "arch": [
-            "universal"
-          ]
-        }
-      ],
       "artifactName": "Afterglow-mac.${ext}"
     },
     "dmg": {
