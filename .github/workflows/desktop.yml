@@ -1,0 +1,79 @@
+name: Build & Release Desktop App
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'desktop/**'
+      - '.github/workflows/desktop.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-mac:
+    runs-on: macos-latest
+    defaults:
+      run:
+        working-directory: desktop
+    env:
+      CSC_IDENTITY_AUTO_DISCOVERY: "false"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm install
+      - run: npm run dist:mac
+      - uses: actions/upload-artifact@v4
+        with:
+          name: afterglow-mac
+          path: desktop/dist/Afterglow-mac.dmg
+          if-no-files-found: error
+
+  build-win:
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: desktop
+    env:
+      CSC_IDENTITY_AUTO_DISCOVERY: "false"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm install
+      - run: npm run dist:win
+      - uses: actions/upload-artifact@v4
+        with:
+          name: afterglow-win
+          path: |
+            desktop/dist/Afterglow-Windows-Setup.exe
+            desktop/dist/Afterglow-Windows-Portable.exe
+          if-no-files-found: error
+
+  release:
+    needs: [build-mac, build-win]
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+      - name: Publish GitHub Release
+        run: |
+          ls -lh artifacts/
+          NOTES=$'### AFTERGLOW 데스크톱 단말 앱 (커버 화면 바로 진입)\n\n- **macOS (Apple Silicon & Intel 공용)**: `Afterglow-mac.dmg`\n- **Windows 설치형**: `Afterglow-Windows-Setup.exe`\n- **Windows 무설치(포터블)**: `Afterglow-Windows-Portable.exe`\n\n> **첫 실행 안내**\n> - **Windows**: SmartScreen 안내가 뜨면 `추가 정보` → `실행`을 눌러 주세요.\n> - **macOS**: 응용 프로그램 폴더로 옮긴 뒤 처음 열 때 `우클릭(Control+클릭) → 열기`를 눌러 주세요.'
+          if ! gh release view v1.0.0 >/dev/null 2>&1; then
+            gh release create v1.0.0 --title "AFTERGLOW 데스크톱 앱 (macOS .dmg / Windows .exe)" --notes "$NOTES" --latest
+          fi
+          gh release upload v1.0.0 \
+            artifacts/Afterglow-mac.dmg \
+            artifacts/Afterglow-Windows-Setup.exe \
+            artifacts/Afterglow-Windows-Portable.exe \
+            --clobber

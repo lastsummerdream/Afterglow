@@ -1,0 +1,75 @@
+{
+  "name": "afterglow-desktop",
+  "productName": "AFTERGLOW",
+  "version": "1.0.0",
+  "description": "잔광(AFTERGLOW) 데스크톱 단말 애플리케이션",
+  "main": "main.js",
+  "author": "AFTERGLOW",
+  "license": "UNLICENSED",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "dist:mac": "electron-builder --mac dmg --publish never",
+    "dist:win": "electron-builder --win nsis portable --publish never"
+  },
+  "devDependencies": {
+    "electron": "^33.4.0",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "io.github.lastsummerdream.afterglow.desktop",
+    "productName": "AFTERGLOW",
+    "copyright": "Copyright © AFTERGLOW",
+    "files": [
+      "main.js",
+      "icon.png",
+      "package.json"
+    ],
+    "mac": {
+      "icon": "icon.icns",
+      "category": "public.app-category.role-playing-games",
+      "identity": null,
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "universal"
+          ]
+        }
+      ],
+      "artifactName": "Afterglow-mac.${ext}"
+    },
+    "dmg": {
+      "title": "AFTERGLOW",
+      "artifactName": "Afterglow-mac.${ext}"
+    },
+    "win": {
+      "icon": "icon.ico",
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "AFTERGLOW",
+      "artifactName": "Afterglow-Windows-Setup.${ext}"
+    },
+    "portable": {
+      "artifactName": "Afterglow-Windows-Portable.${ext}"
+    }
+  }
+}
