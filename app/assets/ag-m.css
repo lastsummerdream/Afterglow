@@ -35,9 +35,6 @@ html.m .cs-box { scale: 1; }
 
 /* ── 대화 화면 (단체 단말 · 개인 연락망 · 개인 단말) ── */
 html:is(.m-group, .m-private, .m-dm) .L[data-r="bottom"]:not([id]) { display: none; }
-html:is(.m-group, .m-private, .m-dm) .L[data-r="tabs"]:not([id]) { display: none; }
-html:is(.m-group, .m-private, .m-dm) #L-tabs { transform: translate(-1266px, 6px) !important; }
-html:is(.m-group, .m-private, .m-dm) #L-tabs .t { color: #e6e6e6; }
 html:is(.m-group, .m-private, .m-dm) #msgs { left: 44px !important; top: 206px !important; width: 942px !important; height: calc(var(--mh) - 206px - 262px) !important; padding: 20px 14px 30px 14px !important; box-sizing: border-box; }
 html:is(.m-group, .m-private, .m-dm) .msg { margin-bottom: 54px; padding: 4px 0 0 92px; min-height: 72px; }
 html:is(.m-group, .m-private, .m-dm) .msg .av { width: 72px; height: 72px; font-size: 28px; }
@@ -107,3 +104,5 @@ html.m-story #sendBtn { left: 816px !important; top: 1800px !important; }
 html.m-story .strip { padding: 0 44px; }
 html.m .modal.battle-items { width: 950px; padding: 44px 60px; }
 html.m .modal .row { width: auto !important; height: auto !important; }
+/* 개인 단말: 탭(DM · 캐릭터 스탯) 아래에서 대화가 시작되게 */
+html.m-dm #msgs { top: 276px !important; height: calc(var(--mh) - 276px - 262px) !important; }
