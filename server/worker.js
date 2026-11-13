@@ -634,6 +634,27 @@ async function community(request, env, user, path, cors, later) {
   }
 
   /* ── 단체 단말 ── */
+  if (path === "/notify" && M === "GET") return ok(await unreadFlags(DB, user.id, now));
+  if (path === "/seen" && M === "POST") {
+    const b = await body(request); const area = b && b.area;
+    if (area !== "group" && area !== "private") return bad("bad_area");
+    const pr = await profile(DB, user.id); const game = pr.game || {}; game.seen = { ...(game.seen || {}), [area]: now };
+    await saveProfile(DB, user.id, { game }, now); return ok({ ok: true });
+  }
+  if (path === "/push" && M === "GET") return ok({ key: VAPID_PUBLIC, on: !!env.VAPID_PRIVATE });
+  if (path === "/push" && (M === "POST" || M === "DELETE")) {
+    const b = await body(request); const sub = b && b.subscription, ep = sub && typeof sub.endpoint === "string" ? sub.endpoint : "";
+    if (!/^https:\/\//.test(ep) || ep.length > 800) return bad("bad_subscription");
+    const pr = await profile(DB, user.id); const game = pr.game || {};
+    let list = (Array.isArray(game.push) ? game.push : []).filter(x => x.endpoint !== ep);
+    if (M === "POST") {
+      const k = sub.keys || {};
+      if (typeof k.p256dh !== "string" || typeof k.auth !== "string" || k.p256dh.length > 200 || k.auth.length > 60) return bad("bad_subscription");
+      list = [...list, { endpoint: ep, p256dh: k.p256dh, auth: k.auth, at: now }].slice(-5);
+    }
+    game.push = list; await saveProfile(DB, user.id, { game }, now);
+    return ok({ ok: true, count: list.length });
+  }
   if (path === "/channels" && M === "GET") {
     const r = await DB.prepare(`SELECT ch.id, ch.name,
         (SELECT COUNT(DISTINCT user_id) FROM messages WHERE scope='ch' AND room=ch.id) AS members,
@@ -657,7 +678,7 @@ async function community(request, env, user, path, cors, later) {
     const ch = await DB.prepare("SELECT id FROM channels WHERE id = ?").bind(m[1]).first();
     if (!ch) return bad("not_found", 404);
     if (M === "GET") return ok(await roomMessages(DB, "ch", m[1], user.id));
-    if (M === "POST") { const v = text(await body(request)); if (v.e) return bad(v.e); return ok(await addMessage(DB, "ch", m[1], user.id, v.t, now)); }
+    if (M === "POST") { const v = text(await body(request)); if (v.e) return bad(v.e); const r = await addMessage(DB, "ch", m[1], user.id, v.t, now); later(notifyNew(env, "ch", m[1], user.id, v.t, now).catch(() => {})); return ok(r); }
   }
   if ((m = path.match(/^\/messages\/([\w-]+)$/))) {
     const msg = await DB.prepare("SELECT * FROM messages WHERE id = ?").bind(m[1]).first();
@@ -699,7 +720,7 @@ async function community(request, env, user, path, cors, later) {
     if (!t) return bad("not_found", 404);
     if (m[2]) {
       if (M === "GET") return ok(await roomMessages(DB, "talk", t.id, user.id));
-      if (M === "POST") { const v = text(await body(request)); if (v.e) return bad(v.e); return ok(await addMessage(DB, "talk", t.id, user.id, v.t, now)); }
+      if (M === "POST") { const v = text(await body(request)); if (v.e) return bad(v.e); const r = await addMessage(DB, "talk", t.id, user.id, v.t, now); later(notifyNew(env, "talk", t.id, user.id, v.t, now).catch(() => {})); return ok(r); }
     } else {
       if (M === "PUT") { const b = await body(request); const title = b && typeof b.title === "string" ? b.title.trim().slice(0, TITLE_MAX) : ""; if (!title) return bad("empty"); await DB.prepare("UPDATE talks SET title = ? WHERE id = ?").bind(title, t.id).run(); return ok({ ok: true }); }
       if (M === "DELETE") { await DB.batch([DB.prepare("DELETE FROM messages WHERE scope='talk' AND room = ?").bind(t.id), DB.prepare("DELETE FROM talks WHERE id = ?").bind(t.id)]); return ok({ ok: true }); }
@@ -726,7 +747,7 @@ async function community(request, env, user, path, cors, later) {
     const room = [user.id, pid].sort().join(":");
     if (m[2] === "read" && M === "POST") { await DB.prepare("INSERT INTO dm_reads (user_id, partner_id, read_at) VALUES (?, ?, ?) ON CONFLICT(user_id, partner_id) DO UPDATE SET read_at = excluded.read_at").bind(user.id, pid, now).run(); return ok({ ok: true }); }
     if (m[2] === "messages" && M === "GET") return ok(await roomMessages(DB, "dm", room, user.id));
-    if (m[2] === "messages" && M === "POST") { const v = text(await body(request)); if (v.e) return bad(v.e); return ok(await addMessage(DB, "dm", room, user.id, v.t, now)); }
+    if (m[2] === "messages" && M === "POST") { const v = text(await body(request)); if (v.e) return bad(v.e); const r = await addMessage(DB, "dm", room, user.id, v.t, now); later(notifyNew(env, "dm", room, user.id, v.t, now).catch(() => {})); return ok(r); }
   }
 
   /* ── 타임라인 ── */
@@ -1349,6 +1370,91 @@ function counterHit(e, eFx, aFx, def, turn, mult, guard) {
   if (fxOn(eFx, "weaken", turn)) t *= 0.7;
   if (fxOn(aFx, "cover", turn)) t *= 0.5;
   return { taken: Math.max(1, Math.round(t * mult)), why: "" };
+}
+
+/* ── 새 메시지 표시 · 푸시 알림 ── */
+const VAPID_PUBLIC = "BJIPs9nppATpRvaObrdqGAePl1VOWLYMUEz25yC1jjuz2TaKxADk8FjNESaNhMc9VrX9kcIPtX1nGYlONxD3qKI";
+const VAPID_SUB = "https://lastsummerdream.github.io/Afterglow/";
+const b64u = buf => btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+const unb64u = s => Uint8Array.from(atob(String(s).replace(/-/g, "+").replace(/_/g, "/") + "===".slice((String(s).length + 3) % 4)), c => c.charCodeAt(0));
+const cat = (...a) => { const o = new Uint8Array(a.reduce((n, x) => n + x.length, 0)); let i = 0; for (const x of a) { o.set(x, i); i += x.length; } return o; };
+const te = s => new TextEncoder().encode(s);
+async function hkdf(salt, ikm, info, len) {
+  const k = await crypto.subtle.importKey("raw", ikm, "HKDF", false, ["deriveBits"]);
+  return new Uint8Array(await crypto.subtle.deriveBits({ name: "HKDF", hash: "SHA-256", salt, info }, k, len * 8));
+}
+// RFC 8291 (aes128gcm) 암호화
+async function pushEncrypt(sub, payload) {
+  const ua = unb64u(sub.p256dh), auth = unb64u(sub.auth);
+  const eph = await crypto.subtle.generateKey({ name: "ECDH", namedCurve: "P-256" }, true, ["deriveBits"]);
+  const asPub = new Uint8Array(await crypto.subtle.exportKey("raw", eph.publicKey));
+  const uaKey = await crypto.subtle.importKey("raw", ua, { name: "ECDH", namedCurve: "P-256" }, false, []);
+  const shared = new Uint8Array(await crypto.subtle.deriveBits({ name: "ECDH", public: uaKey }, eph.privateKey, 256));
+  const ikm = await hkdf(auth, shared, cat(te("WebPush: info\0"), ua, asPub), 32);
+  const salt = crypto.getRandomValues(new Uint8Array(16));
+  const cek = await hkdf(salt, ikm, te("Content-Encoding: aes128gcm\0"), 16);
+  const nonce = await hkdf(salt, ikm, te("Content-Encoding: nonce\0"), 12);
+  const key = await crypto.subtle.importKey("raw", cek, "AES-GCM", false, ["encrypt"]);
+  const ct = new Uint8Array(await crypto.subtle.encrypt({ name: "AES-GCM", iv: nonce }, key, cat(te(payload), new Uint8Array([2]))));
+  const rs = new Uint8Array([0, 0, 16, 0]);
+  return cat(salt, rs, new Uint8Array([asPub.length]), asPub, ct);
+}
+let VAPID_KEY = null;
+async function vapidAuth(env, endpoint) {
+  if (!VAPID_KEY) VAPID_KEY = await crypto.subtle.importKey("jwk", JSON.parse(env.VAPID_PRIVATE), { name: "ECDSA", namedCurve: "P-256" }, false, ["sign"]);
+  const aud = new URL(endpoint).origin;
+  const head = b64u(te(JSON.stringify({ typ: "JWT", alg: "ES256" }))), body = b64u(te(JSON.stringify({ aud, exp: Math.floor(Date.now() / 1000) + 12 * 3600, sub: VAPID_SUB })));
+  const sig = await crypto.subtle.sign({ name: "ECDSA", hash: "SHA-256" }, VAPID_KEY, te(head + "." + body));
+  return `vapid t=${head}.${body}.${b64u(sig)}, k=${VAPID_PUBLIC}`;
+}
+// 한 사람에게 보낸다. 만료된 구독은 지운다
+async function pushTo(env, uid, msg) {
+  if (!env.VAPID_PRIVATE) return 0;
+  const pr = await profile(env.DB, uid); const game = pr.game || {}; const subs = Array.isArray(game.push) ? game.push : [];
+  if (!subs.length) return 0;
+  let sent = 0; const keep = [];
+  for (const sub of subs) {
+    try {
+      const r = await fetch(sub.endpoint, { method: "POST", body: await pushEncrypt(sub, JSON.stringify(msg)),
+        headers: { "Content-Encoding": "aes128gcm", "Content-Type": "application/octet-stream", TTL: "86400", Urgency: "normal", Authorization: await vapidAuth(env, sub.endpoint) } });
+      if (r.status === 404 || r.status === 410) continue;   // 구독이 사라졌다
+      if (r.ok) sent++;
+    } catch {}
+    keep.push(sub);
+  }
+  if (keep.length !== subs.length) { game.push = keep; await saveProfile(env.DB, uid, { game }, Date.now()); }
+  return sent;
+}
+// 새 메시지가 오면 받을 사람에게 알린다 (방금 화면을 보고 있던 사람과 보낸 사람은 빼고)
+const PUSH_QUIET = 20000;
+async function notifyNew(env, scope, room, from, text, now) {
+  if (!env.VAPID_PRIVATE) return;
+  const DB = env.DB;
+  const who = await DB.prepare("SELECT u.username, c.data FROM users u LEFT JOIN characters c ON c.id = u.active_character_id WHERE u.id = ?").bind(from).first();
+  const name = (who && (safeParse(who.data || "{}").name || who.username)) || "누군가";
+  let targets = [], title = name, url = "main.html", tag = scope + ":" + room;
+  if (scope === "dm") { targets = room.split(":").filter(x => x !== from); title = `${name} · 개인 단말`; url = "dm.html?with=" + from; }
+  else if (scope === "talk") { const t = await DB.prepare("SELECT a_user, b_user, title FROM talks WHERE id = ?").bind(room).first(); if (t) { targets = [t.a_user, t.b_user].filter(x => x !== from); title = `${name} · ${t.title}`; url = "private.html"; } }
+  else if (scope === "ch") {
+    const ch = await DB.prepare("SELECT name FROM channels WHERE id = ?").bind(room).first();
+    const r = await DB.prepare("SELECT user_id FROM profiles WHERE game LIKE '%\"push\":[{%' AND user_id != ?").bind(from).all();
+    targets = (r.results || []).map(x => x.user_id); title = `#${(ch && ch.name) || "단체 단말"} · ${name}`; url = "group.html";
+  }
+  for (const uid of targets) {
+    const u = await DB.prepare("SELECT last_seen FROM users WHERE id = ?").bind(uid).first();
+    if (u && u.last_seen && now - u.last_seen < PUSH_QUIET) continue;
+    await pushTo(env, uid, { title, body: String(text).slice(0, 120), url, tag });
+  }
+}
+// 메인 화면의 새 메시지 점: 단체 단말 · 개인 연락망 · 개인 단말
+async function unreadFlags(DB, uid, now) {
+  const pr = await profile(DB, uid); const game = pr.game || {};
+  let seen = game.seen;
+  if (!seen) { seen = game.seen = { group: now, private: now }; await saveProfile(DB, uid, { game }, now); }
+  const g = await DB.prepare("SELECT 1 FROM messages WHERE scope='ch' AND user_id != ? AND deleted_at IS NULL AND created_at > ? LIMIT 1").bind(uid, seen.group || 0).first();
+  const p = await DB.prepare("SELECT 1 FROM messages m JOIN talks t ON t.id = m.room WHERE m.scope='talk' AND (t.a_user = ? OR t.b_user = ?) AND m.user_id != ? AND m.created_at > ? LIMIT 1").bind(uid, uid, uid, seen.private || 0).first();
+  const d = await DB.prepare("SELECT 1 FROM messages m WHERE m.scope='dm' AND (m.room LIKE ? OR m.room LIKE ?) AND m.user_id != ? AND m.created_at > COALESCE((SELECT read_at FROM dm_reads WHERE user_id = ? AND partner_id = m.user_id), 0) LIMIT 1").bind(uid + ":%", "%:" + uid, uid, uid).first();
+  return { group: !!g, private: !!p, dm: !!d };
 }
 
 /* ── 평판: 스토리에서 한 행동이 기록되고, 세력과 NPC가 그에 맞춰 반응한다 ── */

@@ -599,6 +599,9 @@ const S = {
     read: uid => call('POST', `/dms/${uid}/read`, {}),
   },
   stats: uid => call('GET', '/stats' + (uid ? '?user=' + uid : '')),
+  notify: () => call('GET', '/notify'),
+  seen: area => call('POST', '/seen', { area }),
+  push: { info: () => call('GET', '/push'), add: sub => call('POST', '/push', { subscription: sub }), remove: sub => call('DELETE', '/push', { subscription: sub }) },
   inventory: {
     list: () => call('GET', '/inventory'),
     equip: id => call('POST', `/inventory/${id}/equip`, {}),
@@ -779,6 +782,9 @@ function findMsg(id) {
 const lastOf = list => { const l = [...list].reverse().find(m => !m.deleted); return l ? { name: l.userId === 'me' ? meName() : nm(l.userId), text: l.text, at: l.at } : null; };
 
 const Dm = {
+  notify: async () => { const d = db(); return { group: true, private: false, dm: Object.values(d.dms).some(x => x.unread > 0) }; },
+  seen: async () => ({ ok: true }),
+  push: { info: async () => ({ key: '', on: false }), add: async () => ({ ok: true }), remove: async () => ({ ok: true }) },
   async me() {
     const d = db(); const c = d.character || {};
     return { id: 'me', username: LS.get('ag-demo-username') || 'afterglow_user', name: meName(), avatar: c.avatar || null,
@@ -1072,7 +1078,47 @@ Object.assign(AG, {
   me: () => impl.me(), users: () => impl.users(), people: impl.people, urim: m => impl.urim(m), channels: impl.channels, msg: impl.msg, talks: impl.talks, dms: impl.dms,
   stats: (...a) => impl.stats(...a), inventory: impl.inventory, home: impl.home, lines: impl.lines, character: impl.character,
   account: impl.account, battle: impl.battle, posts: impl.posts, story: impl.story, party: impl.party,
+  notify: () => impl.notify(), seen: a => impl.seen(a),
 });
+/* 이 화면을 보고 있는 동안 '읽음'으로 남긴다 (메인의 새 메시지 점이 꺼진다) */
+AG.markSeen = area => {
+  const mark = () => { if (!document.hidden) AG.seen(area).catch(() => {}); };
+  mark(); setInterval(mark, 30000);
+  document.addEventListener('visibilitychange', mark); addEventListener('pagehide', () => AG.seen(area).catch(() => {}));
+};
+/* 푸시 알림: 브라우저 구독을 만들어 서버에 맡긴다 */
+const b64ToU8 = s => { s = s.replace(/-/g, '+').replace(/_/g, '/'); s += '='.repeat((4 - s.length % 4) % 4); return Uint8Array.from(atob(s), c => c.charCodeAt(0)); };
+AG.pushSupported = () => 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window && location.protocol === 'https:';
+AG.pushState = async () => {
+  if (!AG.pushSupported()) return 'unsupported';
+  if (Notification.permission === 'denied') return 'denied';
+  const reg = await navigator.serviceWorker.getRegistration(); const sub = reg && await reg.pushManager.getSubscription();
+  return sub ? 'on' : 'off';
+};
+AG.pushOn = async () => {
+  if (!AG.pushSupported()) throw new Error('이 브라우저는 알림을 지원하지 않아요. 홈 화면에 앱으로 추가하면 받을 수 있어요');
+  const perm = await Notification.requestPermission();
+  if (perm !== 'granted') throw new Error('알림 권한이 꺼져 있어요');
+  const info = await impl.push.info(); if (!info.key) throw new Error('서버 알림이 아직 준비되지 않았어요');
+  const reg = await navigator.serviceWorker.register('sw.js'); await navigator.serviceWorker.ready;
+  let sub = await reg.pushManager.getSubscription();
+  if (!sub) sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64ToU8(info.key) });
+  await impl.push.add(sub.toJSON()); LS.set('ag-push', 'on');
+  return true;
+};
+AG.pushOff = async () => {
+  const reg = await navigator.serviceWorker.getRegistration(); const sub = reg && await reg.pushManager.getSubscription();
+  if (sub) { await impl.push.remove(sub.toJSON()).catch(() => {}); await sub.unsubscribe().catch(() => {}); }
+  LS.set('ag-push', 'off');
+};
+// 메인에서 처음 한 번만 묻는다
+AG.pushAsk = async () => {
+  if (AG.mode !== 'server' || LS.get('ag-push-asked') || !AG.pushSupported() || Notification.permission !== 'default') return;
+  LS.set('ag-push-asked', '1');
+  const m = AG.sheet(`<h2>NOTIFICATION</h2><h3>새 메시지 알림을 받을까요?</h3><p class="bw-empty" style="padding:10px 0 0;text-align:left">단체 단말 · 개인 연락망 · 개인 단말에 새 메시지가 오면 휴대폰이나 컴퓨터로 알려 드려요.<br>설정에서 언제든 끌 수 있어요.</p><div class="bw-btns"><button class="bw-btn" data-y>알림 받기</button><button class="bw-btn" data-x>나중에</button></div>`);
+  m.el.querySelector('[data-x]').onclick = m.close;
+  m.el.querySelector('[data-y]').onclick = async () => { m.close(); try { await AG.pushOn(); AG.toast('새 메시지가 오면 알려 드릴게요'); } catch (e) { AG.toast(e.message || '알림을 켜지 못했어요'); } };
+};
 AG.auth = {
   async login(username, password) { const j = await rawAuth('/auth/login', username, password); LS.set(TOKEN_KEY, j.token); return j; },
   async signup(username, password, invite) { const j = await rawAuth('/auth/signup', username, password, invite); LS.set(TOKEN_KEY, j.token); return j; },

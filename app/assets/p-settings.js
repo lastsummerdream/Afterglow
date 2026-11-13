@@ -110,3 +110,25 @@ AG.boot();
     try { await AG.lines.save(v); AG.toast(v.length ? `메인 화면 대사 ${v.length}개를 저장했어요` : '대사를 모두 비웠어요'); } catch (e) { AG.toast(AG.errMsg(e)); }
   };
 })();
+
+/* 새 메시지 알림 (푸시) */
+(async function () {
+  const btn = document.getElementById('pushBtn'), lbl = document.getElementById('pushLbl');
+  if (!btn || !AG.pushState) return;
+  const show = async () => {
+    const st = await AG.pushState().catch(() => 'unsupported');
+    lbl.textContent = { on: '새 메시지 알림 끄기', off: '새 메시지 알림 켜기', denied: '알림이 막혀 있어요', unsupported: '알림 · 앱으로 설치하면 쓸 수 있어요' }[st] || '새 메시지 알림 켜기';
+    return st;
+  };
+  let st = await show();
+  btn.addEventListener('click', async () => {
+    if (AG.mode !== 'server') return AG.toast('체험 모드에서는 알림을 받을 수 없어요');
+    st = await AG.pushState().catch(() => 'unsupported');
+    try {
+      if (st === 'on') { await AG.pushOff(); AG.toast('알림을 껐어요'); }
+      else if (st === 'denied') AG.toast('브라우저 설정에서 이 사이트의 알림을 허용해 주세요');
+      else { await AG.pushOn(); AG.toast('새 메시지가 오면 알려 드릴게요'); }
+    } catch (e) { AG.toast(e.message || '알림을 켜지 못했어요'); }
+    st = await show();
+  });
+})();

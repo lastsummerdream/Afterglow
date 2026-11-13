@@ -1,5 +1,5 @@
 /* 단체 단말 · 단체채팅 */
-AG.boot();
+AG.boot(); AG.markSeen("group");
 (function () {
   const qs = new URLSearchParams(location.search);
   const flat = s => String(s || '').replace(/\s+/g, ' ');

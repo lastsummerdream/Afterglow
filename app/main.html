@@ -6,6 +6,12 @@
 <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
 <link rel="icon" type="image/png" sizes="192x192" href="assets/icon-192.png">
 <link rel="apple-touch-icon" href="assets/icon-180.png">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0e0e0e">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="AFTERGLOW">
 <title>애프터 글로우 · 메인</title>
 <!-- >>> boot -->
 <link rel="preload" href="assets/bg.jpg" as="image">
@@ -180,6 +186,11 @@
   .big { font-weight: 900; text-shadow: 0 3px 8px rgba(0,0,0,.45); white-space: nowrap; }
   .sub { font-family: "Passion One", sans-serif; font-weight: 700; white-space: nowrap; }
   .tiny { font-family: "Palanquin Dark", sans-serif; font-weight: 700; white-space: nowrap; }
+  /* 새 메시지 표시 (개수는 보이지 않는다) */
+  .ndot { position: absolute; width: 26px; height: 26px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #ffb2a6, #ff5848 55%, #c8261b); box-shadow: 0 0 0 4px rgba(14,14,14,.7), 0 0 22px rgba(255,88,72,.85); pointer-events: none; z-index: 6; opacity: 0; scale: .2; transition: opacity .25s, scale .35s cubic-bezier(.3,1.6,.5,1); }
+  .ndot.on { opacity: 1; scale: 1; animation: ndPulse 1.8s ease-in-out .4s infinite; }
+  @keyframes ndPulse { 50% { box-shadow: 0 0 0 4px rgba(14,14,14,.7), 0 0 34px rgba(255,88,72,1); } }
+  html.m .m-menu .ndot { width: 22px; height: 22px; }
   .hit { position: absolute; left: 0; top: 0; width: 2560px; height: 1440px; overflow: visible; pointer-events: none; }
   .hit polygon { pointer-events: all; cursor: pointer; fill: none; outline: none; }  /* 칠하지 않아 따로 그려지지 않게 */
   .hit polygon:focus-visible { stroke: #fff; stroke-width: 6; }
@@ -403,6 +414,7 @@ html.ag-wait #stage > :not(.wallpaper):not(.tint) { opacity: 0 !important; will-
         <div class="mbox m-part" data-m="inventory" style="width:405.397px;height:154.9747px;transform:matrix(0.99520,0.09790,-0.13650,0.99060,1663.42770,1066.05810);-webkit-mask-image:url(assets/mask-inventory.svg);mask-image:url(assets/mask-inventory.svg);-webkit-mask-position:73.079px 16.947px;mask-position:73.079px 16.947px;-webkit-mask-size:332.318px 138.027px;mask-size:332.318px 138.027px;"><img class="m-shape" src="assets/menu-inventory.svg" style="left:0;top:0;width:405.397px;height:154.9747px" alt=""><p class="tiny" style="width:124px;height:27px;transform:matrix(1.00065,0.05384,-0.01496,0.99936,215.56309,97.94274);font-size:15px;letter-spacing:0.30em;line-height:27px;text-align:right;color:#ffffff">INVENTORY</p><p class="big" style="width:233.6472px;height:59.4936px;transform:matrix(1.00067,0.05031,-0.01142,0.99951,98.73618,28.54394);font-size:50px;letter-spacing:-0.04em;line-height:1.2;text-align:right;color:#ffffff">창고</p></div>
         <div class="mbox m-part" data-m="dm" style="width:329.341px;height:157.2216px;transform:matrix(0.99520,0.09790,-0.13650,0.99060,2025.35410,1120.71440)"><img src="assets/shadow-dm.svg" style="left:-90px;top:-90px;width:509.341px;height:337.22159999999997px" alt=""></div>
         <div class="mbox m-part" data-m="dm" style="width:329.341px;height:157.2216px;transform:matrix(0.99520,0.09790,-0.13650,0.99060,2025.35410,1120.71440);-webkit-mask-image:url(assets/mask-dm.svg);mask-image:url(assets/mask-dm.svg);-webkit-mask-size:100% 100%;mask-size:100% 100%;"><img class="m-shape" src="assets/menu-dm.svg" style="left:0;top:0;width:329.341px;height:157.2216px" alt=""><p class="tiny" style="width:111px;height:26px;transform:matrix(1.00065,0.05384,-0.01496,0.99936,148.28514,99.69573);font-size:15px;letter-spacing:0.30em;line-height:13px;text-align:right;color:#ffffff">PERSONAL<br>MESSAGE</p><p class="big" style="width:282.8566px;height:66.9856px;transform:matrix(1.00065,0.05384,-0.01496,0.99936,-10.16418,15.42567);font-size:50px;letter-spacing:-0.04em;line-height:1.2;text-align:right;color:#ffffff">개인 단말</p></div>
+        <span class="ndot" data-nd="dm" style="left:2330px;top:1134px" aria-hidden="true"></span>
         <div class="mbox m-part" data-m="settings" style="width:367.2931px;height:184.6127px;transform:matrix(0.99520,0.09790,-0.13650,0.99060,2309.28780,1152.86500)"><img src="assets/shadow-settings.svg" style="left:-90px;top:-90px;width:547.2931px;height:364.6127px" alt=""></div>
         <div class="mbox m-part" data-m="settings" style="width:367.2931px;height:184.6127px;transform:matrix(0.99520,0.09790,-0.13650,0.99060,2309.28780,1152.86500);-webkit-mask-image:url(assets/mask-settings.svg);mask-image:url(assets/mask-settings.svg);-webkit-mask-size:100% 100%;mask-size:100% 100%;"><img class="m-shape" src="assets/menu-settings.svg" style="left:0;top:0;width:367.2931px;height:184.6127px" alt=""><p class="tiny" style="width:111px;height:18px;transform:matrix(0.99992,0.07855,-0.03971,0.99767,109.99535,114.33682);font-size:15px;letter-spacing:0.30em;line-height:4px;text-align:right;color:#ffffff"><span style="display:block">PERSONAL</span><span style="display:block;margin-top:10px">SETTING</span></p><p class="big" style="width:282.8566px;height:66.9856px;transform:matrix(1.00065,0.05384,-0.01496,0.99936,132.90869,32.42806);font-size:54px;letter-spacing:-0.04em;line-height:1.2;text-align:left;color:#ffffff">설정</p></div>
       </div>
@@ -424,11 +436,13 @@ html.ag-wait #stage > :not(.wallpaper):not(.tint) { opacity: 0 !important; will-
           <img class="disc" src="assets/side-disc.svg" alt="">
           <img class="ico" src="assets/icon-group.svg" style="left:57.78px;top:24.74px;width:66.5px;height:63.5px" alt="">
           <span class="txt" style="left:91px;top:92px">단체<br>단말</span>
+          <span class="ndot" data-nd="group" style="left:136px;top:16px" aria-hidden="true"></span>
         </button>
         <button class="side-btn" data-side="private" style="top:814.16px" aria-label="개인 연락망">
           <img class="disc" src="assets/side-disc.svg" alt="">
           <img class="ico" src="assets/icon-private.svg" style="left:58.78px;top:24.74px;width:65.5px;height:51.5px" alt="">
           <span class="txt" style="left:91.5px;top:86px">개인<br>연락망</span>
+          <span class="ndot" data-nd="private" style="left:136px;top:16px" aria-hidden="true"></span>
         </button>
         <button class="side-btn" data-side="timeline" style="top:1006.16px" aria-label="타임라인">
           <img class="disc" src="assets/side-disc.svg" alt="">
@@ -493,7 +507,7 @@ html.ag-wait #stage > :not(.wallpaper):not(.tint) { opacity: 0 !important; will-
     <a class="mm-main" data-go="battle" role="button" tabindex="0"><small>STORY / COMBAT</small><b>전투 진입</b><i></i></a>
     <a class="mm-sub" data-go="home" role="button" tabindex="0" style="left:26px"><b>숙소</b><small>MYHOME</small></a>
     <a class="mm-sub" data-go="inventory" role="button" tabindex="0" style="left:270px"><b>창고</b><small>INVENTORY</small></a>
-    <a class="mm-sub" data-go="dm" role="button" tabindex="0" style="left:514px"><b>개인 단말</b><small>PERSONAL MESSAGE</small></a>
+    <a class="mm-sub" data-go="dm" role="button" tabindex="0" style="left:514px"><b>개인 단말</b><small>PERSONAL MESSAGE</small><span class="ndot" data-nd="dm" style="right:14px;top:8px" aria-hidden="true"></span></a>
     <a class="mm-sub" data-go="settings" role="button" tabindex="0" style="left:758px"><b>설정</b><small>SETTING</small></a>
   </nav>
   <aside class="vinfo" id="vinfo" aria-label="캐릭터 정보">
@@ -744,6 +758,13 @@ document.querySelectorAll('.side-btn').forEach(b => b.addEventListener('click', 
 
 /* 상단바 */
 document.querySelector('[data-action="home"]').addEventListener('click', () => { location.href = 'main.html'; });
+/* 새 메시지 점: 단체 단말 · 개인 연락망 · 개인 단말 */
+if (window.AG && AG.notify && !VISIT) {
+  const nd = async () => { try { const f = await AG.notify(); document.querySelectorAll('[data-nd]').forEach(el => el.classList.toggle('on', !!f[el.dataset.nd])); } catch {} };
+  nd(); setInterval(() => { if (!document.hidden) nd(); }, 20000);
+  addEventListener('pageshow', e => { if (e.persisted) nd(); }); document.addEventListener('visibilitychange', () => { if (!document.hidden) nd(); });
+  if (AG.pushAsk) setTimeout(() => AG.pushAsk(), 2500);   // 처음 한 번: 알림 받을지 묻기
+}
 document.querySelectorAll('.m-menu [data-go]').forEach(el => el.addEventListener('click', () => go(el.dataset.go)));   // 모바일 하단 메뉴
 document.querySelector('[data-action="browse"]').addEventListener('click', () => window.AG ? AG.browse() : go('browse'));
 document.querySelector('[data-action="back"]').addEventListener('click', () => {

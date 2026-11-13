@@ -1,5 +1,5 @@
 /* 개인 연락망 · 개인채팅 (한 사람과 여러 대화) */
-AG.boot();
+AG.boot(); AG.markSeen("private");
 (function () {
   const $ = s => document.getElementById(s);
   const qs = new URLSearchParams(location.search);

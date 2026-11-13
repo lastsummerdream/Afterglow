@@ -15,3 +15,21 @@ self.addEventListener('fetch', e => {
     return net;
   })());
 });
+
+/* 푸시 알림: 서버가 보낸 새 메시지를 알림으로 띄우고, 누르면 그 화면을 연다 */
+self.addEventListener('push', e => {
+  let d = {}; try { d = e.data ? e.data.json() : {}; } catch { d = { body: e.data && e.data.text() }; }
+  e.waitUntil(self.registration.showNotification(d.title || 'AFTERGLOW', {
+    body: d.body || '새 메시지가 왔어요', tag: d.tag || 'ag', renotify: true,
+    icon: 'assets/icon-192.png', badge: 'assets/badge-96.png', data: { url: d.url || 'main.html' },
+  }));
+});
+self.addEventListener('notificationclick', e => {
+  e.notification.close();
+  const url = new URL(e.notification.data && e.notification.data.url || 'main.html', self.registration.scope).href;
+  e.waitUntil((async () => {
+    const all = await clients.matchAll({ type: 'window', includeUncontrolled: true });
+    for (const c of all) if (c.url.startsWith(self.registration.scope)) { await c.focus(); return c.navigate(url).catch(() => clients.openWindow(url)); }
+    return clients.openWindow(url);
+  })());
+});
