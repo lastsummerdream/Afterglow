@@ -40,17 +40,6 @@ AG.boot();
     $('v-' + k).textContent = v;
     fill('b-' + k, v, k === 'hp' ? (s.hpMax || 240) : max, W);
   }
-  const waitHeal = st => {
-    if (!st || !st.healAt || st.hp >= st.hpMax) return;
-    setTimeout(async () => {
-      const next = await AG.stats(other || undefined).catch(() => null);
-      if (!next) return;
-      $('v-hp').textContent = next.hp;
-      fill('b-hp', next.hp, next.hpMax || 240, W);
-      waitHeal(next);
-    }, Math.max(1000, st.healAt - Date.now() + 200));
-  };
-  waitHeal(s);
   const ei = s.echoInfo || {};
   $('echoTitle').textContent = ei.type ? `ECHO · ${ei.type}` : 'ECHO · 잔향';
   $('echoDesc').textContent = ei.desc || '잔향이 아직 깨어나지 않았어요.';

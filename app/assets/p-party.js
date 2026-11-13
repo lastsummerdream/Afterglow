@@ -37,7 +37,7 @@ AG.boot();
     const E = p.enemy;
     $('enName').textContent = E.name || '—'; $('enPic').textContent = E.name ? E.name.slice(0, 1) : '?';
     $('enHp').style.width = Math.max(0, Math.min(1, E.hp / E.hpMax)) * 440 + 'px';
-    $('enTxt').textContent = `HP ${E.hp} / ${E.hpMax} · ${E.state || ''}`;
+    $('enTxt').textContent = `HP ${E.hp} / ${E.hpMax} · ${E.state || ''}${E.fxText ? ' · ' + E.fxText : ''}`;
     $('turn').textContent = p.status === 'over' ? ({ win: 'VICTORY', lose: 'DEFEAT', run: 'ESCAPED' }[p.result] || 'END') : p.status === 'lobby' ? 'LOBBY' : `TURN ${String(p.turn).padStart(2, '0')}`;
     const m = mine();
     $('foot').innerHTML = p.status === 'over' ? (p.storyId ? `전투가 끝났어요 · <a href="${AG.PAGES.story}?id=${p.storyId}" style="pointer-events:auto;text-decoration:underline">이야기로 돌아가기</a>` : `전투가 끝났어요 · <a href="${AG.PAGES.party}" style="pointer-events:auto;text-decoration:underline">새 방 만들기</a>`)

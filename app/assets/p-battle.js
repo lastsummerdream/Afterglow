@@ -15,10 +15,10 @@ AG.boot();
     $('meTxt').textContent = `HP ${b.me.hp} / ${b.me.hpMax} · 잔향 ${b.me.echo ?? 0}` + (b.me.taint ? ` · 오염도 ${b.me.taint}` : '');
     $('enName').textContent = b.enemy.name;
     $('enHp').style.width = pct(b.enemy.hp, b.enemy.hpMax, $('enHp'));
-    $('enTxt').textContent = `HP ${b.enemy.hp} / ${b.enemy.hpMax} · ${b.enemy.state || ''}`;
+    $('enTxt').textContent = `HP ${b.enemy.hp} / ${b.enemy.hpMax} · ${b.enemy.state || ''}${b.enemy.fxText ? ' · ' + b.enemy.fxText : ''}${b.me.fxText ? ' · 나: ' + b.me.fxText : ''}`;
     $('enPic').textContent = b.enemy.name ? b.enemy.name.slice(0, 1) : '?';
     $('turn').textContent = b.over ? ({ win: 'VICTORY', lose: 'DEFEAT', run: 'ESCAPED' }[b.result] || 'END') : `TURN ${String(b.turn).padStart(2, '0')}`;
-    $('foot').textContent = b.over ? '전투가 끝났어요 · 행동 버튼을 누르면 새 전투를 시작해요' : 'AI 판정 · 캐릭터 스탯(G·C·T, 전투 스탯, 장비)을 바탕으로 결과를 계산해요';
+    $('foot').textContent = b.over ? '전투가 끝났어요 · 행동 버튼을 누르면 새 전투를 시작해요' : '직접 적은 행동은 AI가 난이도를 정하고 주사위(d20 + 능력치)로 판정해요 · 지형·약점·내 능력을 쓸수록 유리해요';
     if (prev) {
       if (b.me.hp < prev.me.hp) { const l = document.querySelector('[data-r="left"]'); l.classList.remove('shake'); void l.offsetWidth; l.classList.add('shake'); }
       if (b.enemy.hp < prev.enemy.hp) { const r = $('enHp'); r.classList.remove('flash'); void r.offsetWidth; r.classList.add('flash'); }
@@ -123,20 +123,6 @@ AG.boot();
     if (document.activeElement === input || e.metaKey || e.ctrlKey) return;
     const k = { 1: 'attack', 2: 'guard', 3: 'echo', 4: 'item', 5: 'run' }[e.key]; if (k) act(k);
   });
-
-  // 전투가 끝난 뒤 화면을 켜 둔 채 30분이 지나면 체력 회복을 바로 반영
-  setInterval(async () => {
-    if (document.hidden || busy || (b && !b.over)) return;
-    const s = await AG.stats().catch(() => null);
-    if (!s) return;
-    if (b && b.me) {
-      const hp = Math.min(b.me.hpMax, s.hp);
-      if (hp !== b.me.hp) { b.me.hp = hp; bars(); }
-    } else if (!b) {
-      $('meTxt').textContent = `HP ${s.hp} / ${s.hpMax} · 잔향 ${s.echoLeft ?? 0} · 오염도 ${s.taintTier || 'T0'}`;
-      $('meHp').style.width = Math.max(0, Math.min(1, s.hp / s.hpMax)) * 453 + 'px';
-    }
-  }, 30000);
 
   try { b = await AG.battle.state(); if (!b) b = await AG.battle.start(); }
   catch (e) {
