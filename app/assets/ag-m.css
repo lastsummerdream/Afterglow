@@ -1,6 +1,7 @@
 /* 모바일(세로) 화면: html.m 일 때만. 폭 1030 캔버스를 화면 폭에 꽉 맞춘다. 높이 var(--mh)는 화면 비율에 따라 달라지므로 아래쪽 요소는 아래에 붙인다 */
 html.m { --mw: 1030px; }
 html.m, html.m body { background: #0e0e0e; touch-action: manipulation; }
+html.m, html.m body { height: 100%; overflow: hidden; overscroll-behavior: none; }
 /* 화면 비율이 캔버스와 다르면 남는 자리는 흐린 배경으로 채운다 */
 html.m body::before { content: ""; position: fixed; inset: -60px; background: url(bg.jpg) 62% center / cover; filter: blur(26px) brightness(.5); }
 html.m #stage { width: var(--mw); height: var(--mh); }

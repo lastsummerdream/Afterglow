@@ -124,12 +124,19 @@ AG.fitStage = function (stage) {
   document.documentElement.style.setProperty('--mh', AG.mh + 'px'); document.documentElement.style.setProperty('--mhn', AG.mh);
   let y = 0;
   const vv = window.visualViewport;
-  if (vv && vv.height < AG.vh0 - 120) y = Math.min(0, vv.offsetTop + vv.height - AG.mh * s);   // 키보드가 가리면 아래쪽(입력창)이 보이게 위로 민다
+  const kb = !!(vv && vv.height < AG.vh0 - 120);
+  if (kb) y = Math.min(0, vv.offsetTop + vv.height - AG.mh * s);   // 키보드가 가리면 아래쪽(입력창)이 보이게 위로 민다
+  else if (window.scrollY || (vv && vv.offsetTop)) window.scrollTo(0, 0);   // 키보드가 내려가면 브라우저가 밀어 올린 화면을 제자리로 (올라간 채 굳는 것 방지)
   stage.style.width = AG.MW + 'px'; stage.style.height = AG.mh + 'px';
   stage.style.transform = `translate(0px, ${y}px) scale(${s})`;
   AG.mobileLayout && AG.mobileLayout();
 };
 if (AG.M) { const st = document.getElementById('stage'); if (st) { AG.fitStage(st); addEventListener('resize', () => AG.fitStage(st)); } }
+if (AG.M) {   // 입력을 마치면(키보드가 내려가면) 화면을 원래 자리로 되돌린다
+  const back = () => { const st = document.getElementById('stage'); if (!st) return; window.scrollTo(0, 0); AG.fitStage(st); };
+  addEventListener('focusout', e => { if (e.target && e.target.matches && e.target.matches('input, textarea, [contenteditable]')) [60, 300, 700].forEach(t => setTimeout(back, t)); });
+  addEventListener('focusin', e => { if (e.target && e.target.matches && e.target.matches('input, textarea, [contenteditable]')) [250, 600].forEach(t => setTimeout(() => { const st = document.getElementById('stage'); st && AG.fitStage(st); }, t)); });
+}
 if (AG.M && window.visualViewport) { const f = () => { const st = document.getElementById('stage'); st && AG.fitStage(st); }; visualViewport.addEventListener('resize', f); visualViewport.addEventListener('scroll', f); }
 AG.mobileSetup = function () {
   const cfg = AG.M_PAGES[AG.page] || {}, stage = document.getElementById('stage'), root = document.documentElement;

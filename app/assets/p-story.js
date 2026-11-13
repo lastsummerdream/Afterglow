@@ -12,6 +12,8 @@ AG.boot();
       ${s.intro ? `<small>${AG.esc(s.intro)}</small>` : ''}<em>${s.kind === 'group' ? '단체 스토리' : s.done ? '끝까지 봤어요' : s.started ? '이어서 하기' : '새 이야기'}</em></button>`).join('')
       || '<p class="sl empty" style="padding-top:60px;font-size:24px">아직 열린 이야기가 없어요.</p>';
     rows.querySelectorAll('.srow').forEach(b => b.onclick = () => open(b.dataset.id));
+    const nt = (list.find(s => s.notice) || {}).notice;   // 노션 스크립트를 못 읽어 예시만 보일 때 이유를 알려 준다
+    if (nt) rows.insertAdjacentHTML('beforeend', `<p class="snote">${AG.esc(nt)}</p>`);
   }
   function line(l) {
     const d = document.createElement('p');

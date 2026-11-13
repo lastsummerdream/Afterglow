@@ -571,6 +571,7 @@ ENEMIES.push(...EP1_ENEMIES);
 
 async function community(request, env, user, path, cors, later) {
   const M = request.method;
+  if (later) later(gmSync(env, Date.now()).catch(e => console.log("gm failed", String(e))));   // 노션 명부의 GM 칸 반영 (30초에 한 번)
   const DB = env.DB;
   const ok = (o, s = 200) => json(o, s, cors);
   const bad = (e, s = 400) => json({ error: e }, s, cors);
@@ -885,7 +886,7 @@ ${sheet || "아직 캐릭터 정보를 적지 않았다."}
     const ids = list.map(s => (s.kind === "group" ? "group" : user.id) + ":" + s.id);
     const runs = {};
     for (const id of ids) { const r = await DB.prepare("SELECT state FROM story_runs WHERE id = ?").bind(id).first(); if (r) runs[id] = safeParse(r.state); }
-    return ok(list.map(s => { const r = runs[(s.kind === "group" ? "group" : user.id) + ":" + s.id]; return { id: s.id, title: s.title, kind: s.kind, intro: s.intro, started: !!r, done: !!(r && r.done), at: s.at }; }));
+    return ok(list.map(s => { const r = runs[(s.kind === "group" ? "group" : user.id) + ":" + s.id]; return { id: s.id, title: s.title, kind: s.kind, intro: s.intro, started: !!r, done: !!(r && r.done), at: s.at, notice: s.sample && STORY_ERR ? STORY_ERR : undefined }; }));
   }
   if ((m = path.match(/^\/story\/([\w-]+)(\/act|\/reset)?$/))) {
     const st = (await stories(env)).find(s => s.id === m[1]);
@@ -1137,9 +1138,9 @@ narration은 한국어 한두 문장, 3인칭이 아닌 2인칭 서술 없이 �
 
 /* ── 스토리: 노션의 줄거리 읽기 · URIM 진행 ── */
 const NOTION_STORY_DB_DEFAULT = "ca60aa37c9434826a050336406926555";
-const SAMPLE_STORIES = [{ id: "sample-ration", title: "배급소의 빈 상자", kind: "solo", intro: "배급 상자 하나가 비어 있다. 누가, 왜 가져갔을까.", enemy: "굶주린 들개 무리", at: 0,
+const SAMPLE_STORIES = [{ sample: true, id: "sample-ration", title: "배급소의 빈 상자", kind: "solo", intro: "배급 상자 하나가 비어 있다. 누가, 왜 가져갔을까.", enemy: "굶주린 들개 무리", at: 0,
   outline: "배경: 3구역 배급소의 아침. 안개가 짙다.\n1. 주인공은 배급 상자 하나가 비어 있는 것을 발견한다. 기록원은 장부와 수량이 맞지 않는다고 말한다.\n2. 발자국은 무너진 창고 뒤편으로 이어진다. 따라가거나, 기록원을 더 캐묻거나, 그냥 돌아갈 수 있다.\n3. 창고 뒤편에서 굶주린 들개 무리와 마주친다. (전투)\n4. 전투가 끝나면 상자를 가져간 사람이 근처에 숨어 있던 아이였다는 것이 드러난다. 주인공이 어떻게 할지 선택하게 한다.\n5. 선택에 맞는 짧은 결말로 마무리한다." }];
-let STORY_CACHE = { at: 0, list: null };
+let STORY_CACHE = { at: 0, list: null }, STORY_ERR = "";
 async function stories(env) {
   if (STORY_CACHE.list && Date.now() - STORY_CACHE.at < 60000) return STORY_CACHE.list;
   let list = null;
@@ -1155,11 +1156,49 @@ async function stories(env) {
         list.push({ id: pg.id.replace(/-/g, ""), title: plain(pr["제목"] && pr["제목"].title) || "제목 없음", kind: pr["종류"] && pr["종류"].select && pr["종류"].select.name === "단체" ? "group" : "solo",
           intro: plain(pr["한 줄 소개"] && pr["한 줄 소개"].rich_text), enemy: plain(pr["전투 상대"] && pr["전투 상대"].rich_text), outline, at: Date.parse(pg.created_time) || 0 });
       }
-    } catch (e) { console.log("story notion failed", String(e)); list = null; }
+      STORY_ERR = "";
+    } catch (e) { console.log("story notion failed", String(e)); list = null; STORY_ERR = /404|object_not_found/.test(String(e)) ? "노션 스토리 DB에 서버 연동이 연결되어 있지 않아 예시만 보여요" : "노션 스토리를 읽지 못해 예시만 보여요 (" + String(e).slice(0, 80) + ")"; }
   }
   if (!list) list = SAMPLE_STORIES;   // 노션에 연결되지 않았으면 예시 한 편
   STORY_CACHE = { at: Date.now(), list };
   return list;
+}
+/* ── GM: 노션 명부의 GM 칸을 읽어 체력 · 잔향 · 경험치를 조절하고 아이템을 준다 ──
+   'GM 적용'을 체크한 줄만 처리하고, 처리한 뒤 칸을 비우고 'GM 결과'에 한 일을 적는다.
+   체력 · 잔향 칸: "+30" / "-20" 은 더하고 빼기, "50" 은 그 값으로, "최대" 는 가득 */
+let GM_AT = 0;
+async function gmSync(env, now) {
+  if (!env.NOTION_TOKEN || now - GM_AT < 30000) return;
+  GM_AT = now;
+  const q = await notion(env, "POST", "/databases/" + (env.NOTION_DB || NOTION_DB_DEFAULT) + "/query", { filter: { property: "GM 적용", checkbox: { equals: true } }, page_size: 20 });
+  const plain = p => ((p && (p.rich_text || p.title)) || []).map(t => t.plain_text || "").join("").trim();
+  for (const pg of q.results || []) {
+    const P = pg.properties || {}, uid = plain(P["계정 ID"]), done = [];
+    const u = uid && await env.DB.prepare("SELECT id FROM users WHERE id = ?").bind(uid).first();
+    if (!u) done.push("계정을 찾지 못했어요");
+    else {
+      const s = await statsOf(env.DB, uid, now);
+      const amt = (txt, cur, max) => { const t = txt.replace(/\s/g, ""); if (!t) return null; if (/^(최대|full|max)$/i.test(t)) return max; const n = Number(t.replace(/^=/, "")); if (!isFinite(n)) return null; return clampInt(/^[+-]/.test(t) ? cur + n : n, 0, max); };
+      const hp = amt(plain(P["GM 체력"]), s.hp, s.hpMax), ec = amt(plain(P["GM 잔향"]), s.echoLeft, s.echoMax);
+      if (hp != null || ec != null) { await saveVitals(env.DB, uid, { hp, echo: ec }, now); if (hp != null) done.push(`체력 ${s.hp}→${hp}`); if (ec != null) done.push(`잔향 ${s.echoLeft}→${ec}`); }
+      const xp = P["GM 경험치"] && P["GM 경험치"].number;
+      if (xp) {
+        const pr = await profile(env.DB, uid); const game = pr.game || {}; game.level = game.level || 1; game.exp = Math.max(0, (game.exp || 0) + xp);
+        while (game.exp >= expMax(game.level)) { game.exp -= expMax(game.level); game.level += 1; }
+        await saveProfile(env.DB, uid, { game }, now); done.push(`경험치 ${xp > 0 ? "+" : ""}${xp} (Lv.${game.level})`);
+      }
+      const raw = plain(P["GM 아이템"]);
+      if (raw) {
+        const mm = raw.match(/^(.*?)(?:\s*[x×*]\s*(\d+))?$/), name = mm[1].trim().slice(0, 40), n = clampInt(mm[2] || 1, 1, 20);
+        const known = ENEMIES.flatMap(e => e.loot || []).find(l => l.name === name) || {};   // 이미 있는 아이템 이름이면 설명 · 등급을 그대로 쓴다
+        const desc = plain(P["GM 아이템 설명"]) || known.desc || "", sel = P["GM 아이템 등급"] && P["GM 아이템 등급"].select;
+        for (let i = 0; i < n; i++) await env.DB.prepare("INSERT INTO items (id, user_id, name, rarity, kind, source, descr, slot, deco, img, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)").bind(randomId(), uid, name, (sel && sel.name) || known.rarity || "COMMON", plain(P["GM 아이템 분류"]) || known.kind || "소모품", "GM 지급", desc.slice(0, 300), known.slot || null, known.deco ? 1 : 0, null, now + i).run();
+        done.push(`아이템 ${name}${n > 1 ? " ×" + n : ""}`);
+      }
+    }
+    const stamp = new Date(now + 9 * 3600000).toISOString().slice(5, 16).replace("T", " ");
+    await notion(env, "PATCH", "/pages/" + pg.id, { properties: { "GM 적용": { checkbox: false }, "GM 체력": nText(""), "GM 잔향": nText(""), "GM 경험치": { number: null }, "GM 아이템": nText(""), "GM 아이템 설명": nText(""), "GM 결과": nText(`${stamp} · ${done.join(" · ") || "바꿀 내용이 없었어요"}`) } });
+  }
 }
 function applyStory(run, o) {
   run.step = (run.step || 0) + 1;
