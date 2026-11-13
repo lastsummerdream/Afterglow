@@ -103,6 +103,7 @@ AG.page = (location.pathname.split('/').pop() || 'index.html').replace(/\.html$/
 AG.M = !!AG.M_PAGES[AG.page] && innerWidth < innerHeight && innerWidth <= 820;
 if (AG.M) document.documentElement.classList.add('m', 'm-' + AG.page);
 { const w0 = innerWidth; addEventListener('resize', () => { if (Math.abs(innerWidth - w0) > 120) location.reload(); }); }   // 화면을 돌리면 배치를 새로
+AG.MW = 1030; AG.MH = 1980;   // 세로 캔버스: 어떤 폰에서도 이 비율 그대로 줄이거나 늘려서 보여 준다
 AG.fitStage = function (stage) {
   if (!AG.M) {
     const s = Math.min(innerWidth / 2560, innerHeight / 1440);
@@ -110,14 +111,16 @@ AG.fitStage = function (stage) {
     stage.style.transform = `translate(${(innerWidth - 2560 * s) / 2}px, ${(innerHeight - 1440 * s) / 2}px) scale(${s})`;
     return;
   }
-  const vv = window.visualViewport, w = vv ? vv.width : innerWidth, h = vv ? vv.height : innerHeight;   // 키보드가 올라오면 그만큼 줄어든다
-  const s = w / 720; AG.scale = s; AG.mh = h / s;
-  document.documentElement.style.setProperty('--mh', AG.mh + 'px');
-  stage.style.width = '720px'; stage.style.height = AG.mh + 'px';
-  stage.style.transform = `translate(0px, ${vv ? vv.offsetTop : 0}px) scale(${s})`;
+  AG.vh0 = Math.max(AG.vh0 || 0, innerHeight);                    // 키보드가 올라와도 배치와 크기는 그대로
+  const s = Math.min(innerWidth / AG.MW, AG.vh0 / AG.MH); AG.scale = s; AG.mh = AG.MH;
+  let y = (AG.vh0 - AG.MH * s) / 2;
+  const vv = window.visualViewport;
+  if (vv && vv.height < AG.vh0 - 120) y = Math.min(y, vv.offsetTop + vv.height - AG.MH * s);   // 키보드가 가리면 아래쪽(입력창)이 보이게 위로 민다
+  stage.style.width = AG.MW + 'px'; stage.style.height = AG.MH + 'px';
+  stage.style.transform = `translate(${(innerWidth - AG.MW * s) / 2}px, ${y}px) scale(${s})`;
   AG.mobileLayout && AG.mobileLayout();
 };
-if (AG.M) { const st = document.getElementById('stage'); if (st) { document.documentElement.style.setProperty('--mh0', innerHeight / (innerWidth / 720) + 'px'); AG.fitStage(st); addEventListener('resize', () => AG.fitStage(st)); } }
+if (AG.M) { const st = document.getElementById('stage'); if (st) { AG.fitStage(st); addEventListener('resize', () => AG.fitStage(st)); } }
 if (AG.M && window.visualViewport) { const f = () => { const st = document.getElementById('stage'); st && AG.fitStage(st); }; visualViewport.addEventListener('resize', f); visualViewport.addEventListener('scroll', f); }
 AG.mobileSetup = function () {
   const cfg = AG.M_PAGES[AG.page] || {}, stage = document.getElementById('stage'), root = document.documentElement;
@@ -126,12 +129,12 @@ AG.mobileSetup = function () {
   AG.mobileLayout = () => {
     for (const r of Object.keys(cfg.drawers || {})) {   // 서랍: 패널을 원래 크기로 화면 가운데 위쪽에
       const b = src[r]; if (!b) continue;
-      const k = Math.min(1, 700 / b.width, (AG.mh - 150 - 124) / b.height), tx = (720 - b.width * k) / 2 - b.x * k, ty = 150 - b.y * k;
+      const k = Math.min(1, (AG.MW - 40) / b.width, (AG.MH - 170 - 124) / b.height), tx = (AG.MW - b.width * k) / 2 - b.x * k, ty = 170 - b.y * k;
       document.querySelectorAll(`#stage .L[data-r="${r}"]`).forEach(L => L.style.transform = `translate(${tx}px, ${ty}px) scale(${k})`);
     }
     for (const r of cfg.fit || []) {   // 본문 바탕: 모양을 화면 크기에 맞게 늘린다 (내용은 CSS로 배치)
       const b = src[r]; if (!b) continue;
-      const x = 14, y = 196, w = 692, h = AG.mh - y - 250;
+      const x = 24, y = 196, w = AG.MW - 48, h = AG.MH - y - 250;
       document.querySelectorAll(`#stage .L[data-r="${r}"]:not([id])`).forEach(L => L.style.transform = `translate(${x - b.x * w / b.width}px, ${y - b.y * h / b.height}px) scale(${w / b.width}, ${h / b.height})`);
     }
   };

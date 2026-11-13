@@ -237,26 +237,46 @@
 .zoom-panel b { width: 70px; text-align: right; font-weight: 900; }
 .zoom-panel button { height: 46px; padding: 0 20px; border-radius: 23px; background: rgba(255,255,255,.14); color: #fff; font-size: 20px; font-weight: 700; white-space: nowrap; }
 .zoom-panel button:hover { background: rgba(255,255,255,.26); }
-/* ── 모바일(세로): 폭 720 캔버스. 위에서부터 URIM · 레벨 / 일러스트(+사이드 메뉴) / 대사창 / 메인 메뉴 ── */
-html.m .play, html.m .canvas { width: 720px; height: var(--mh); }
-html.m .urim { left: 20px; top: 100px; scale: .66; transform-origin: 0 0; }
+/* ── 모바일(세로): 1030 × 1980 고정 캔버스. 위에서부터 URIM · 레벨 / 일러스트(+사이드 메뉴) / 대사창 / 하단 메뉴 ── */
+.m-menu { display: none; }
+html.m .play, html.m .canvas { width: var(--mw); height: var(--mh); }
+html.m .urim { left: 30px; top: 112px; scale: .66; transform-origin: 0 0; }
 html.m .urim-line { font-size: 36px; }
 html.m .namegrp { display: none; }
-html.m .lvl { left: 262px; top: 164px; scale: .74; transform-origin: 0 0; }
-html.m .chargrp { left: 110px; top: 300px; scale: .5; transform-origin: 0 0; }
-html.m .sidegrp { left: -84px; top: 118px; scale: .68; transform-origin: 0 0; }
+html.m .lvl { left: 566px; top: 210px; scale: .74; transform-origin: 0 0; }
+html.m .chargrp { left: 95px; top: 370px; scale: .7; transform-origin: 0 0; }
+html.m .sidegrp { left: -84px; top: 196px; scale: .68; transform-origin: 0 0; }
 html.m .sidegrp > img { display: none; }
 html.m .side-btn .txt { font-size: 30px; }
-html.m .optgrp { left: 392px; top: calc(var(--mh) - 760px); scale: .9; transform-origin: 0 0; }
+html.m .optgrp { left: 702px; top: 1276px; scale: .9; transform-origin: 0 0; }
 html.m .zoom-panel { left: auto; right: 0; width: 470px; }
-html.m .dlggrp { left: 4px; top: calc(var(--mh) - 660px); scale: .62; transform-origin: 0 0; }
+html.m .dlggrp { left: 156px; top: 1376px; scale: .62; transform-origin: 0 0; }
 html.m .dialogue .line { font-size: 44px; line-height: 1.4; }
 html.m .nameplate { font-size: 40px; }
-html.m .layer, html.m .hit { scale: .58; transform-origin: 0 0; left: calc(40px - 1606px * .58); top: calc(var(--mh) - 446px - 637px * .58); }
+html.m .layer, html.m .hit { display: none !important; }   /* 가로 화면용 메인 메뉴는 숨기고 아래 메뉴를 쓴다 */
 html.m .side-btn .tip, html.m .opt .tip { display: none; }
-html.m.visit .vinfo { left: 20px; top: calc(var(--mh) - 600px); width: 680px; scale: 1; padding: 34px 70px 36px; }
-html.m.visit .dlggrp { top: calc(var(--mh) - 800px); }
-html.m.visit .chargrp { top: 150px; }
+/* 하단 메뉴: 큰 띠 하나(전투 진입) + 작은 칸 넷. 어두운 사선 띠 · 체크 무늬 · 위에서 아래로 밝아지는 글씨 */
+html.m .m-menu { display: block; position: absolute; left: 0; top: 1558px; width: var(--mw); height: 422px; z-index: 12; pointer-events: none; animation: mmUp .7s cubic-bezier(.2,.8,.2,1) .35s backwards; }
+html.m.visit .m-menu { display: none; }
+@keyframes mmUp { from { opacity: 0; translate: 0 80px; } }
+.m-menu::before { content: ""; position: absolute; left: 0; right: 0; top: 60px; bottom: 0; background: linear-gradient(180deg, rgba(14,14,14,0), rgba(14,14,14,.82) 38%, #0e0e0e); }
+.m-menu a { position: absolute; display: block; color: #fff; text-decoration: none; pointer-events: auto; cursor: pointer; -webkit-tap-highlight-color: transparent; transition: translate .16s, filter .16s; filter: drop-shadow(0 12px 18px rgba(0,0,0,.45)); }
+.m-menu a::before { content: ""; position: absolute; inset: 0; z-index: -1; clip-path: var(--cut); background: repeating-conic-gradient(rgba(0,0,0,.2) 0 25%, transparent 0 50%) 0 0 / 30px 30px, var(--bg); }
+.m-menu a::after { content: ""; position: absolute; inset: 0; z-index: -1; clip-path: var(--cut); background: linear-gradient(180deg, rgba(255,255,255,.22), rgba(255,255,255,0) 9px); }
+.m-menu a:active { translate: 0 4px; filter: drop-shadow(0 6px 10px rgba(0,0,0,.5)) brightness(1.35); }
+.m-menu b { display: block; width: fit-content; font-weight: 900; line-height: 1.1; background: linear-gradient(180deg, #f6f6f6, #9a9a9a); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.m-menu small { display: block; font-family: "Passion One", sans-serif; letter-spacing: .3em; color: #b9b9b9; white-space: nowrap; }
+.m-menu .mm-main { left: 26px; top: 0; width: 978px; height: 176px; padding: 30px 0 0 96px; box-sizing: border-box; --cut: polygon(46px 0, 100% 0, calc(100% - 46px) 100%, 0 100%); --bg: linear-gradient(96deg, #101010 0%, #3c3c3c 58%, #7d7d7d 100%); }
+.m-menu .mm-main small { font-size: 24px; }
+.m-menu .mm-main b { font-size: 80px; margin-top: 2px; }
+.m-menu .mm-main i { position: absolute; right: 96px; top: 50%; translate: 0 -50%; width: 46px; height: 46px; border-right: 7px solid #e6e6e6; border-top: 7px solid #e6e6e6; rotate: 45deg; opacity: .8; }
+.m-menu .mm-sub { top: 204px; width: 246px; height: 170px; padding: 38px 0 0 0; box-sizing: border-box; text-align: center; --cut: polygon(30px 0, 100% 0, calc(100% - 30px) 100%, 0 100%); --bg: linear-gradient(100deg, #161616, #4a4a4a); }
+.m-menu .mm-sub:nth-of-type(odd) { --bg: linear-gradient(100deg, #2b2b2b, #636363); }
+.m-menu .mm-sub b { font-size: 44px; margin: 0 auto; }
+.m-menu .mm-sub small { font-size: 17px; margin-top: 12px; letter-spacing: .22em; }
+html.m.visit .vinfo { left: 175px; top: 1380px; width: 680px; scale: 1; padding: 34px 70px 36px; }
+html.m.visit .dlggrp { top: 1210px; }
+html.m.visit .chargrp { top: 230px; }
 /* 다른 캐릭터 구경 (main.html?visit=…): 메뉴를 감추고 간단한 정보만 */
 .vinfo { display: none; }
 .visit .layer, .visit .hit, .visit .sidegrp, .visit .optgrp, .visit .lvl, .visit .urim, .visit .char-hint b { display: none !important; }
@@ -463,6 +483,13 @@ html.ag-wait #stage > :not(.wallpaper):not(.tint) { opacity: 0 !important; will-
     </div>
   </section>
 
+  <nav class="m-menu" aria-label="메인 메뉴">
+    <a class="mm-main" data-go="battle" role="button" tabindex="0"><small>STORY / COMBAT</small><b>전투 진입</b><i></i></a>
+    <a class="mm-sub" data-go="home" role="button" tabindex="0" style="left:26px"><b>숙소</b><small>MYHOME</small></a>
+    <a class="mm-sub" data-go="inventory" role="button" tabindex="0" style="left:270px"><b>창고</b><small>INVENTORY</small></a>
+    <a class="mm-sub" data-go="dm" role="button" tabindex="0" style="left:514px"><b>개인 단말</b><small>PERSONAL MESSAGE</small></a>
+    <a class="mm-sub" data-go="settings" role="button" tabindex="0" style="left:758px"><b>설정</b><small>SETTING</small></a>
+  </nav>
   <aside class="vinfo" id="vinfo" aria-label="캐릭터 정보">
     <h2>VISITING</h2>
     <dl id="vRows"><dt>불러오는 중…</dt><dd></dd></dl>
@@ -711,6 +738,7 @@ document.querySelectorAll('.side-btn').forEach(b => b.addEventListener('click', 
 
 /* 상단바 */
 document.querySelector('[data-action="home"]').addEventListener('click', () => { location.href = 'main.html'; });
+document.querySelectorAll('.m-menu [data-go]').forEach(el => el.addEventListener('click', () => go(el.dataset.go)));   // 모바일 하단 메뉴
 document.querySelector('[data-action="browse"]').addEventListener('click', () => window.AG ? AG.browse() : go('browse'));
 document.querySelector('[data-action="back"]').addEventListener('click', () => {
   if (history.length > 1) history.back(); else toast('이전 페이지가 없어요');
