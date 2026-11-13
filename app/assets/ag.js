@@ -717,6 +717,8 @@ function seed() {
     inventory: [
       { id: 'i1', name: '녹슨 갈고리', rarity: 'RARE', kind: '무기', source: '전리품', desc: '변이 수집자에게서 얻었다. 끝이 무뎌졌지만 아직 쓸 만하다.\n공격 +6 · 민첩 -2', slot: 'weapon' },
       { id: 'i2', name: '잔광 결정', rarity: 'EPIC', kind: '재료', source: '전리품', desc: '희미하게 빛나는 결정. 잔향 출력을 잠깐 끌어올린다.\n잔향 +8 (전투 1회)' },
+      { id: 'q01', name: '01 회수반 지휘관의 명령서', rarity: 'EPIC', kind: '단서', source: '전리품', desc: "발령처는 '명부 관리청 · 자동 발령'. 서명란은 비어 있다." },
+      { id: 'q12', name: '12 THUMMIM의 첫 파형', rarity: 'EPIC', kind: '단서', source: '전리품', desc: '작은 유리병 안에서 심장 박동 같은 빛이 떠 있다.' },
       { id: 'i3', name: '배급 쿠폰', rarity: 'COMMON', kind: '소모품', source: '전리품', desc: 'TB-03 배급소에서 쓸 수 있는 쿠폰.' },
       { id: 'i4', name: '수집자 가면', rarity: 'RARE', kind: '방어구', source: '전리품', desc: '변이 수집자가 쓰던 가면. 숨이 조금 답답하다.\n방어 +5', slot: 'armor' },
       { id: 'i5', name: '방수포', rarity: 'COMMON', kind: '꾸미기', source: '숙소 꾸미기', desc: '숙소 바닥에 깔 수 있는 방수포.', deco: true },
@@ -1074,6 +1076,9 @@ Object.assign(Dm, {
   Dm.posts.list = async (...a) => { const l = await base(...a); const d = db(); d.stories = d.stories || {}; DEMO_STORIES.filter(s => s.kind === 'group').forEach(s => { const r = d.stories[s.id]; const started = !!(r && !r.done), done = !!(r && r.done); l.unshift({ id: 'story-' + s.id, userId: 'urim', name: 'URIM', sub: started ? '단체 스토리 · 진행 중 (중간 진입 가능)' : done ? '단체 스토리 · 완료' : '단체 스토리', text: `【단체 스토리】 ${s.title}\n${s.intro}`, at: now0 - H, editedAt: null, comments: 0, mine: false, story: s.id, storyStarted: started, storyDone: done }); }); return l; }; }
 
 const impl = AG.mode === 'server' ? S : Dm;
+/* 퀘스트 아이템 그림: 이름 앞 두 자리 번호로 assets/items/qNN.png 를 붙인다 (서버가 아직 안 붙였어도) */
+AG.questImg = name => { const k = String(name || '').slice(0, 2); return /^(0[1-9]|1[0-9])$/.test(k) && / /.test(String(name).slice(2, 3)) ? `assets/items/q${k}.png` : null; };
+{ const base = impl.inventory.list; impl.inventory.list = async (...a) => (await base(...a)).map(it => it.img ? it : { ...it, img: AG.questImg(it.name) }); }
 Object.assign(AG, {
   me: () => impl.me(), users: () => impl.users(), people: impl.people, urim: m => impl.urim(m), channels: impl.channels, msg: impl.msg, talks: impl.talks, dms: impl.dms,
   stats: (...a) => impl.stats(...a), inventory: impl.inventory, home: impl.home, lines: impl.lines, character: impl.character,

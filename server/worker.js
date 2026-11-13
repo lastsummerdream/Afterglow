@@ -533,7 +533,10 @@ const ENEMIES = [
    레벨 L 기준: HP 60+10L · 공격 24+2.5L · 방어 8+1.2L · 민첩 20+2L
    정예: HP×2.2 · 공격×1.2 · 방어+6 / 보스: HP×5 · 공격×1.4 · 방어+10 (단체 4인 기준)
    종류: guard 방어+6·민첩-8 / machine 방어+4 / flood 공격×1.2·방어-6 / raider 민첩+10 / signal 민첩+15·방어-6 / idol 공격×0.4 */
-const CLUE = (n, desc) => ({ name: n, rarity: "EPIC", kind: "단서", desc });
+// 퀘스트 아이템 그림: app/assets/items/qNN.png (번호가 있는 것만)
+const QUEST_IMG = new Set(["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19"]);
+const questImg = name => { const k = String(name || "").slice(0, 2); return /^\d\d$/.test(k) && QUEST_IMG.has(k) ? `assets/items/q${k}.png` : null; };
+const CLUE = (n, desc) => ({ name: n, rarity: "EPIC", kind: "단서", desc, img: questImg(n) });
 const EAT = (n, heal, desc) => ({ name: n, rarity: "COMMON", kind: "소모품", desc: `${desc}\n전투 중 체력을 ${heal} 회복한다.` });
 const EP1_LOOT = {
   ration: EAT("배급 영양 팩", 30, "테바 하층 배급소의 회색 팩. 맛은 없다."),
@@ -904,7 +907,7 @@ ${sheet || "아직 캐릭터 정보를 적지 않았다."}
     const eq = (pr.game && pr.game.equipment) || {};
     const placed = new Set(((pr.home && pr.home.items) || []).map(i => i.invId).filter(Boolean));
     const r = await DB.prepare("SELECT * FROM items WHERE user_id = ? ORDER BY created_at").bind(user.id).all();
-    return ok((r.results || []).map(i => ({ id: i.id, name: i.name, rarity: i.rarity, kind: i.kind, source: i.source, desc: i.descr, slot: i.slot, deco: !!i.deco, img: i.img, equipped: Object.values(eq).includes(i.id), placed: placed.has(i.id) })));
+    return ok((r.results || []).map(i => ({ id: i.id, name: i.name, rarity: i.rarity, kind: i.kind, source: i.source, desc: i.descr, slot: i.slot, deco: !!i.deco, img: i.img || questImg(i.name), equipped: Object.values(eq).includes(i.id), placed: placed.has(i.id) })));
   }
   if ((m = path.match(/^\/inventory\/([\w-]+)(\/equip|\/place|\/use)?$/))) {
     const it = await DB.prepare("SELECT * FROM items WHERE id = ? AND user_id = ?").bind(m[1], user.id).first();
@@ -1272,7 +1275,7 @@ ${sheet || "아직 캐릭터 정보를 적지 않았다."}
       const enemy = ENEMIES.find(e => e.name === b.enemy.name) || ENEMIES[0];
       const l = enemy.loot[Math.floor(Math.random() * enemy.loot.length)];
       await DB.prepare("INSERT INTO items (id, user_id, name, rarity, kind, source, descr, slot, deco, img, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
-        .bind(randomId(), user.id, l.name, l.rarity, l.kind, "전리품", l.desc, l.slot || null, l.deco ? 1 : 0, null, now).run();
+        .bind(randomId(), user.id, l.name, l.rarity, l.kind, "전리품", l.desc, l.slot || null, l.deco ? 1 : 0, l.img || null, now).run();
       const pr = await profile(DB, user.id); const game = pr.game || {}; game.level = game.level || 1; game.exp = (game.exp || 0) + 120;
       let lvUp = false; while (game.exp >= expMax(game.level)) { game.exp -= expMax(game.level); game.level += 1; lvUp = true; }
       await saveProfile(DB, user.id, { game }, now);
@@ -1722,7 +1725,7 @@ async function gmSync(env, now) {
         const mm = raw.match(/^(.*?)(?:\s*[x×*]\s*(\d+))?$/), name = mm[1].trim().slice(0, 40), n = clampInt(mm[2] || 1, 1, 20);
         const known = ENEMIES.flatMap(e => e.loot || []).find(l => l.name === name) || {};   // 이미 있는 아이템 이름이면 설명 · 등급을 그대로 쓴다
         const desc = plain(P["GM 아이템 설명"]) || known.desc || "", sel = P["GM 아이템 등급"] && P["GM 아이템 등급"].select;
-        for (let i = 0; i < n; i++) await env.DB.prepare("INSERT INTO items (id, user_id, name, rarity, kind, source, descr, slot, deco, img, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)").bind(randomId(), uid, name, (sel && sel.name) || known.rarity || "COMMON", plain(P["GM 아이템 분류"]) || known.kind || "소모품", "GM 지급", desc.slice(0, 300), known.slot || null, known.deco ? 1 : 0, null, now + i).run();
+        for (let i = 0; i < n; i++) await env.DB.prepare("INSERT INTO items (id, user_id, name, rarity, kind, source, descr, slot, deco, img, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)").bind(randomId(), uid, name, (sel && sel.name) || known.rarity || "COMMON", plain(P["GM 아이템 분류"]) || known.kind || "소모품", "GM 지급", desc.slice(0, 300), known.slot || null, known.deco ? 1 : 0, known.img || questImg(name), now + i).run();
         done.push(`아이템 ${name}${n > 1 ? " ×" + n : ""}`);
       }
     }
@@ -1904,7 +1907,7 @@ async function partyResolve(env, DB, p, now) {
     const enemy = ENEMIES.find(e => e.name === p.enemy.name) || ENEMIES[0];
     for (const x of p.members.filter(y => !y.left && !y.fled)) {
       const l = enemy.loot[Math.floor(Math.random() * enemy.loot.length)];
-      await DB.prepare("INSERT INTO items (id, user_id, name, rarity, kind, source, descr, slot, deco, img, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)").bind(randomId(), x.id, l.name, l.rarity, l.kind, "전리품", l.desc, l.slot || null, l.deco ? 1 : 0, null, now).run();
+      await DB.prepare("INSERT INTO items (id, user_id, name, rarity, kind, source, descr, slot, deco, img, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)").bind(randomId(), x.id, l.name, l.rarity, l.kind, "전리품", l.desc, l.slot || null, l.deco ? 1 : 0, l.img || null, now).run();
       const pr = await profile(DB, x.id); const game = pr.game || {}; game.level = game.level || 1; game.exp = (game.exp || 0) + 120;
       while (game.exp >= expMax(game.level)) { game.exp -= expMax(game.level); game.level += 1; }
       await saveProfile(DB, x.id, { game }, now);
