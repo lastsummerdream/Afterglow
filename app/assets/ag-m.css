@@ -124,5 +124,5 @@ html.m-inventory .cellbtn.sel { background-color: rgba(120,120,120,.6); box-shad
 html.m #stage *:not(.L, .bw-back, .bw-back *, .modal-back, .modal-back *), html.m #stage *::before, html.m #stage *::after { animation: none !important; }
 html.m .L, html.m .L.mo, html.m .L.in { animation: none !important; }
 @media (orientation: portrait) and (max-width: 820px) { @view-transition { navigation: none; } }
-/* 상대방 메시지(아이콘 포함)를 오른쪽으로 15% 더 */
-html:is(.m-group, .m-private, .m-dm) .msg:not(.me) { margin-left: 15%; }
+/* 상대방 메시지(아이콘 포함)를 오른쪽으로 10% */
+html:is(.m-group, .m-private, .m-dm) .msg:not(.me) { margin-left: 10%; }
