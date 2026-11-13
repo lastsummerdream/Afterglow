@@ -40,14 +40,19 @@ html:is(.m-group, .m-private, .m-dm) .msg { margin-bottom: 54px; padding: 4px 0 
 html:is(.m-group, .m-private, .m-dm) .msg .av { width: 72px; height: 72px; font-size: 28px; }
 html:is(.m-group, .m-private, .m-dm) .msg .hd { gap: 18px; height: auto; flex-wrap: wrap; }
 html:is(.m-group, .m-private, .m-dm) .msg .bd { width: auto; }
-html:is(.m-group, .m-private, .m-dm) .msg.me { margin-bottom: 36px; padding: 0; }
-html:is(.m-group, .m-private, .m-dm) .msg.me .bub { width: 700px; margin-right: 0; }
-html:is(.m-group, .m-private, .m-dm) .msg.me .bd { width: auto; padding: 34px 64px 34px 56px; }
 html:is(.m-group, .m-private, .m-dm) #L-bottom::before { content: ""; position: absolute; left: 24px; top: calc(var(--mh) - 232px); width: 982px; height: 100px; clip-path: polygon(0 0, calc(100% - 22px) 0, 100% 100%, 22px 100%); background: linear-gradient(90deg, rgba(12,12,12,.94), rgba(70,70,70,.9)); }
 html:is(.m-group, .m-private, .m-dm) #msgInput { left: 74px !important; top: calc(var(--mh) - 214px) !important; width: 790px !important; height: 64px !important; font-size: 26px !important; }
 html:is(.m-group, .m-private, .m-dm) #sendBtn { left: 890px !important; top: calc(var(--mh) - 220px) !important; width: 76px !important; height: 76px !important; border-radius: 50%; background: #e6e6e6; }
 html:is(.m-group, .m-private, .m-dm) #sendBtn::before { content: ""; width: 26px; height: 26px; background: #1e1e1e; clip-path: polygon(0 0, 100% 50%, 0 100%, 24% 50%); margin-left: 6px; }
 
+html:is(.m-group, .m-private, .m-dm) .msg.me { margin-bottom: 36px; padding: 0; filter: drop-shadow(0 8px 12px rgba(0,0,0,.28)); }
+/* 내 말풍선: 글자 길이에 맞춰 크기가 정해지고, 네 방향 여백이 같아 보이게 (비스듬한 변만큼 더 준다). 오른쪽 끝은 상대 쪽 왼쪽 여백과 같은 거리 */
+html:is(.m-group, .m-private, .m-dm) .msg.me .tm { padding-right: 10px; }
+html:is(.m-group, .m-private, .m-dm) .msg.me .bub { width: fit-content; max-width: 780px; min-width: 150px; margin-left: auto; margin-right: 6px;
+  clip-path: polygon(0 0, calc(100% - 24px) 8px, 100% calc(100% - 4px), 34px calc(100% - 10px));
+  background: repeating-conic-gradient(rgba(0,0,0,.16) 0 25%, transparent 0 50%) 0 0 / 28px 28px, linear-gradient(90deg, #8f8f8f, #3a3a3a 62%, #1d1d1d); }
+html:is(.m-group, .m-private, .m-dm) .msg.me .bub > svg { display: none; }
+html:is(.m-group, .m-private, .m-dm) .msg.me .bd { width: auto; margin: 0; padding: 30px 54px 34px 62px; text-align: left; }
 /* ── 커버 (로딩 · 로그인 · 회원가입): 가운데 묶음을 화면 가운데로 ── */
 html.m-index .L.cv { scale: .7 !important; transform-origin: 1280px 720px !important; transform: translate(calc(-765px / .7), calc((var(--mh) / 2 - 720px) / .7)); animation: m-in .5s ease-out backwards !important; }
 html.m-index .L.panel { scale: 1.04 !important; transform-origin: 1280px 720px !important; transform: translate(calc(-779px / 1.04), calc((var(--mh) / 2 - 720px) / 1.04)); animation: none !important; }
