@@ -242,6 +242,25 @@ AG.boot = function (opts = {}) {
     stage.appendChild(chip);
   }
   grain();
+  if (AG.mode === 'server' && AG.page !== 'index') {
+    const checkAlarms = async () => {
+      try {
+        const alarms = await AG.story.alarms();
+        if (!Array.isArray(alarms) || !alarms.length) return;
+        const curStory = AG.page === 'story' ? new URLSearchParams(location.search).get('id') : null;
+        let seen = {}; try { seen = JSON.parse(LS.get('ag-seen-alarms') || '{}'); } catch {}
+        for (const a of alarms) {
+          if (!a || !a.id || seen[a.id] || a.storyId === curStory) continue;
+          seen[a.id] = Date.now();
+          LS.set('ag-seen-alarms', JSON.stringify(seen));
+          AG.storyAlarm(a);
+          break;
+        }
+      } catch {}
+    };
+    setTimeout(checkAlarms, 1200);
+    AG.poll(checkAlarms, 5000);
+  }
 };
 
 /* 비디오 질감 자리: 천천히 흔들리는 그레인 */
@@ -254,12 +273,24 @@ function grain() {
   setInterval(() => { seed = (seed % 97) + 1; turb.setAttribute('seed', seed); }, 90);
 }
 
-let toastTimer;
+let toastTimer, alarmTimer;
 AG.toast = function (msg, ms = 1900) {
   let el = document.getElementById('pageToast');
   if (!el) { el = document.createElement('div'); el.id = 'pageToast'; el.className = 'page-toast'; el.setAttribute('role', 'status'); document.getElementById('stage').appendChild(el); }
   el.textContent = msg; el.classList.add('show');
   clearTimeout(toastTimer); toastTimer = setTimeout(() => el.classList.remove('show'), ms);
+};
+AG.storyAlarm = function (a, ms = 9000) {
+  const stage = document.getElementById('stage'); if (!stage) return;
+  let el = document.getElementById('storyAlarm');
+  if (!el) { el = document.createElement('div'); el.id = 'storyAlarm'; el.className = 'story-alarm'; el.setAttribute('role', 'alert'); stage.appendChild(el); }
+  const label = a.mid ? '중간 합류하기 →' : '참여하기 →';
+  const desc = `${a.byName || '누군가'} 님이 「${a.title || '단체 스토리'}」 진행을 ${a.mid ? '이어가고 있어요' : '시작했어요'}`;
+  el.innerHTML = `<button type="button" class="sa-go"><span class="sa-badge">단체 스토리</span><span>${AG.esc(desc)}</span><span class="sa-join">${label}</span></button><button type="button" class="sa-close" aria-label="알림 닫기">×</button>`;
+  el.querySelector('.sa-go').onclick = () => { location.href = AG.PAGES.story + '?id=' + encodeURIComponent(a.storyId); };
+  el.querySelector('.sa-close').onclick = () => { el.classList.remove('show'); clearTimeout(alarmTimer); };
+  el.classList.add('show');
+  clearTimeout(alarmTimer); alarmTimer = setTimeout(() => el.classList.remove('show'), ms);
 };
 
 AG.tpl = function (name, extra = '') {
@@ -613,7 +644,8 @@ const S = {
   },
   story: {
     list: () => call('GET', '/stories'),
-    open: id => call('GET', `/story/${id}`),
+    alarms: () => call('GET', '/story-alarms'),
+    open: (id, notify) => call('GET', `/story/${id}${notify ? '?notify=1' : ''}`),
     act: (id, text) => call('POST', `/story/${id}/act`, { text }),
     reset: id => call('POST', `/story/${id}/reset`, {}),
   },
@@ -998,9 +1030,21 @@ function demoPartyAct(p, action, text, skill) {
 Object.assign(Dm, {
   story: {
     list: () => { const d = db(); d.stories = d.stories || {}; return wait(DEMO_STORIES.map(s => ({ id: s.id, title: s.title, kind: s.kind, intro: s.intro, started: !!d.stories[s.id], done: !!(d.stories[s.id] && d.stories[s.id].done), at: now0 - 2 * H }))); },
-    open: id => { const st = DEMO_STORIES.find(s => s.id === id); if (!st) return fail('not_found'); const d = db(); d.stories = d.stories || {};
-      if (!d.stories[id]) { d.stories[id] = { step: 0, log: [], choices: [], done: false, battle: null }; demoStoryStep(st, d.stories[id]); }
-      demoStorySync(st, d.stories[id]); save(); return wait(demoStoryView(st), 300); },
+    alarms: () => wait([]),
+    open: (id, notify) => { const st = DEMO_STORIES.find(s => s.id === id); if (!st) return fail('not_found'); const d = db(); d.stories = d.stories || {};
+      let notified = 0, midJoined = false;
+      if (!d.stories[id]) { d.stories[id] = { step: 0, log: [], choices: [], done: false, battle: null, participants: ['me'] }; demoStoryStep(st, d.stories[id]); }
+      else if (st.kind === 'group' && !d.stories[id].done) {
+        d.stories[id].participants = Array.isArray(d.stories[id].participants) ? d.stories[id].participants : [];
+        if (!d.stories[id].participants.includes('me')) {
+          d.stories[id].participants.push('me');
+          if ((d.stories[id].step || 0) > 0) { midJoined = true; d.stories[id].log.push({ who: 'sys', text: `${meName()} 님이 이야기 도중에 합류했어요.` }); }
+        }
+      }
+      if (st.kind === 'group' && !d.stories[id].done && notify) {
+        notified = Object.values(d.users || {}).filter(u => u.id !== 'me' && u.online).length;
+      }
+      demoStorySync(st, d.stories[id]); save(); return wait({ ...demoStoryView(st), notified, midJoined }, 300); },
     act: (id, text) => { const st = DEMO_STORIES.find(s => s.id === id); const r = st && demoStoryRun(st); if (!r) return fail('not_found');
       if (!r.done && !r.battle) { r.log.push({ who: 'me', userId: 'me', name: meName(), text }); demoStoryStep(st, r); } save(); return wait(demoStoryView(st), 700); },
     reset: id => { const d = db(); const st = DEMO_STORIES.find(s => s.id === id); if (d.stories) delete d.stories[id]; save(); return Dm.story.open(id); },
@@ -1021,7 +1065,7 @@ Object.assign(Dm, {
 });
 
 { const base = Dm.posts.list;   // 단체 스토리는 타임라인 맨 위의 참여 글로
-  Dm.posts.list = async (...a) => { const l = await base(...a); DEMO_STORIES.filter(s => s.kind === 'group').forEach(s => l.unshift({ id: 'story-' + s.id, userId: 'urim', name: 'URIM', sub: '단체 스토리', text: `【단체 스토리】 ${s.title}\n${s.intro}`, at: now0 - H, editedAt: null, comments: 0, mine: false, story: s.id })); return l; }; }
+  Dm.posts.list = async (...a) => { const l = await base(...a); const d = db(); d.stories = d.stories || {}; DEMO_STORIES.filter(s => s.kind === 'group').forEach(s => { const r = d.stories[s.id]; const started = !!(r && !r.done), done = !!(r && r.done); l.unshift({ id: 'story-' + s.id, userId: 'urim', name: 'URIM', sub: started ? '단체 스토리 · 진행 중 (중간 진입 가능)' : done ? '단체 스토리 · 완료' : '단체 스토리', text: `【단체 스토리】 ${s.title}\n${s.intro}`, at: now0 - H, editedAt: null, comments: 0, mine: false, story: s.id, storyStarted: started, storyDone: done }); }); return l; }; }
 
 const impl = AG.mode === 'server' ? S : Dm;
 Object.assign(AG, {

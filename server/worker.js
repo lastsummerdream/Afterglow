@@ -741,8 +741,12 @@ async function community(request, env, user, path, cors, later) {
       out.push({ id: p.id, userId: p.user_id, name: a.name, sub: a.sub, avatar: avatars[p.user_id], text: p.text, at: p.created_at, editedAt: p.edited_at, comments: p.cm, mine: p.user_id === user.id });
     }
     if (!new URL(request.url).searchParams.get("before")) {   // 진행 중인 단체 스토리: URIM의 참여 글로 맨 위에
-      for (const st of (await stories(env)).filter(x => x.kind === "group").reverse())
-        out.unshift({ id: "story-" + st.id, userId: "urim", name: "URIM", sub: "단체 스토리", avatar: null, text: `【단체 스토리】 ${st.title}\n${st.intro || ""}`.trim(), at: st.at || now, editedAt: null, comments: 0, mine: false, story: st.id });
+      for (const st of (await stories(env)).filter(x => x.kind === "group").reverse()) {
+        const rr = await DB.prepare("SELECT state FROM story_runs WHERE id = ?").bind("group:" + st.id).first();
+        const rState = rr && safeParse(rr.state);
+        const started = !!(rState && !rState.done), done = !!(rState && rState.done);
+        out.unshift({ id: "story-" + st.id, userId: "urim", name: "URIM", sub: started ? "단체 스토리 · 진행 중 (중간 진입 가능)" : done ? "단체 스토리 · 완료" : "단체 스토리", avatar: null, text: `【단체 스토리】 ${st.title}\n${st.intro || ""}`.trim(), at: st.at || now, editedAt: null, comments: 0, mine: false, story: st.id, storyStarted: started, storyDone: done });
+      }
     }
     return ok(out);
   }
@@ -922,6 +926,15 @@ ${sheet || "아직 캐릭터 정보를 적지 않았다."}
   }
 
   /* ── 스토리 (노션 줄거리를 URIM이 진행) ── */
+  if (path === "/story-alarms" && M === "GET") {
+    const r = await DB.prepare("SELECT state, updated_at FROM story_runs WHERE owner = 'group' AND updated_at > ? ORDER BY updated_at DESC LIMIT 5").bind(now - ONLINE_MS).all();
+    const alarms = [];
+    for (const row of r.results || []) {
+      const st = safeParse(row.state);
+      if (st && !st.done && st.alarm && now - st.alarm.at < ONLINE_MS && st.alarm.byId !== user.id) alarms.push(st.alarm);
+    }
+    return ok(alarms);
+  }
   if (path === "/stories" && M === "GET") {
     const list = await stories(env);
     const ids = list.map(s => (s.kind === "group" ? "group" : user.id) + ":" + s.id);
@@ -937,16 +950,39 @@ ${sheet || "아직 캐릭터 정보를 적지 않았다."}
     let run = row ? safeParse(row.state) : null;
     const me = await statsOf(DB, user.id, now);
     const save = () => DB.prepare("INSERT INTO story_runs (id, story_id, owner, state, updated_at) VALUES (?, ?, ?, ?, ?) ON CONFLICT(id) DO UPDATE SET state = excluded.state, updated_at = excluded.updated_at").bind(rid, st.id, owner, JSON.stringify(run), now).run();
-    const view = () => ({ id: st.id, title: st.title, kind: st.kind, intro: st.intro, log: run.log, choices: run.choices || [], done: !!run.done, battle: run.battle || null, me: user.id });
+    let notified = 0, midJoined = false;
+    const view = () => ({ id: st.id, title: st.title, kind: st.kind, intro: st.intro, log: run.log, choices: run.choices || [], done: !!run.done, battle: run.battle || null, me: user.id, notified, midJoined });
     if (m[2] === "/reset" && M === "POST") {
       if (st.kind === "group") return bad("단체 스토리는 다시 시작할 수 없어요");
       await DB.prepare("DELETE FROM story_runs WHERE id = ?").bind(rid).run(); run = null;
     }
+    const isFirst = !run;
     if (!run || (!run.done && !run.battle && !run.log.some(l => l.who === "urim"))) {   // 처음 열면 URIM이 첫 장면을 연다 (지난번에 못 열었으면 다시)
-      run = run || { step: 0, log: [], choices: [], done: false, battle: null };
+      run = run || { step: 0, log: [], choices: [], done: false, battle: null, participants: [user.id] };
       const o = await narrate(env, st, run, me, null);
       applyStory(run, o);
       await save();
+    } else if (st.kind === "group" && !run.done) {
+      run.participants = Array.isArray(run.participants) ? run.participants : [];
+      const hadLog = (run.log || []).some(l => l.userId === user.id);
+      if (!run.participants.includes(user.id)) {
+        run.participants.push(user.id);
+        if (!hadLog && (run.step || 0) > 0) {
+          midJoined = true;
+          run.log.push({ who: "sys", text: `${me.name} 님이 이야기 도중에 합류했어요.` });
+          run.log = run.log.slice(-80);
+        }
+        await save();
+      }
+    }
+    const wantNotify = st.kind === "group" && !run.done && (new URL(request.url).searchParams.get("notify") === "1" || isFirst);
+    if (wantNotify) {
+      const onRow = await DB.prepare("SELECT COUNT(*) AS n FROM users WHERE id != ? AND last_seen > ?").bind(user.id, now - ONLINE_MS).first();
+      notified = (onRow && onRow.n) || 0;
+      if (notified > 0) {
+        run.alarm = { id: randomId(), at: now, byId: user.id, byName: me.name, storyId: st.id, title: st.title, mid: !isFirst && (run.step || 0) > 1 };
+        await save();
+      }
     }
     if (run.battle) await storyBattleSync(DB, run, st, user.id, now, save);
     if (!run.battle && run.afterBattle && !run.done) { applyStory(run, await narrate(env, st, run, me, null)); await save(); }   // 전투가 끝났으면 다음 장면으로
@@ -957,6 +993,10 @@ ${sheet || "아직 캐릭터 정보를 적지 않았다."}
       const req = await body(request);
       const said = String((req && req.text) || "").trim().slice(0, 300);
       if (!said) return bad("empty");
+      if (st.kind === "group") {
+        run.participants = Array.isArray(run.participants) ? run.participants : [];
+        if (!run.participants.includes(user.id)) run.participants.push(user.id);
+      }
       run.log.push({ who: "me", userId: user.id, name: me.name, text: said });
       const o = await narrate(env, st, run, me, said);
       applyStory(run, o);
@@ -992,7 +1032,7 @@ ${sheet || "아직 캐릭터 정보를 적지 않았다."}
     for (const x of r.results || []) {
       const p = safeParse(x.state); const on = (p.members || []).filter(mm => now - (mm.seen || 0) < PARTY_ONLINE);
       if ((p.members || []).some(mm => mm.id === user.id && !mm.left)) mine = mine || partyView(p, user.id, now);
-      else if (x.status === "lobby" && on.length && on.length < PARTY_MAX) open.push({ id: p.id, host: (p.members.find(mm => mm.id === p.hostId) || {}).name || "?", count: on.length, max: PARTY_MAX, enemy: p.enemy.name, story: p.storyId || null });
+      else if ((x.status === "lobby" || (x.status === "battle" && p.storyId)) && on.length && on.length < PARTY_MAX) open.push({ id: p.id, host: (p.members.find(mm => mm.id === p.hostId) || {}).name || "?", count: on.length, max: PARTY_MAX, enemy: p.enemy.name, story: p.storyId || null });
     }
     return ok({ mine, open });
   }
@@ -1013,9 +1053,25 @@ ${sheet || "아직 캐릭터 정보를 적지 않았다."}
       let err = null;
       if (m[2] === "/join" && M === "POST") {
         if (!mem) {
-          if (p.status !== "lobby") err = "이미 시작한 방이에요";
+          const canMidJoin = p.status === "battle" && !!p.storyId;
+          if (p.status === "over") err = "이미 끝난 전투예요";
+          else if (p.status !== "lobby" && !canMidJoin) err = "이미 시작한 방이에요";
           else if (p.members.filter(x => !x.left).length >= PARTY_MAX) err = "방이 가득 찼어요";
-          else { const me = await statsOf(DB, user.id, now); if (me.hp <= 0) err = "체력이 없어요. 창고에서 회복 아이템을 쓰고 다시 나가요"; else { p.members = p.members.filter(x => x.id !== user.id); mem = partyMember(user.id, me, now); p.members.push(mem); p.log.push({ kind: "urim", text: `${me.name} 님이 들어왔어요.` }); } }
+          else {
+            const me = await statsOf(DB, user.id, now);
+            if (me.hp <= 0) err = "체력이 없어요. 창고에서 회복 아이템을 쓰고 다시 나가요";
+            else {
+              p.members = p.members.filter(x => x.id !== user.id);
+              mem = partyMember(user.id, me, now);
+              p.members.push(mem);
+              if (p.status === "battle") {
+                await saveVitals(DB, user.id, { battleEndAt: null }, now);
+                p.log.push({ kind: "urim", text: `${me.name} 님이 전투 도중에 합류했어요.` });
+              } else {
+                p.log.push({ kind: "urim", text: `${me.name} 님이 들어왔어요.` });
+              }
+            }
+          }
         }
       } else if (!mem) return bad("이 방에 있지 않아요", 403);
       if (err) return bad(err);
@@ -1506,6 +1562,7 @@ choices에는 지금 할 수 있는 행동 2~3개를 12자 안팎으로 적는�
 - 단서는 줄거리에 적힌 조건을 채웠을 때만 준다. 전투 상대는 enemy에 줄거리에 적힌 이름 그대로 쓴다.
 - 줄거리에 [정체 공개]가 나오기 전까지, 너(URIM)는 자신이 명부·제1기관·신호와 이어져 있다는 것을 말하거나 인정하지 않는다. 추궁당하면 기록 손상이나 분류 오류로 얼버무린다. '명부 관리청'이라는 이름은 나와도 되지만 그 뒤에 누가 있는지는 말하지 않는다.
 - 캐릭터의 비밀은 그 캐릭터의 [개인 선택] 장면에서만 다루고, 먼저 폭로하지 않는다. 다른 플레이어의 캐릭터를 대신 결정하지 않는다.
+- 단체 스토리에서는 진행 도중에 새로운 캐릭터가 중간 진입(합류)할 수 있다. 새 캐릭터가 중간에 합류해 행동하거나 대사를 하면 자연스럽게 현장에 합류한 것으로 묘사하며 이야기를 이어 간다.
 - 전투에서 졌어도 이야기는 이어진다. 줄거리의 [패배] 줄을 따른다.
 [평판]
 - NPC와 세력은 캐릭터의 [평판]을 보고 태도를 정한다. 평판이 높으면 반기고 정보를 더 주며 값을 깎아 주고, 낮으면 경계하거나 값을 올리거나 말을 아끼거나 적대한다. 그 NPC·세력과의 관계 점수가 있으면 전체 평판보다 그것을 먼저 따른다. 지난 행동을 들은 것처럼 언급해도 된다.

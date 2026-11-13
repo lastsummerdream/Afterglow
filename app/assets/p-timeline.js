@@ -59,7 +59,7 @@ AG.boot();
       el.innerHTML = `${ava(p)}<div class="hd"><span class="nm">${AG.esc(p.name)}</span><span class="sb">${meta(p)}</span></div>
         <p class="bd">${AG.esc(pv.text + (pv.cut ? '…' : ''))}</p>
         ${pv.cut ? '<span class="more">본문 보기</span>' : ''}
-        ${p.story ? '<span class="join">참여하기</span>' : `<p class="ft">${p.comments ? `댓글 ${p.comments}` : '댓글 달기'}</p>`}`;
+        ${p.story ? `<span class="join">${p.storyDone ? '기록 보기' : p.storyStarted ? '중간 합류하기' : '참여하기'}</span>` : `<p class="ft">${p.comments ? `댓글 ${p.comments}` : '댓글 달기'}</p>`}`;
       if (p.story) { el.classList.add('story'); el.setAttribute('aria-label', '단체 스토리 참여하기'); el.querySelector('.more')?.remove(); el.querySelector('.bd').textContent = p.text; }
       const go = () => p.story ? (location.href = AG.PAGES.story + '?id=' + p.story) : open(p.id);
       el.addEventListener('click', e => { if (e.target.closest('.acts,.edit-box,.edit-row')) return; go(); });

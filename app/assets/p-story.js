@@ -7,9 +7,8 @@ AG.boot();
   const qid = new URLSearchParams(location.search).get('id');
 
   function renderList() {
-    const solo = list.filter(s => s.kind !== 'group' || (run && s.id === run.id));
-    rows.innerHTML = solo.map(s => `<button class="srow${run && run.id === s.id ? ' on' : ''}" data-id="${AG.esc(s.id)}" type="button"><b>${AG.esc(s.title)}</b>
-      ${s.intro ? `<small>${AG.esc(s.intro)}</small>` : ''}<em>${s.kind === 'group' ? '단체 스토리' : s.done ? '끝까지 봤어요' : s.started ? '이어서 하기' : '새 이야기'}</em></button>`).join('')
+    rows.innerHTML = list.map(s => `<button class="srow${run && run.id === s.id ? ' on' : ''}" data-id="${AG.esc(s.id)}" type="button"><b>${AG.esc(s.title)}</b>
+      ${s.intro ? `<small>${AG.esc(s.intro)}</small>` : ''}<em>${s.kind === 'group' ? (s.done ? '단체 스토리 · 끝까지 봤어요' : s.started ? '단체 스토리 · 중간 진입 가능' : '단체 스토리 · 참여하기') : s.done ? '끝까지 봤어요' : s.started ? '이어서 하기' : '새 이야기'}</em></button>`).join('')
       || '<p class="sl empty" style="padding-top:60px;font-size:24px">아직 열린 이야기가 없어요.</p>';
     rows.querySelectorAll('.srow').forEach(b => b.onclick = () => open(b.dataset.id));
     const nt = (list.find(s => s.notice) || {}).notice;   // 노션 스크립트를 못 읽어 예시만 보일 때 이유를 알려 준다
@@ -61,11 +60,16 @@ AG.boot();
     log.innerHTML = '<p class="sl empty">URIM이 이야기를 준비하고 있어요…</p>'; shown = 0;
     try {
       const fresh = !(list.find(s => s.id === id) || {}).started;
-      run = await AG.story.open(id);
+      run = await AG.story.open(id, true);
       history.replaceState(null, '', '?id=' + id);
       $('sTitle').textContent = run.title; $('sCap').textContent = run.kind === 'group' ? 'GROUP STORY' : 'STORY';
-      const it = list.find(s => s.id === id); if (it) it.started = true;
+      const it = list.find(s => s.id === id); if (it) { it.started = true; it.done = run.done; }
       renderList(); log.innerHTML = ''; await renderLog(fresh);
+      if (run.kind === 'group' && !run.battle) {
+        if (run.midJoined && run.notified > 0) AG.toast(`진행 중인 단체 스토리에 중간 합류했어요 · 접속 중인 유저 ${run.notified}명에게 알림을 보냈어요`, 2800);
+        else if (run.midJoined) AG.toast('진행 중인 단체 스토리에 중간 합류했어요', 2400);
+        else if (run.notified > 0) AG.toast(`접속 중인 유저 ${run.notified}명에게 단체 스토리 알림을 보냈어요`, 2600);
+      }
     } catch (e) { run = null; log.innerHTML = ''; AG.toast(AG.errMsg(e)); }
     setBusy(false);
     if (run && run.battle) toBattle(); else input.focus({ preventScroll: true });
