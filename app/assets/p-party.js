@@ -78,7 +78,7 @@ AG.boot();
     const m0 = mine(); const b = { turn: p.turn, cool: (m0 && m0.cool) || {} };
     const rows = ['normal', 'special', 'ultimate'].map((k, i) => {
       const R = AG.SKILL_RULES[k], sk = skills[k] || {}, st = AG.skillState(b, k, skills);
-      const rule = [`피해 ×${R.mult}`, R.cooldown ? `${R.cooldown}턴 쉬어요` : '', R.perBattle ? `전투당 ${R.perBattle}번` : ''].filter(Boolean).join(' · ');
+      const rule = AG.skillRule(k, sk);
       return `<button class="sk sk-${k}" data-k="${k}" type="button" ${st.ok ? '' : 'disabled'} style="animation-delay:${i * .06}s"><span class="sk-kind">${{ normal: 'NORMAL', special: 'SPECIAL', ultimate: 'ULTIMATE' }[k]}</span>
         <span class="sk-tx"><b>${AG.esc(sk.name || (k === 'normal' ? '일반 공격' : '정하지 않음'))}</b>${sk.desc ? `<small>${AG.esc(sk.desc)}</small>` : ''}</span><span class="sk-st">${AG.esc(st.ok ? rule : st.why)}</span></button>`;
     }).join('');

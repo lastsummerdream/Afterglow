@@ -463,6 +463,12 @@ AG.SKILL_RULES = {
   special: { label: '특수 공격', mult: 1.5, cooldown: 2 },
   ultimate: { label: '필살기', mult: 2.5, perBattle: 1 },
 };
+/* 공격 설명 한 줄: 서버가 기술 서술을 읽어 정한 효과(sk.fx)가 있으면 그것을 쓴다 */
+AG.skillRule = (kind, sk) => {
+  const R = AG.SKILL_RULES[kind], f = (sk && sk.fx) || { mult: R.mult };
+  return [`피해 ×${f.mult}`, f.crit > 5 ? `급소 ${f.crit}%` : '', f.sure ? '반드시 명중' : '', f.weaken ? '적 반격 약화' : '', f.echoCost ? `잔향 ${f.echoCost} 소모` : '', f.recoil ? '다음 턴 행동 불가' : '',
+    R.cooldown ? `${R.cooldown}턴 쉬어요` : '', R.perBattle ? `전투당 ${R.perBattle}번` : ''].filter(Boolean).join(' · ');
+};
 /* 지금 쓸 수 있는지: { ok, why } */
 AG.skillState = (b, kind, skills) => {
   const R = AG.SKILL_RULES[kind]; const sk = skills && skills[kind];

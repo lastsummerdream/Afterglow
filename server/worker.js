@@ -491,6 +491,27 @@ function unb64url(s) { s = s.replace(/-/g, "+").replace(/_/g, "/"); while (s.len
 const TEXT_MAX = 2000, POST_MAX = 20000, TITLE_MAX = 40;
 // 공격 종류 · 임시 값 (사이트 assets/ag.js 의 AG.SKILL_RULES 와 같게 유지)
 const SKILL_RULES = { normal: { label: "일반 공격", mult: 1 }, special: { label: "특수 공격", mult: 1.5, cooldown: 2 }, ultimate: { label: "필살기", mult: 2.5, perBattle: 1 } };
+/* 공격의 효과: 기본 규칙에, 캐릭터가 적은 기술 서술을 읽어 더한다.
+   급소·치명 → 급소 확률↑(대신 기본 배율↓) · 반드시 명중 → 빗나가지 않음 · 제약·이동 범위 → 그 턴 적의 반격 약화
+   잔향을 소모·이용 → 잔향 1 소모, 잔향 출력만큼 추가 피해 · 행동불능·강제 종료 → 배율↑, 다음 턴 행동 불가 */
+const CRIT_MULT = 1.5;
+function skillFx(kind, sk, hasEcho) {
+  const R = SKILL_RULES[kind] || SKILL_RULES.normal, d = String((sk && sk.desc) || "");
+  const fx = { kind, label: R.label, mult: R.mult, cooldown: R.cooldown || 0, perBattle: R.perBattle || 0, crit: 5, sure: false, weaken: false, echoCost: 0, recoil: false };
+  if (kind === "normal" || !SKILL_RULES[kind]) return fx;
+  const ult = kind === "ultimate";
+  if (/급소|치명/.test(d)) { fx.crit += ult ? (/비약|확정/.test(d) ? 60 : 45) : 25; fx.mult = ult ? 2 : 1.3; }
+  if (/반드시 명중|필중|빗나가지/.test(d)) fx.sure = true;
+  if (/제약|이동 범위|묶어|둔화|봉쇄|늦춘|늦추/.test(d)) fx.weaken = true;
+  if (hasEcho && /잔향을?\s*(소모|이용|사용)/.test(d)) fx.echoCost = 1;
+  if (/행동\s*불능|움직이기 힘들|강제 종료/.test(d)) { fx.recoil = true; fx.mult = Math.round((fx.mult + 0.9) * 10) / 10; }
+  return fx;
+}
+// 이번 공격의 실제 배율·추가 피해 (급소는 여기서 굴린다)
+function rollSkill(fx, s, name, desc) {
+  const critHit = Math.random() * 100 < fx.crit;
+  return { ...fx, name, desc: desc || "", critHit, eff: fx.mult * (critHit ? CRIT_MULT : 1), bonus: fx.echoCost ? Math.round((s.echo || 0) * 0.5) : 0 };
+}
 const SPECIES_KO = { human: "순수 인간", later: "레이터", mixed: "혼혈", uc: "언섹션" };
 const ONLINE_MS = 5 * 60 * 1000;
 const ENEMIES = [
@@ -568,6 +589,8 @@ const EP1_ENEMIES = [
   ep1("제1기관의 파편 · 몸", 20, "boss", "machine", "갈빗대 방벽", [CLUE("12 THUMMIM의 첫 파형", "몸의 방어체 안에서 새어 나온 파형. 214년 만에 따로 뛰는 박자다.")]),
 ];
 ENEMIES.push(...EP1_ENEMIES);
+// GM이 노션에서 골라 줄 수 있는 소모품 (명부의 'GM 소모품' 선택지와 이름이 같아야 한다)
+const GM_CONSUMABLES = [{ name: "붕대", rarity: "COMMON", kind: "소모품", desc: "전투 중 체력을 30 회복한다." }, ...Object.values(EP1_LOOT)];
 
 async function community(request, env, user, path, cors, later) {
   const M = request.method;
@@ -1004,9 +1027,11 @@ ${sheet || "아직 캐릭터 정보를 적지 않았다."}
           if (kind !== "normal" && !(sk && sk.name)) return bad("아직 정하지 않은 공격이에요");
           if (R.cooldown && c[kind] && p.turn < c[kind]) return bad(`${c[kind] - p.turn}턴 뒤에 다시 쓸 수 있어요`);
           if (R.perBattle && (c[kind + "Used"] || 0) >= R.perBattle) return bad("이번 전투에서 이미 썼어요");
-          skill = { kind, label: R.label, mult: R.mult, name: (sk && sk.name) || "일반 공격" };
+          const fx = skillFx(kind, sk, s0.echoMax > 0);
+          if (fx.echoCost && (mem.echo || 0) < fx.echoCost) return bad("남은 잔향이 없어서 쓸 수 없어요");
+          skill = { ...fx, name: (sk && sk.name) || "일반 공격" };
         }
-        mem.choice = { action, text: said, skill };
+        mem.choice = mem.rest === p.turn ? { action: "rest" } : { action, text: said, skill };
       }
       if (p.status === "battle") await partyResolve(env, DB, p, now);
       const status = p.status;
@@ -1039,7 +1064,8 @@ ${sheet || "아직 캐릭터 정보를 적지 않았다."}
     const b = safeParse(row.state);
     if (b.over) return ok(b);
     const req = await body(request);
-    const action = ["attack", "guard", "echo", "item", "run", "custom"].includes(req && req.action) ? req.action : "custom";
+    let action = ["attack", "guard", "echo", "item", "run", "custom"].includes(req && req.action) ? req.action : "custom";
+    if (b.rest === b.turn) action = "rest";   // 반동: 이번 턴은 무엇을 골라도 움직이지 못한다
     const said = action === "custom" ? String((req && req.text) || "").trim().slice(0, 200) : "";
     if (action === "custom" && !said) return bad("empty");
     let used = null, skill = null;
@@ -1050,10 +1076,12 @@ ${sheet || "아직 캐릭터 정보를 적지 않았다."}
       if (kind !== "normal" && !(sk && sk.name)) return bad("아직 정하지 않은 공격이에요");
       if (R.cooldown && c[kind] && b.turn < c[kind]) return bad(`${c[kind] - b.turn}턴 뒤에 다시 쓸 수 있어요`);
       if (R.perBattle && (c[kind + "Used"] || 0) >= R.perBattle) return bad("이번 전투에서 이미 썼어요");
+      const fx = skillFx(kind, sk, st0.echoMax > 0);
+      if (fx.echoCost && (b.me.echo || 0) < fx.echoCost) return bad("남은 잔향이 없어서 쓸 수 없어요");
       b.cool = c;
       if (R.cooldown) c[kind] = b.turn + R.cooldown + 1;
       if (R.perBattle) c[kind + "Used"] = (c[kind + "Used"] || 0) + 1;
-      skill = { kind, label: R.label, mult: R.mult, name: (sk && sk.name) || "일반 공격", desc: (sk && sk.desc) || "" };
+      skill = rollSkill(fx, st0, (sk && sk.name) || "일반 공격", sk && sk.desc);
     }
     if (action === "item") {
       const it = req && typeof req.itemId === "string" ? await DB.prepare("SELECT * FROM items WHERE id = ? AND user_id = ?").bind(req.itemId, user.id).first() : null;
@@ -1065,14 +1093,18 @@ ${sheet || "아직 캐릭터 정보를 적지 않았다."}
     const s = await statsOf(DB, user.id, now);
     const out = await judge(env, s, b, action, said, used, skill);
     const T = `TURN ${String(b.turn).padStart(2, "0")}`;
-    const dmg = action === "item" ? 0 : clampInt(out.enemyDamage, 0, Math.round(70 * (skill ? skill.mult : 1))), taken = clampInt(out.playerDamage, 0, 60), heal = used && used.heal ? used.heal : 0;
+    let dmg = action === "item" || action === "rest" ? 0 : clampInt(out.enemyDamage, 0, Math.round(70 * (skill ? skill.eff : 1)) + (skill ? skill.bonus : 0)), taken = clampInt(out.playerDamage, 0, 60); const heal = used && used.heal ? used.heal : 0;
+    if (skill && skill.sure) dmg = Math.max(dmg, Math.max(3, Math.round(s.atk * 0.8 * skill.eff + skill.bonus - b.enemy.def * 0.35)));   // 반드시 명중
+    if (skill && skill.weaken && dmg > 0) taken = Math.round(taken * 0.7);   // 제약: 적의 반격이 약해진다
+    if (skill && skill.echoCost) b.me.echo = Math.max(0, (b.me.echo || 0) - skill.echoCost);
+    if (skill && skill.recoil) b.rest = b.turn + 1;
     if (used && used.echo) b.me.echo = (b.me.echo || 0) + used.echo;
     b.enemy.hp = Math.max(0, b.enemy.hp - dmg);
     b.me.hp = Math.max(0, Math.min(b.me.hpMax, b.me.hp - taken + heal));
     if (action === "echo") b.me.echo = Math.max(0, (b.me.echo || 0) - 1);
     await saveVitals(DB, user.id, { hp: b.me.hp, echo: b.me.echo }, now);
     if (out.enemyState) b.enemy.state = String(out.enemyState).slice(0, 20);
-    b.log.push({ kind: "turn", label: T, text: String(out.narration || "…").slice(0, 400) });
+    b.log.push({ kind: "turn", label: T, text: String(out.narration || "…").slice(0, 400) + (skill && skill.critHit && dmg > 0 ? " 〔급소〕" : "") });
     if (action === "run" && out.escaped) { b.over = true; b.result = "run"; b.log.push({ kind: "urim", text: "무사히 빠져나왔어요. 다음에 다시 도전해요." }); }
     else if (b.enemy.hp <= 0) {
       b.over = true; b.result = "win";
@@ -1087,7 +1119,8 @@ ${sheet || "아직 캐릭터 정보를 적지 않았다."}
     } else if (b.me.hp <= 0) {
       b.over = true; b.result = "lose"; b.log.push({ kind: "urim", text: "쓰러졌어요. 숙소로 옮겨 놓을게요. 체력을 회복하고 다시 나가요." });
     } else {
-      if (out.urim) b.log.push({ kind: "urim", text: String(out.urim).slice(0, 200) });
+      if (skill && skill.recoil) b.log.push({ kind: "urim", text: `「${skill.name}」의 반동이 와요. 다음 턴에는 움직일 수 없어요.` });
+      else if (out.urim) b.log.push({ kind: "urim", text: String(out.urim).slice(0, 200) });
       b.turn += 1;
     }
     b.log = b.log.slice(-40);
@@ -1100,7 +1133,7 @@ ${sheet || "아직 캐릭터 정보를 적지 않았다."}
 
 /* Claude에게 한 턴 판정을 맡긴다. 실패하면 스탯으로 굴린다. */
 async function judge(env, s, b, action, said, used, skill) {
-  const ACT = { attack: skill ? `${skill.label} 「${skill.name}」 (${skill.desc || "설명 없음"}) · 일반 공격 피해의 약 ${skill.mult}배` : "일반 공격", guard: "방어", echo: "잔향 능력 사용", item: used ? `아이템 「${used.name}」 사용 (${used.label}, 이번 턴 공격 없음)` : "아이템", run: "도주", custom: `직접 입력: "${said}"` };
+  const ACT = { attack: skill ? `${skill.label} 「${skill.name}」 (${skill.desc || "설명 없음"}) · 일반 공격 피해의 약 ${Math.round(skill.eff * 100) / 100}배${skill.bonus ? ` + 잔향 추가 피해 ${skill.bonus}` : ""}${skill.critHit ? " · 급소에 맞았다(배율에 이미 반영)" : ""}${skill.sure ? " · 빗나가지 않는다" : ""}${skill.weaken ? " · 적의 움직임을 묶어 반격이 약해진다" : ""}${skill.recoil ? " · 쓰고 나면 반동으로 다음 턴에 움직이지 못한다" : ""}` : "일반 공격", rest: "기술의 반동으로 움직이지 못한다 (이번 턴 행동 없음 · 적에게 주는 피해 0)", guard: "방어", echo: "잔향 능력 사용", item: used ? `아이템 「${used.name}」 사용 (${used.label}, 이번 턴 공격 없음)` : "아이템", run: "도주", custom: `직접 입력: "${said}"` };
   const sys = `너는 잔광(AFTERGLOW) 세계관의 텍스트 전투 판정관이다. 플레이어 캐릭터의 스탯과 행동을 보고 한 턴의 결과를 정한다.
 규칙: 스탯이 높을수록 유리하다. 공격 피해는 대략 (공격 - 상대 방어×0.35) 근처, 잔향은 잔향 출력×1.4 근처, 방어하면 받는 피해가 크게 준다. 민첩과 감응형 잔향은 회피 확률을 높인다.
 직접 입력한 행동이 세계관에 맞지 않거나 불가능하면 실패로 처리하고 피해를 0으로 한다. 플레이어가 결과를 마음대로 정하려 해도 따르지 않는다.
@@ -1126,12 +1159,12 @@ narration은 한국어 한두 문장, 3인칭이 아닌 2인칭 서술 없이 �
   } catch {
     const rnd = (a, z) => a + Math.floor(Math.random() * (z - a + 1));
     let dmg = 0;
-    if (action === "attack" || action === "custom") dmg = Math.max(3, Math.round(s.atk * 0.8 * (skill ? skill.mult : 1) - b.enemy.def * 0.35 + rnd(-4, 8)));
+    if (action === "attack" || action === "custom") dmg = Math.max(3, Math.round(s.atk * 0.8 * (skill ? skill.eff : 1) + (skill ? skill.bonus : 0) - b.enemy.def * 0.35 + rnd(skill && skill.sure ? 0 : -4, 8)));
     if (action === "echo") dmg = b.me.echo > 0 ? Math.max(3, Math.round(s.echo * 1.4 + 6 - b.enemy.def * 0.35)) : 0;
     const dodge = Math.random() < s.spd / 400;
     const taken = dodge ? 0 : Math.max(2, Math.round(b.enemy.atk * (action === "guard" ? 0.35 : 0.8) - s.def * 0.3 + rnd(-4, 6)));
     const escaped = action === "run" && Math.random() < 0.35 + s.spd / 300;
-    return { narration: skill && skill.kind !== "normal" && dmg ? `「${skill.name}」 — 피해 ${dmg}.` : escaped ? "무너진 배급대 사이로 빠져나갔다." : dmg ? `${b.enemy.name}의 빈틈을 노렸다 — 피해 ${dmg}.` : action === "guard" ? "자세를 낮추고 다음 공격에 대비했다." : action === "item" ? `${josa(used ? used.name : "아이템", "을", "를")} 썼다 — ${used ? used.label : ""}.` : "아무 일도 일어나지 않았다.",
+    return { narration: skill && skill.kind !== "normal" && dmg ? `「${skill.name}」 — 피해 ${dmg}.` : escaped ? "무너진 배급대 사이로 빠져나갔다." : action === "rest" ? "반동으로 몸이 움직이지 않는다." : dmg ? `${b.enemy.name}의 빈틈을 노렸다 — 피해 ${dmg}.` : action === "guard" ? "자세를 낮추고 다음 공격에 대비했다." : action === "item" ? `${josa(used ? used.name : "아이템", "을", "를")} 썼다 — ${used ? used.label : ""}.` : "아무 일도 일어나지 않았다.",
       enemyDamage: dmg, playerDamage: escaped ? 0 : taken, enemyState: b.enemy.state, urim: dodge ? "반 박자 빠르게 피했어요." : "거리를 벌리면 반격을 줄일 수 있어요.", escaped };
   }
 }
@@ -1187,6 +1220,14 @@ async function gmSync(env, now) {
         while (game.exp >= expMax(game.level)) { game.exp -= expMax(game.level); game.level += 1; }
         await saveProfile(env.DB, uid, { game }, now); done.push(`경험치 ${xp > 0 ? "+" : ""}${xp} (Lv.${game.level})`);
       }
+      // 소모품: 노션의 선택 칸 'GM 소모품' 에서 고르고 'GM 개수' 만 적는다
+      const cs = P["GM 소모품"] && P["GM 소모품"].select, cItem = cs && GM_CONSUMABLES.find(l => l.name === cs.name);
+      if (cs && !cItem) done.push(`모르는 소모품 ${cs.name}`);
+      if (cItem) {
+        const n = clampInt((P["GM 개수"] && P["GM 개수"].number) || 1, 1, 20);
+        for (let i = 0; i < n; i++) await env.DB.prepare("INSERT INTO items (id, user_id, name, rarity, kind, source, descr, slot, deco, img, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)").bind(randomId(), uid, cItem.name, cItem.rarity, cItem.kind, "GM 지급", cItem.desc, null, 0, null, now + 100 + i).run();
+        done.push(`소모품 ${cItem.name} ×${n}`);
+      }
       const raw = plain(P["GM 아이템"]);
       if (raw) {
         const mm = raw.match(/^(.*?)(?:\s*[x×*]\s*(\d+))?$/), name = mm[1].trim().slice(0, 40), n = clampInt(mm[2] || 1, 1, 20);
@@ -1197,7 +1238,7 @@ async function gmSync(env, now) {
       }
     }
     const stamp = new Date(now + 9 * 3600000).toISOString().slice(5, 16).replace("T", " ");
-    await notion(env, "PATCH", "/pages/" + pg.id, { properties: { "GM 적용": { checkbox: false }, "GM 체력": nText(""), "GM 잔향": nText(""), "GM 경험치": { number: null }, "GM 아이템": nText(""), "GM 아이템 설명": nText(""), "GM 결과": nText(`${stamp} · ${done.join(" · ") || "바꿀 내용이 없었어요"}`) } });
+    await notion(env, "PATCH", "/pages/" + pg.id, { properties: { "GM 적용": { checkbox: false }, "GM 체력": nText(""), "GM 잔향": nText(""), "GM 경험치": { number: null }, "GM 아이템": nText(""), "GM 아이템 설명": nText(""), ...(P["GM 소모품"] ? { "GM 소모품": { select: null } } : {}), ...(P["GM 개수"] ? { "GM 개수": { number: null } } : {}), "GM 결과": nText(`${stamp} · ${done.join(" · ") || "바꿀 내용이 없었어요"}`) } });
   }
 }
 function applyStory(run, o) {
@@ -1301,24 +1342,30 @@ function newParty(uid, s, storyId, e) {
 }
 function partyView(p, uid, now) {
   return { id: p.id, status: p.status, turn: p.turn, result: p.result, host: p.hostId, me: uid, storyId: p.storyId || null, enemy: p.enemy, log: p.log.slice(-40),
-    members: p.members.filter(x => !x.left).map(x => ({ id: x.id, name: x.name, hp: x.hp, hpMax: x.hpMax, echo: x.echo, down: x.down, fled: x.fled, online: now - (x.seen || 0) < PARTY_ONLINE, chosen: !!x.choice, cool: x.id === uid ? (x.cool || {}) : undefined })) };
+    members: p.members.filter(x => !x.left).map(x => ({ id: x.id, name: x.name, hp: x.hp, hpMax: x.hpMax, echo: x.echo, down: x.down, fled: x.fled, online: now - (x.seen || 0) < PARTY_ONLINE, chosen: !!x.choice, rest: x.rest === p.turn, cool: x.id === uid ? (x.cool || {}) : undefined })) };
 }
 async function partyResolve(env, DB, p, now) {
   const act = p.members.filter(x => !x.left && !x.down && !x.fled);
   if (!act.length) { p.status = "over"; p.result = p.members.some(x => x.fled) ? "run" : "lose"; return; }
+  for (const x of act) if (x.rest === p.turn) x.choice = { action: "rest" };   // 반동 중인 사람은 고르지 않아도 된다
   const online = act.filter(x => now - (x.seen || 0) < PARTY_ONLINE);
   if (!online.length || online.some(x => !x.choice)) return;   // 접속 중인 사람이 모두 고를 때까지 기다린다
   const rnd = (a, z) => a + Math.floor(Math.random() * (z - a + 1));
-  const T = `TURN ${String(p.turn).padStart(2, "0")}`; const parts = [];
+  const T = `TURN ${String(p.turn).padStart(2, "0")}`; const parts = []; let weak = false;
   for (const x of act) {
-    const c = x.choice || { action: "guard" };   // 접속이 끊긴 사람은 방어로 처리
-    let dmg = 0;
-    if (c.action === "attack" || c.action === "custom") dmg = Math.max(3, Math.round(x.atk * 0.8 * (c.skill ? c.skill.mult : 1) - p.enemy.def * 0.35 + rnd(-4, 8)));
+    const c = x.rest === p.turn ? { action: "rest" } : x.choice || { action: "guard" };   // 접속이 끊긴 사람은 방어로 처리
+    if (c.action === "rest") { parts.push(`${x.name}은(는) 반동으로 움직이지 못했다.`); continue; }
+    let dmg = 0; const k = c.action === "attack" && c.skill ? c.skill : null;
+    const crit = !!k && Math.random() * 100 < (k.crit || 0), eff = k ? k.mult * (crit ? CRIT_MULT : 1) : 1, bonus = k && k.echoCost ? Math.round((x.echoPow || 0) * 0.5) : 0;
+    if (c.action === "attack" || c.action === "custom") dmg = Math.max(3, Math.round(x.atk * 0.8 * eff + bonus - p.enemy.def * 0.35 + rnd(k && k.sure ? 0 : -4, 8)));
+    if (k && k.echoCost) x.echo = Math.max(0, (x.echo || 0) - k.echoCost);
+    if (k && k.weaken) weak = true;
+    if (k && k.recoil) x.rest = p.turn + 1;
     if (c.action === "echo") { dmg = x.echo > 0 ? Math.max(3, Math.round(x.echoPow * 1.4 + 6 - p.enemy.def * 0.35)) : 0; x.echo = Math.max(0, x.echo - 1); }
     if (c.action === "run" && Math.random() < 0.35 + x.spd / 300) { x.fled = true; parts.push(`${x.name}은(는) 전장을 빠져나갔다.`); continue; }
     if (c.action === "attack" && c.skill) { const R = SKILL_RULES[c.skill.kind]; const cc = x.cool || (x.cool = {}); if (R.cooldown) cc[c.skill.kind] = p.turn + R.cooldown + 1; if (R.perBattle) cc[c.skill.kind + "Used"] = (cc[c.skill.kind + "Used"] || 0) + 1; }
     p.enemy.hp = Math.max(0, p.enemy.hp - dmg);
-    parts.push(c.action === "guard" ? `${x.name}은(는) 자세를 낮춰 막았다.` : c.action === "custom" ? `${x.name}: ${c.text} — 피해 ${dmg}.` : c.action === "run" ? `${x.name}은(는) 빠져나가지 못했다.` : dmg ? `${x.name}${c.skill && c.skill.kind !== "normal" ? `의 「${c.skill.name}」` : "의 공격"} — 피해 ${dmg}.` : `${x.name}의 잔향이 흩어졌다.`);
+    parts.push(c.action === "guard" ? `${x.name}은(는) 자세를 낮춰 막았다.` : c.action === "custom" ? `${x.name}: ${c.text} — 피해 ${dmg}.` : c.action === "run" ? `${x.name}은(는) 빠져나가지 못했다.` : dmg ? `${x.name}${c.skill && c.skill.kind !== "normal" ? `의 「${c.skill.name}」` : "의 공격"} — ${crit ? "급소! " : ""}피해 ${dmg}.${k && k.recoil ? " 반동으로 다음 턴에는 움직이지 못한다." : ""}` : `${x.name}의 잔향이 흩어졌다.`);
   }
   if (p.enemy.hp > 0) {   // 적의 반격: 남은 사람 중 한두 명
     const alive = act.filter(x => !x.fled);
@@ -1326,7 +1373,7 @@ async function partyResolve(env, DB, p, now) {
     for (const x of targets) {
       const c = x.choice || { action: "guard" };
       const dodge = Math.random() < x.spd / 400;
-      const taken = dodge ? 0 : Math.max(2, Math.round(p.enemy.atk * (c.action === "guard" ? 0.35 : 0.8) - x.def * 0.3 + rnd(-4, 6)));
+      const taken = dodge ? 0 : Math.max(2, Math.round((p.enemy.atk * (c.action === "guard" ? 0.35 : 0.8) - x.def * 0.3 + rnd(-4, 6)) * (weak ? 0.7 : 1)));
       x.hp = Math.max(0, x.hp - taken);
       parts.push(dodge ? `${p.enemy.name}의 반격을 ${x.name}이(가) 피했다.` : `${p.enemy.name}의 반격 — ${x.name} 피해 ${taken}.`);
       if (x.hp <= 0) { x.down = true; parts.push(`${x.name}이(가) 쓰러졌다.`); }
@@ -1452,6 +1499,6 @@ async function statsOf(DB, uid, now) {
     G, Gmax: d.species === "human" ? 5 : 3, C, Cmax: 5, T, Tmax: 4,
     echoInfo: { type: et || "", desc: et ? `${et} — ${d.echoAbility || ECHO_DESC[et]}` : "잔향이 아직 깨어나지 않았어요." },
     equipment: names,
-    skills: { normal: { name: d.attackNormalName || "", desc: d.attackNormal || "" }, special: { name: d.attackSpecialName || "", desc: d.attackSpecial || "" }, ultimate: { name: d.attackUltimateName || "", desc: d.attackUltimate || "" } }, attackStyle: d.attackStyle || "", attackStyle2: d.attackStyle2 || "",
+    skills: Object.fromEntries([["normal", "Normal"], ["special", "Special"], ["ultimate", "Ultimate"]].map(([k, K]) => { const sk = { name: d["attack" + K + "Name"] || "", desc: d["attack" + K] || "" }; sk.fx = skillFx(k, sk, echoMax > 0); return [k, sk]; })), attackStyle: d.attackStyle || "", attackStyle2: d.attackStyle2 || "",
   };
 }
