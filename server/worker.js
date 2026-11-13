@@ -37,6 +37,7 @@
 // 사이트를 만들 때도 같은 형식을 쓰면 되고, 형식을 바꾸면 SCHEMA_VERSION을 올린다.
 
 const MODELS = ["claude-sonnet-5-5", "claude-haiku-5-5"];
+const STORY_MODELS = ["claude-opus-5-5", "claude-sonnet-5-5"];   // 스토리 진행(URIM 내레이션)은 Opus, 안 되면 Sonnet
 const MAX_TOKENS = 4000;
 const MAX_MESSAGES = 16;
 
@@ -1574,9 +1575,9 @@ function parseLooseJSON(t) {
   }
   try { return JSON.parse(out); } catch { return null; }
 }
-async function askJSON(env, sys, user, maxTokens, valid) {
+async function askJSON(env, sys, user, maxTokens, valid, models = MODELS) {
   if (!env.ANTHROPIC_API_KEY) return null;
-  const tries = [[MODELS[0], maxTokens], [MODELS[0], Math.round(maxTokens * 1.6)], [MODELS[1] || MODELS[0], Math.round(maxTokens * 1.6)]];
+  const tries = [[models[0], maxTokens], [models[0], Math.round(maxTokens * 1.6)], [models[1] || models[0], Math.round(maxTokens * 1.6)]];
   for (const [model, max] of tries) {
     try {
       const r = await fetch("https://api.anthropic.com/v1/messages", { method: "POST",
@@ -1775,7 +1776,7 @@ ${st.enemy ? `[전투 상대] ${st.enemy}` : ""}`;
 [지금까지]
 ${hist || "(아직 시작 전)"}
 ${said ? `[이번 행동] ${me.name}: ${said}` : run.afterBattle ? "[요청] 전투가 끝난 뒤의 장면을 이어 주세요. battle은 false." : "[요청] 첫 장면을 열어 주세요."}${run.afterBattle ? `\n[방금 전투 결과] ${run.afterBattle}` : ""}`;
-  const got = await askJSON(env, sys, userMsg, 1400, x => typeof x.narration === "string" && x.narration.trim());
+  const got = await askJSON(env, sys, userMsg, 1400, x => typeof x.narration === "string" && x.narration.trim(), STORY_MODELS);
   if (got) { run.afterBattle = null; return got; }
   if (env.ANTHROPIC_API_KEY) return { retry: true };   // 잠깐 끊긴 것: 줄거리 지시문을 그대로 보여 주지 않고 다시 보내 달라고 한다
   {
