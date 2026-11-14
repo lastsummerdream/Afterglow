@@ -107,10 +107,28 @@ AG.M_PAGES = { index: { css: 1 }, main: { css: 1 },
   private: { drawers: { left: '대화 목록', right: '정보' }, mid: '대화', fit: ['center'] },
   dm: { fitTop: 312, drawers: { left: '연락처', right: '프로필' }, mid: '신호', fit: ['center'] } };
 AG.page = (location.pathname.split('/').pop() || 'index.html').replace(/\.html$/, '') || 'index';
-AG.M = !!AG.M_PAGES[AG.page] && innerWidth < innerHeight && innerWidth <= 820;
+/* 모바일(세로) 배치를 쓸지: 터치 기기는 화면 자체의 방향과 짧은 변으로 정한다.
+   (창 크기는 키보드가 올라와 있거나, 앱으로 열 때 아직 크기가 잡히기 전이면 틀릴 수 있어서 PC 화면으로 잘못 나오곤 했다) */
+AG.isM = function () {
+  if (!AG.M_PAGES[AG.page]) return false;
+  const w = innerWidth, h = innerHeight;
+  const touch = matchMedia('(pointer: coarse)').matches || navigator.maxTouchPoints > 0 && !matchMedia('(pointer: fine)').matches;
+  if (touch || !w || !h) {
+    const sw = screen.width, sh = screen.height;
+    if (sw && sh) {
+      const o = screen.orientation && screen.orientation.type;
+      const portrait = o ? o.startsWith('portrait') : typeof window.orientation === 'number' ? Math.abs(window.orientation) !== 90 : (w && h ? w < h : sw < sh);
+      return portrait && Math.min(sw, sh) <= 820;
+    }
+  }
+  return w < h && w <= 820;
+};
+AG.M = AG.isM();
 if (AG.M) document.documentElement.classList.add('m', 'm-' + AG.page);
 if (AG.M && AG.M_PAGES[AG.page].drawers) document.documentElement.classList.add('m-dr');
-{ const w0 = innerWidth; addEventListener('resize', () => { if (Math.abs(innerWidth - w0) > 120) { AG.leaving && AG.leaving(); location.reload(); } }); }   // 화면을 돌리면 배치를 새로
+{ const recheck = () => { if (AG.isM() !== AG.M) { AG.leaving && AG.leaving(); location.reload(); } };   // 화면을 돌리거나 크기가 늦게 잡혀 배치가 바뀌어야 하면 새로
+  addEventListener('resize', recheck); addEventListener('orientationchange', () => setTimeout(recheck, 300));
+  addEventListener('pageshow', recheck); setTimeout(recheck, 800); }
 AG.MW = 1030;   // 세로 캔버스의 폭. 항상 화면 폭에 꽉 맞추고(양옆 여백 없음), 높이는 화면 비율만큼 — 위쪽은 위에, 아래쪽은 아래에 붙여 배치한다
 AG.fitStage = function (stage) {
   if (!AG.M) {
