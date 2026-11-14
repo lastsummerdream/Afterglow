@@ -292,10 +292,12 @@ html.m.visit .m-menu { display: none; }
 .m-menu .mm-sub:nth-of-type(odd) { --bg: linear-gradient(100deg, #2b2b2b, #636363); }
 .m-menu .mm-sub b { font-size: 44px; margin: 0 auto; }
 .m-menu .mm-sub small { font-size: 17px; margin-top: 12px; letter-spacing: .22em; }
-html.m.visit .vinfo { left: 175px; top: calc(var(--mh) - 600px); width: 680px; scale: 1; padding: 34px 70px 36px; }
+html.m.visit .vinfo { left: 95px; top: calc(var(--mh) - 600px); width: 860px; scale: 1; padding: 34px 70px 36px; display: grid; grid-template-columns: repeat(3, 1fr); column-gap: 12px; align-items: start; }
+html.m.visit .vinfo > h2, html.m.visit .vinfo > dl { grid-column: 1 / -1; }
+html.m.visit .vinfo button { margin-top: 0; height: 74px; padding: 0 14px; font-size: 20px; line-height: 1.2; word-break: keep-all; }   /* 버튼 세 개를 가로로 */
 html.m.visit .dlggrp { top: calc(var(--mh) - 770px); }
 html.m.visit .chargrp { top: 230px; }
-html.m.visit .lvl { left: 10px; top: calc(var(--mh) - 690px); scale: .89; z-index: 31; }   /* 구경 중 레벨: VISITING 창 왼쪽 위에 걸쳐서, 20% 크게 */
+html.m.visit .lvl { left: -30px; top: calc(var(--mh) - 735px); scale: .89; z-index: 31; }   /* 구경 중 레벨: VISITING 창 왼쪽 위에 걸쳐서, 20% 크게 */
 /* 다른 캐릭터 구경 (main.html?visit=…): 메뉴를 감추고 간단한 정보만 */
 .vinfo { display: none; }
 .visit .layer, .visit .hit, .visit .sidegrp, .visit .optgrp, .visit .urim, .visit .char-hint b { display: none !important; }
