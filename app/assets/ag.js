@@ -650,6 +650,8 @@ const S = {
     alarms: () => call('GET', '/story-alarms'),
     open: (id, notify) => call('GET', `/story/${id}${notify ? '?notify=1' : ''}`),
     act: (id, text) => call('POST', `/story/${id}/act`, { text }),
+    vote: (id, option) => call('POST', `/story/${id}/vote`, { option }),   // 단체 스토리 분기 투표
+    ready: id => call('POST', `/story/${id}/ready`, {}),   // 단체 스토리: 내 몫을 마치고 합류 지점으로
     reset: id => call('POST', `/story/${id}/reset`, {}),
   },
   party: {
@@ -988,7 +990,18 @@ const DEMO_STORIES = [
              ['수집자가 떨어뜨린 자루에는 잘라 낸 표지 조각이 가득해요. 누군가 경계를 지우려 하고 있어요. 이번 조사는 여기까지예요.', [], false, true]] },
 ];
 function demoStoryRun(st) { const d = db(); d.stories = d.stories || {}; return d.stories[st.id]; }
-function demoStoryView(st) { const r = demoStoryRun(st); return { id: st.id, title: st.title, kind: st.kind, intro: st.intro, log: r.log, choices: r.choices, done: r.done, battle: r.battle, me: 'me' }; }
+function demoStoryView(st) { const r = demoStoryRun(st); const v = { id: st.id, title: st.title, kind: st.kind, intro: st.intro, log: r.log, choices: r.choices, done: r.done, battle: r.battle, me: 'me' };
+  if (st.kind !== 'group' || r.done || r.battle) return v;
+  v.phase = r.phase || 'solo';
+  if (v.phase === 'vote' && r.vote) { v.choices = []; v.vote = { q: r.vote.q, options: r.vote.options.map(t => ({ text: t, n: 0 })), mine: null, need: 2, active: 3, voters: 0, left: 8 * 60000 }; }
+  if (v.phase === 'solo') { const t = r.track || {}; v.choices = t.ready ? [] : r.choices; v.track = { steps: t.steps || 0, max: 2, ready: !!t.ready, readyNames: [], restNames: [nm('hayun'), nm('juno')], left: 8 * 60000 }; }
+  return v; }
+/* 체험 모드 단체 스토리: 분기마다 투표, 그 사이에는 각자 진행 (가상의 동료가 함께한다) */
+function demoGroupNext(r, after) {
+  if (r.done || r.battle) { r.phase = null; return; }
+  if (after === 'regroup' && r.choices.length) { r.phase = 'vote'; r.vote = { q: '일행은 어떻게 할까요?', options: r.choices.slice() }; r.log.push({ who: 'sys', text: '분기 — 일행은 어떻게 할까요? (일행 과반수가 고른 행동만 일어나요)' }); }
+  else { r.phase = 'solo'; r.vote = null; r.track = { steps: 0 }; r.log.push({ who: 'sys', text: '각자 진행 — 저마다 움직이다가 합류 지점에서 일행과 다시 모여요.' }); }
+}
 function demoStoryStep(st, r) {
   const sc = st.scenes[r.step]; if (!sc) { r.done = true; r.choices = []; return; }
   r.step += 1; r.log.push({ who: 'urim', text: sc[0] }); r.choices = sc[1] || []; if (sc[3]) r.done = true;
@@ -1003,6 +1016,7 @@ function demoStoryStep(st, r) {
 const KO_RESULT = { win: '승리했다', lose: '쓰러졌다', run: '달아났다', closed: '흩어졌다' };
 function demoStorySync(st, r) {
   if (!r.battle) return; const d = db();
+  if (st.kind === 'group') { const b = d.party; const over = !b || b.id !== r.battle.party || b.status === 'over'; if (!over) return; r.log.push({ who: 'sys', text: `전투 결과 — ${KO_RESULT[(b && b.id === r.battle.party && b.result) || 'closed']}` }); r.battle = null; demoStoryStep(st, r); demoGroupNext(r, 'regroup'); return; }
   const b = r.battle.solo ? d.battle : d.party; const id = r.battle.solo || r.battle.party;
   const over = !b || b.id !== id || (r.battle.solo ? b.over : b.status === 'over');
   if (!over) return;
@@ -1041,7 +1055,7 @@ Object.assign(Dm, {
     alarms: () => wait([]),
     open: (id, notify) => { const st = DEMO_STORIES.find(s => s.id === id); if (!st) return fail('not_found'); const d = db(); d.stories = d.stories || {};
       let notified = 0, midJoined = false;
-      if (!d.stories[id]) { d.stories[id] = { step: 0, log: [], choices: [], done: false, battle: null, participants: ['me'] }; demoStoryStep(st, d.stories[id]); }
+      if (!d.stories[id]) { d.stories[id] = { step: 0, log: [], choices: [], done: false, battle: null, participants: ['me'] }; demoStoryStep(st, d.stories[id]); if (st.kind === 'group') demoGroupNext(d.stories[id], 'regroup'); }
       else if (st.kind === 'group' && !d.stories[id].done) {
         d.stories[id].participants = Array.isArray(d.stories[id].participants) ? d.stories[id].participants : [];
         if (!d.stories[id].participants.includes('me')) {
@@ -1053,7 +1067,20 @@ Object.assign(Dm, {
         notified = Object.values(d.users || {}).filter(u => u.id !== 'me' && u.online).length;
       }
       demoStorySync(st, d.stories[id]); save(); return wait({ ...demoStoryView(st), notified, midJoined }, 300); },
+    vote: (id, i) => { const st = DEMO_STORIES.find(s => s.id === id); const r = st && demoStoryRun(st); if (!r || r.phase !== 'vote' || !r.vote) return fail('지금은 투표할 분기가 없어요');
+      const pick = r.vote.options[i]; r.log.push({ who: 'sys', text: `투표 결과 — 「${pick}」 (2표 · 과반수) · 체험 모드의 가상 동료도 같은 쪽을 골랐어요` });
+      r.log.push({ who: 'me', userId: 'me', name: meName(), text: pick }); r.vote = null; demoStoryStep(st, r); demoGroupNext(r, 'vote'); save(); return wait(demoStoryView(st), 700); },
+    ready: id => { const st = DEMO_STORIES.find(s => s.id === id); const r = st && demoStoryRun(st); if (!r || r.phase !== 'solo') return fail('지금은 합류할 수 없어요');
+      r.log.push({ who: 'sys', for: 'me', text: '합류 지점으로 향했어요.' }); r.log.push({ who: 'sys', text: '일행이 모두 합류했어요.' }); r.track = null; demoStoryStep(st, r); demoGroupNext(r, 'regroup'); save(); return wait(demoStoryView(st), 700); },
     act: (id, text) => { const st = DEMO_STORIES.find(s => s.id === id); const r = st && demoStoryRun(st); if (!r) return fail('not_found');
+      if (st.kind === 'group' && r.phase === 'vote') return fail('지금은 일행이 함께 정하는 분기예요. 선택지 중 하나에 투표해 주세요');
+      if (st.kind === 'group' && r.phase === 'solo' && !r.done && !r.battle) {
+        const t = r.track = r.track || { steps: 0 }; if (t.ready) return fail('합류 지점에서 일행을 기다리는 중이에요');
+        r.log.push({ who: 'me', userId: 'me', name: meName(), text, for: 'me' }); t.steps += 1;
+        r.log.push({ who: 'urim', for: 'me', text: t.steps >= 2 ? '혼자 살핀 흔적을 정리하고, 일행이 모이기로 한 곳으로 향해요. (체험 모드: 각자 진행은 두 번까지)' : '혼자 주변을 더 살펴요. 다른 사람들은 지금 다른 곳을 조사하고 있어요. 이 장면은 당신에게만 보여요.' });
+        if (t.steps >= 2) { save(); return Dm.story.ready(id); }   // 체험 모드: 가상 동료는 이미 도착해 있어 바로 합류한다
+        save(); return wait(demoStoryView(st), 700);
+      }
       if (!r.done && !r.battle) { r.log.push({ who: 'me', userId: 'me', name: meName(), text }); demoStoryStep(st, r); } save(); return wait(demoStoryView(st), 700); },
     reset: id => { const d = db(); const st = DEMO_STORIES.find(s => s.id === id); if (d.stories) delete d.stories[id]; save(); return Dm.story.open(id); },
   },

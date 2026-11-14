@@ -967,9 +967,11 @@ ${sheet || "아직 캐릭터 정보를 적지 않았다."}
     for (const id of ids) { const r = await DB.prepare("SELECT state FROM story_runs WHERE id = ?").bind(id).first(); if (r) runs[id] = safeParse(r.state); }
     return ok(list.map(s => { const r = runs[(s.kind === "group" ? "group" : user.id) + ":" + s.id]; return { id: s.id, title: s.title, kind: s.kind, intro: s.intro, started: !!r, done: !!(r && r.done), at: s.at, notice: s.sample && STORY_ERR ? STORY_ERR : undefined }; }));
   }
-  if ((m = path.match(/^\/story\/([\w-]+)(\/act|\/reset)?$/))) {
+  if ((m = path.match(/^\/story\/([\w-]+)(\/act|\/reset|\/vote|\/ready)?$/))) {
     const st = (await stories(env)).find(s => s.id === m[1]);
     if (!st) return bad("not_found", 404);
+    if (st.kind === "group") return await groupStory(env, DB, request, user, st, m[2] || "", now, ok, bad);   // 단체: 분기 투표 + 각자 진행
+    if (m[2] === "/vote" || m[2] === "/ready") return bad("단체 스토리에서만 쓸 수 있어요");
     const owner = st.kind === "group" ? "group" : user.id, rid = owner + ":" + st.id;
     const row = await DB.prepare("SELECT state FROM story_runs WHERE id = ?").bind(rid).first();
     let run = row ? safeParse(row.state) : null;
@@ -1755,7 +1757,7 @@ function applyStory(run, o) {
   run.choices = Array.isArray(o.choices) ? o.choices.filter(c => typeof c === "string" && c.trim()).slice(0, 3).map(c => c.slice(0, 60)) : [];
   if (o.end) { run.done = true; run.choices = []; }
 }
-async function narrate(env, st, run, me, said) {
+async function narrate(env, st, run, me, said, g = null) {
   const sys = `너는 잔광(AFTERGLOW) 세계관의 안내 단말 URIM이다. 1기의 URIM은 친절하고 차분한 AI 어시스턴트로, 존댓말(해요체)로 이야기를 진행한다.
 아래 [줄거리]를 순서대로 따라가며 플레이어의 캐릭터가 겪는 장면을 3~6문장으로 서술한다. 줄거리에 없는 큰 사건을 지어내지 않고, 플레이어의 행동에 자연스럽게 반응한다.
 플레이어가 줄거리를 건너뛰거나 결과를 마음대로 정하려 하면 부드럽게 다음 장면으로 이끈다. 세계관에 맞지 않는 행동은 일어나지 않은 것으로 처리한다.
@@ -1774,30 +1776,266 @@ choices에는 지금 할 수 있는 행동 2~3개를 12자 안팎으로 적는�
 - NPC와 세력은 캐릭터의 [평판]을 보고 태도를 정한다. 평판이 높으면 반기고 정보를 더 주며 값을 깎아 주고, 낮으면 경계하거나 값을 올리거나 말을 아끼거나 적대한다. 그 NPC·세력과의 관계 점수가 있으면 전체 평판보다 그것을 먼저 따른다. 지난 행동을 들은 것처럼 언급해도 된다.
 - 이번 행동이 남에게 알려질 만하면 rep에 기록한다: 돕기·약속 지키기·나눠 주기·지켜 주기는 +, 배신·도둑질·거짓말·괜한 폭력·협박은 −. 이동·관찰·평범한 대화는 기록하지 않는다(score 0, who 빈 배열).
 - rep.score는 전체 평판도 변화 −5~+5, rep.who는 영향을 받은 세력이나 NPC(줄거리와 장면에 나온 이름 그대로) 최대 3곳, delta −10~+10. rep.deed는 기록에 남길 행동 한 줄(20자 안팎, 3인칭).
-반드시 JSON 하나만 출력: {"narration":string,"choices":string[],"battle":bool,"enemy":string,"end":bool,"rep":{"deed":string,"score":int,"who":[{"name":string,"delta":int}]}}
+${g ? GROUP_RULES + "\n" + g.task : `반드시 JSON 하나만 출력: {"narration":string,"choices":string[],"battle":bool,"enemy":string,"end":bool,"rep":{"deed":string,"score":int,"who":[{"name":string,"delta":int}]}}`}
 
 [줄거리: ${st.title}]
 ${st.outline || st.intro || "자유롭게 진행"}
 ${st.enemy ? `[전투 상대] ${st.enemy}` : ""}`;
-  const hist = run.log.slice(-14).map(l => (l.who === "urim" ? "URIM: " : `${l.name || "플레이어"}: `) + l.text).join("\n");
+  const hist = ((g && g.hist) || run.log).slice(-14).map(l => (l.who === "urim" ? "URIM: " : `${l.name || "플레이어"}: `) + l.text).join("\n");
   const userMsg = `[캐릭터] ${me.name} · Lv.${me.level} · ${(me.registry && [me.registry.origin, me.registry.species, me.registry.job].filter(Boolean).join(" · ")) || ""} · 잔향 ${me.echoType || "없음"}
 [평판] ${repPrompt(me.rep)}
 [지금까지]
 ${hist || "(아직 시작 전)"}
-${said ? `[이번 행동] ${me.name}: ${said}` : run.afterBattle ? "[요청] 전투가 끝난 뒤의 장면을 이어 주세요. battle은 false." : "[요청] 첫 장면을 열어 주세요."}${run.afterBattle ? `\n[방금 전투 결과] ${run.afterBattle}` : ""}`;
+${g && g.ask ? g.ask : said ? `[이번 행동] ${me.name}: ${said}` : run.afterBattle ? "[요청] 전투가 끝난 뒤의 장면을 이어 주세요. battle은 false." : "[요청] 첫 장면을 열어 주세요."}${!g && run.afterBattle ? `\n[방금 전투 결과] ${run.afterBattle}` : ""}`;
   const got = await askJSON(env, sys, userMsg, 1400, x => typeof x.narration === "string" && x.narration.trim(), STORY_MODELS);
-  if (got) { run.afterBattle = null; return got; }
+  if (got) { if (!g) run.afterBattle = null; return got; }
   if (env.ANTHROPIC_API_KEY) return { retry: true };   // 잠깐 끊긴 것: 줄거리 지시문을 그대로 보여 주지 않고 다시 보내 달라고 한다
   {
     // AI를 쓸 수 없을 때: 줄거리의 번호 줄을 한 줄씩 읽어 준다
     const lines = String(st.outline || "").split("\n").map(x => x.trim()).filter(x => /^(\d+\.|-)\s/.test(x)).map(x => x.replace(/^(\d+\.|-)\s*/, ""));
     const i = Math.min(run.step || 0, lines.length);
     const line = lines[i];
-    run.afterBattle = null;
+    if (!g) run.afterBattle = null;
+    if (g && g.mode === "track") return { narration: "주변을 살피며 일행이 모일 곳으로 향해요.", choices: [], battle: false, regroup: true };
     if (!line) return { narration: "여기까지가 이번 이야기예요. 수고하셨어요.", choices: [], battle: false, end: true };
     const battle = /\(전투\)/.test(line);
     return { narration: line.replace(/\s*\(전투\)\s*/, " ").trim(), choices: battle ? [] : ["주변을 살핀다", "앞으로 나아간다"], battle, enemy: st.enemy, end: i >= lines.length - 1 && !battle };
   }
+}
+/* ── 단체 스토리: '분기'(과반수 투표로 정한 행동만 일어난다)와 '각자 진행'(합류 지점까지 따로 움직인다)이 번갈아 나온다 ──
+   phase: open(첫 장면 준비) · vote(분기 투표) · solo(각자 진행) · battle(함께 싸우는 중)
+   로그 줄에 for가 있으면 그 사람에게만 보이는 '각자 진행' 줄이다 */
+const G_ACTIVE = 10 * 60000, VOTE_MAX = 8 * 60000, REGROUP_WAIT = 8 * 60000, TRACK_MAX = 4, G_LOCK = 90000;
+const GROUP_RULES = `[단체 스토리 진행 방식]
+- 단체 스토리는 '분기'와 '각자 진행'이 번갈아 나온다.
+- 분기: 줄거리에 [분기]로 적힌 지점이다. 줄거리에 [분기] 표시가 하나도 없으면 일행 전체의 진로가 갈리는 큰 결정 지점(이야기 전체에서 2~4곳)을 분기로 삼는다. 분기에서는 일행이 함께 투표해 과반수가 고른 행동만 일어난다.
+- 각자 진행: 분기와 분기 사이에는 캐릭터마다 따로 움직이며 자기 몫의 장면을 겪는다. 줄거리에 [각자]로 적힌 부분이 있으면 그 내용을 따른다. 다음 합류 지점(다음 분기, 또는 줄거리상 다시 모이는 장면)에서 일행과 합류한다.`;
+const G_SHARED_TASK = `[지금 할 일: 일행 전체 장면]
+일행 모두가 함께 있는 장면을 3~6문장으로 서술한다. 플레이어 캐릭터가 하지 않은 행동이나 대사를 새로 지어내지 않는다.
+- 다음이 분기 지점이면 분기 직전까지 서술하고 branch에 question(30자 안팎)과 options(줄거리 [분기]에 적힌 선택지 그대로, 없으면 2~4개, 각 14자 안팎)를 넣는다. 이때 choices는 빈 배열.
+- 분기가 아니면 branch는 null로 하고, 일행이 흩어져 각자 움직일 수 있게 장면을 열어 둔 뒤 choices에 각자 시작할 만한 행동 2~3개를 넣는다.
+- 전투 차례면 직전까지만 서술하고 battle을 true로 한다(branch는 null). 줄거리의 마지막 장면을 마무리했으면 end를 true로 한다.
+반드시 JSON 하나만 출력: {"narration":string,"branch":{"question":string,"options":string[]}|null,"choices":string[],"battle":bool,"enemy":string,"end":bool}`;
+const gTrackTask = (name, n) => `[지금 할 일: 각자 진행 — ${name}의 몫]
+지금은 일행이 흩어져 각자 움직이는 중이다. 이 캐릭터가 혼자(또는 곁의 NPC와) 겪는 장면만 3~5문장으로 서술한다. 다른 플레이어 캐릭터는 등장시키지 않거나 멀리서 스치는 정도로만 쓴다.
+이 캐릭터의 몫을 마쳐 다음 합류 지점에 닿았으면 regroup을 true로 하고, 합류 지점으로 향하는 모습으로 마무리한다(choices는 빈 배열). 이번이 ${n}번째 행동이고, ${TRACK_MAX}번째에는 반드시 regroup을 true로 한다.
+분기 투표나 이야기 전체의 결말은 여기서 정하지 않는다(end는 쓰지 않는다). 혼자 싸워야 할 상대가 나오면 직전까지만 서술하고 battle을 true로 한다.
+choices에는 지금 할 수 있는 행동 2~3개를 12자 안팎으로 적는다.
+평판(rep)은 위 [평판] 규칙대로 적는다.
+반드시 JSON 하나만 출력: {"narration":string,"choices":string[],"battle":bool,"enemy":string,"regroup":bool,"rep":{"deed":string,"score":int,"who":[{"name":string,"delta":int}]}}`;
+function gPush(run, e, now) {
+  run.seq = (run.seq || 0) + 1;
+  run.log.push({ ...e, n: run.seq, at: now || Date.now() });
+  if (run.log.length > 300) run.log = run.log.slice(-300);
+}
+function gFix(run) {   // 예전 방식으로 진행하던 단체 스토리도 이어서 쓸 수 있게 맞춘다
+  run.log = Array.isArray(run.log) ? run.log : [];
+  run.participants = Array.isArray(run.participants) ? run.participants : [];
+  run.tracks = run.tracks || {}; run.seen = run.seen || {}; run.names = run.names || {};
+  if (!run.seq) { let n = 0; for (const l of run.log) l.n = ++n; run.seq = n; }
+  if (!run.phase) run.phase = run.log.some(l => l.who === "urim") ? (run.battle ? "battle" : "solo") : "open";
+  run.seg = run.seg || 1;
+  return run;
+}
+const gLocked = (x, now) => !!(x && now - x.at < G_LOCK);
+function gActive(run, now, uid) { const a = run.participants.filter(u => now - (run.seen[u] || 0) < G_ACTIVE); if (uid && !a.includes(uid)) a.push(uid); return a; }
+function gVoteState(run, now, uid) {
+  const v = run.vote, act = gActive(run, now, uid);
+  const counts = v.options.map((_, i) => Object.values(v.votes).filter(x => x === i).length);
+  const voters = Object.keys(v.votes).length, need = Math.floor(act.length / 2) + 1, max = Math.max(0, ...counts);
+  let pick = -1, how = "";
+  if (max >= need) { pick = counts.indexOf(max); how = "과반수"; }
+  else if (voters && (act.every(u => u in v.votes) || now - v.at > VOTE_MAX)) {
+    const top = counts.map((c, i) => c === max ? i : -1).filter(i => i >= 0);
+    pick = top[Math.floor(Math.random() * top.length)]; how = top.length > 1 ? "동점이라 제비뽑기" : "최다 득표";
+  }
+  return { counts, voters, need, active: act.length, pick, how };
+}
+function gRegroupState(run, now, uid) {
+  const act = gActive(run, now, uid), tr = run.tracks;
+  const ready = Object.keys(tr).filter(u => tr[u].ready), rest = act.filter(u => !(tr[u] && tr[u].ready));
+  const first = ready.length ? Math.min(...ready.map(u => tr[u].readyAt ?? now)) : 0;
+  return { ready, rest, go: ready.length > 0 && (!rest.length || now - first > REGROUP_WAIT), left: ready.length ? Math.max(0, REGROUP_WAIT - (now - first)) : 0 };
+}
+async function groupStory(env, DB, request, user, st, sub, now, ok, bad) {
+  const rid = "group:" + st.id, M = request.method, uid = user.id;
+  const load = async () => { const r = await DB.prepare("SELECT state FROM story_runs WHERE id = ?").bind(rid).first(); return r ? gFix(safeParse(r.state) || {}) : null; };
+  const put = run => DB.prepare("INSERT INTO story_runs (id, story_id, owner, state, updated_at) VALUES (?, ?, 'group', ?, ?) ON CONFLICT(id) DO UPDATE SET state = excluded.state, updated_at = excluded.updated_at").bind(rid, st.id, JSON.stringify(run), Date.now()).run();
+  const mutate = async fn => { const r = (await load()) || gFix({}); const out = fn(r); await put(r); return out === undefined ? r : out; };   // 늘 최신 상태를 다시 읽고 고친다 (여러 사람이 동시에 움직여도 덮어쓰지 않게)
+  if (sub === "/reset") return bad("단체 스토리는 다시 시작할 수 없어요");
+  const me = await statsOf(DB, uid, now);
+  let run = await load(); const isFirst = !run;
+  let notified = 0, midJoined = false;
+
+  // 참여 · 접속 표시 (1분에 한 번만 적는다)
+  if (!run || !run.participants.includes(uid) || now - (run.seen[uid] || 0) > 60000 || run.names[uid] !== me.name) {
+    run = await mutate(r => {
+      if (!r.participants.includes(uid)) {
+        r.participants.push(uid);
+        if (!r.log.some(l => l.userId === uid) && (r.step || 0) > 0 && !r.done) { midJoined = true; gPush(r, { who: "sys", text: `${me.name} 님이 이야기 도중에 합류했어요.` }, now); }
+      }
+      r.seen[uid] = now; r.names[uid] = me.name;
+    });
+  }
+  // 알림 (처음 열었거나 알림을 원할 때)
+  if (!run.done && (new URL(request.url).searchParams.get("notify") === "1" || isFirst)) {
+    const onRow = await DB.prepare("SELECT COUNT(*) AS n FROM users WHERE id != ? AND last_seen > ?").bind(uid, now - ONLINE_MS).first();
+    notified = (onRow && onRow.n) || 0;
+    if (notified > 0) run = await mutate(r => { r.alarm = { id: randomId(), at: now, byId: uid, byName: me.name, storyId: st.id, title: st.title, mid: !isFirst && (r.step || 0) > 1 }; });
+  }
+
+  // 함께 싸우던 전투가 끝났는지
+  if (run.battle && run.battle.party) {
+    const pr = await DB.prepare("SELECT state, status FROM parties WHERE id = ?").bind(run.battle.party).first();
+    if (!pr || pr.status === "over") {
+      const p = pr && safeParse(pr.state), res = RESULT_KO[(p && p.result) || "closed"];
+      run = await mutate(r => { if (!r.battle || r.battle.party !== run.battle.party) return; r.afterBattle = `${r.battle.enemy}과(와)의 전투에서 일행은 ${res}`; gPush(r, { who: "sys", text: `전투 결과 — ${res}` }, now); r.battle = null; r.phase = "open"; });
+    }
+  }
+  // 내가 혼자 치르던 전투가 끝났는지 (각자 진행 중)
+  const myT = run.tracks[uid];
+  if (myT && myT.battle) {
+    const br = await DB.prepare("SELECT state FROM battles WHERE user_id = ?").bind(uid).first(); const b = br && safeParse(br.state);
+    if (!b || b.id !== myT.battle.solo || b.over) {
+      const res = b && b.id === myT.battle.solo ? RESULT_KO[b.result] || "끝났다" : null;
+      run = await mutate(r => { const t = r.tracks[uid]; if (!t || !t.battle) return; if (res) { t.afterBattle = `${t.battle.enemy}과(와)의 전투에서 ${res}`; gPush(r, { who: "sys", for: uid, seg: r.seg, text: `전투 결과 — ${res}` }, now); } t.battle = null; });
+    }
+  }
+
+  /* 일행 전체 장면을 쓴다: 한 번에 한 사람만 (잠금) */
+  const shared = async (kind, ask, extra) => {
+    const got = await mutate(r => { if (r.done || gLocked(r.busy, now)) return false; r.busy = { at: now, by: uid }; return true; });
+    if (!got) return;
+    const snap = await load();
+    const o = await narrate(env, st, snap, me, null, { mode: "shared", task: G_SHARED_TASK, hist: snap.log.filter(l => !l.for), ask });
+    let party = null;
+    if (!o.retry && o.battle && !o.end) {
+      const en = enemyFor(o.enemy || st.enemy); party = newParty(uid, me, st.id, en);
+      await DB.prepare("INSERT INTO parties (id, host_id, story_id, state, status, updated_at) VALUES (?, ?, ?, ?, 'lobby', ?)").bind(party.id, uid, st.id, JSON.stringify(party), now).run();
+    }
+    run = await mutate(r => {
+      r.busy = null;
+      if (o.retry) { const last = r.log[r.log.length - 1]; if (!last || last.text !== STORY_RETRY) gPush(r, { who: "sys", text: STORY_RETRY }, now); return; }
+      if (extra) extra(r);
+      r.step = (r.step || 0) + 1; r.afterBattle = null;
+      gPush(r, { who: "urim", text: String(o.narration || "…").slice(0, 1200) }, now);
+      const opts = o.branch && Array.isArray(o.branch.options) ? o.branch.options.filter(x => typeof x === "string" && x.trim()).slice(0, 4).map(x => x.slice(0, 40)) : [];
+      r.vote = null; r.choices = [];
+      if (o.end) { r.done = true; r.phase = "done"; }
+      else if (party) { r.battle = { party: party.id, enemy: party.enemy.name }; r.phase = "battle"; }
+      else if (opts.length >= 2) { r.phase = "vote"; r.vote = { id: randomId(), q: String(o.branch.question || "일행은 어떻게 할까요?").slice(0, 80), options: opts, votes: {}, at: now }; gPush(r, { who: "sys", text: `분기 — ${r.vote.q} (일행 과반수가 고른 행동만 일어나요)` }, now); }
+      else { r.phase = "solo"; r.seg = (r.seg || 1) + 1; r.tracks = {}; r.choices = Array.isArray(o.choices) ? o.choices.filter(c => typeof c === "string" && c.trim()).slice(0, 3).map(c => c.slice(0, 60)) : []; gPush(r, { who: "sys", text: "각자 진행 — 저마다 움직이다가 합류 지점에서 일행과 다시 모여요." }, now); }
+    });
+  };
+  /* 내 몫의 장면을 쓴다 (각자 진행) */
+  const personal = async (said, ask) => {
+    const pre = await mutate(r => {
+      const t = r.tracks[uid] = r.tracks[uid] || { steps: 0 };
+      if (r.phase !== "solo" || t.ready || t.battle || gLocked(t.busy, now)) return null;
+      t.busy = { at: now };
+      if (said) gPush(r, { who: "me", userId: uid, name: me.name, text: said, for: uid, seg: r.seg }, now);
+      return { steps: t.steps, seg: r.seg };
+    });
+    if (!pre) return false;
+    const snap = await load();
+    const o = await narrate(env, st, snap, me, said, { mode: "track", task: gTrackTask(me.name, pre.steps + 1), hist: snap.log.filter(l => !l.for || l.for === uid), ask });
+    const ch = !o.retry && said ? await repApply(DB, uid, o, st.title, now) : null;
+    let battle = null;
+    if (!o.retry && o.battle && !o.regroup) {
+      if (me.hp > 0) {
+        const en = fitSolo(enemyFor(o.enemy || st.enemy), me.level);
+        const b = { id: randomId(), turn: 1, over: false, result: null, story: st.id, group: true, me: { name: me.name, hp: me.hp, hpMax: me.hpMax, echo: me.echoLeft, taint: me.taintTier },
+          enemy: { name: en.name, level: en.level, tier: en.tier, hp: en.hp, hpMax: en.hp, atk: en.atk, def: en.def, spd: en.spd, state: en.state },
+          log: [{ kind: "urim", text: `${en.name}이(가) 길을 막았어요. 이야기는 전투가 끝난 뒤에 이어져요.` }] };
+        await saveBattle(DB, uid, b, now); await saveVitals(DB, uid, { battleEndAt: null }, now);
+        battle = { solo: b.id, enemy: en.name };
+      } else battle = "nohp";
+    }
+    run = await mutate(r => {
+      const t = r.tracks[uid] = r.tracks[uid] || { steps: 0 }; t.busy = null;
+      if (r.seg !== pre.seg) return;   // 그사이 일행이 이미 합류했으면 버린다
+      if (o.retry) {
+        const i = r.log.map(l => l.who === "me" && l.for === uid).lastIndexOf(true); if (said && i >= 0 && i === r.log.length - 1) r.log.splice(i, 1);
+        gPush(r, { who: "sys", for: uid, seg: r.seg, text: STORY_RETRY }, now); return;
+      }
+      t.steps += 1; t.afterBattle = null;
+      gPush(r, { who: "urim", for: uid, seg: r.seg, text: String(o.narration || "…").slice(0, 1200) }, now);
+      if (ch) gPush(r, { who: "sys", for: uid, seg: r.seg, text: repLine(ch) }, now);
+      t.choices = Array.isArray(o.choices) ? o.choices.filter(c => typeof c === "string" && c.trim()).slice(0, 3).map(c => c.slice(0, 60)) : [];
+      if (battle === "nohp") gPush(r, { who: "urim", for: uid, seg: r.seg, text: "지금은 체력이 없어서 싸울 수 없어요. 창고에서 회복한 뒤에 다시 말을 걸어 주세요." }, now);
+      else if (battle) t.battle = battle;
+      if (!t.battle && (o.regroup || t.steps >= TRACK_MAX)) { t.ready = true; t.readyAt = now; t.choices = []; gPush(r, { who: "sys", for: uid, seg: r.seg, text: "합류 지점에 닿았어요. 일행이 모이면 이야기가 이어져요." }, now); }
+    });
+    return true;
+  };
+  /* 차례가 됐으면 다음으로 넘긴다 */
+  const advance = async () => {
+    if (run.done || gLocked(run.busy, now)) return;
+    if (run.phase === "open" && !run.battle) {
+      if (run.afterBattle) await shared("battle", `[요청] 일행이 함께 치른 전투가 끝난 뒤의 장면을 이어 주세요. battle은 false.\n[방금 전투 결과] ${run.afterBattle}`);
+      else if (!run.log.some(l => l.who === "urim")) await shared("open", "[요청] 일행이 모인 첫 장면을 열어 주세요.");
+      else { run = await mutate(r => { if (r.phase === "open") { r.phase = "solo"; r.tracks = {}; } }); }
+      return;
+    }
+    if (run.phase === "vote" && run.vote) {
+      const vs = gVoteState(run, now, uid); if (vs.pick < 0) return;
+      const v = run.vote, choice = v.options[vs.pick];
+      await shared("voted", `[분기 결과] ${v.q} → 일행이 「${choice}」을(를) 골랐다 (${vs.counts[vs.pick]}/${vs.voters}표, ${vs.how}).\n[요청] 일행이 이 선택대로 함께 행동하는 장면을 서술하고 줄거리의 다음으로 이어 가세요. 고르지 않은 선택지의 일은 일어나지 않는다.`,
+        r => { if (!r.vote || r.vote.id !== v.id) return; gPush(r, { who: "sys", text: `투표 결과 — 「${choice}」 (${vs.counts[vs.pick]}표 · ${vs.how})` }, now); });
+      return;
+    }
+    if (run.phase === "solo") {
+      const t = run.tracks[uid];
+      if (t && t.afterBattle && !t.battle && !t.ready) { await personal(null, `[요청] 혼자 치른 전투가 끝난 뒤의 장면을 이어 주세요. battle은 false.\n[방금 전투 결과] ${t.afterBattle}`); return; }
+      const gs = gRegroupState(run, now, uid); if (!gs.go) return;
+      const seg = run.seg, lines = [];
+      for (const u of run.participants) {
+        const mine = run.log.filter(l => l.for === u && l.seg === seg && (l.who === "me" || l.who === "urim")).slice(-6);
+        if (mine.length) lines.push(`- ${run.names[u] || "누군가"}: ` + mine.map(l => (l.who === "me" ? "(행동) " : "") + l.text.slice(0, 160)).join(" / "));
+      }
+      await shared("regroup", `[각자 진행한 일]\n${lines.join("\n") || "(따로 한 일이 없다)"}\n[요청] 흩어졌던 일행이 합류 지점에 다시 모이는 장면을 서술하고, 각자 겪은 일이 서로 이어지게 한 뒤 줄거리의 다음 장면으로 이어 가세요.`,
+        r => { if (r.seg !== seg) return; const late = gActive(r, now, uid).filter(u => !(r.tracks[u] && r.tracks[u].ready)); gPush(r, { who: "sys", text: late.length ? `일행이 합류했어요. (${late.map(u => r.names[u] || "누군가").join(", ")} 님은 뒤늦게 따라왔어요)` : "일행이 모두 합류했어요." }, now); });
+    }
+  };
+
+  if (M === "POST" && sub === "/vote") {
+    const req = await body(request), i = req && Number.isInteger(req.option) ? req.option : -1;
+    const okv = await mutate(r => { if (r.phase !== "vote" || !r.vote || i < 0 || i >= r.vote.options.length) return false; r.vote.votes[uid] = i; r.seen[uid] = now; return true; });
+    if (!okv) return bad("지금은 투표할 분기가 없어요");
+    run = await load();
+  } else if (M === "POST" && sub === "/ready") {
+    const okr = await mutate(r => { const t = r.tracks[uid] = r.tracks[uid] || { steps: 0 }; if (r.phase !== "solo" || t.ready || t.battle || gLocked(t.busy, now)) return false; t.ready = true; t.readyAt = now; t.choices = []; gPush(r, { who: "sys", for: uid, seg: r.seg, text: "합류 지점으로 향했어요. 일행이 모이면 이야기가 이어져요." }, now); return true; });
+    if (!okr) return bad("지금은 합류할 수 없어요");
+    run = await load();
+  } else if (M === "POST" && sub === "/act") {
+    const req = await body(request), said = String((req && req.text) || "").trim().slice(0, 300);
+    if (!said) return bad("empty");
+    run = await load();
+    if (run.done) return bad("이야기가 끝났어요");
+    if (run.phase === "vote") return bad("지금은 일행이 함께 정하는 분기예요. 선택지 중 하나에 투표해 주세요");
+    if (run.phase !== "solo") return bad("일행의 장면을 기다리는 중이에요");
+    const t = run.tracks[uid] || {};
+    if (t.ready) return bad("합류 지점에서 일행을 기다리는 중이에요");
+    if (t.battle) return bad("전투가 먼저예요");
+    if (!(await personal(said))) return bad("URIM이 앞 행동을 이어 쓰는 중이에요. 잠시 뒤에 다시 보내 주세요");
+  } else if (M !== "GET") return bad("not_found", 404);
+  await advance();
+
+  // 보여 줄 모습
+  run = run || (await load());
+  const t = run.tracks[uid] || {}, vis = run.log.filter(l => !l.for || l.for === uid);
+  const view = { id: st.id, title: st.title, kind: st.kind, intro: st.intro, log: vis.slice(-100), choices: [], done: !!run.done, battle: run.battle || t.battle || null, me: uid, notified, midJoined,
+    phase: run.done ? "done" : run.phase, busy: gLocked(run.busy, Date.now()) || gLocked(t.busy, Date.now()), vote: null, track: null };
+  if (!run.done && run.phase === "vote" && run.vote) {
+    const vs = gVoteState(run, now, uid);
+    view.vote = { q: run.vote.q, options: run.vote.options.map((x, i) => ({ text: x, n: vs.counts[i] })), mine: uid in run.vote.votes ? run.vote.votes[uid] : null, need: vs.need, active: vs.active, voters: vs.voters, left: Math.max(0, VOTE_MAX - (now - run.vote.at)) };
+  }
+  if (!run.done && run.phase === "solo") {
+    const gs = gRegroupState(run, now, uid);
+    view.choices = !t.ready && !t.battle ? (t.choices || run.choices || []) : [];
+    view.track = { steps: t.steps || 0, max: TRACK_MAX, ready: !!t.ready, readyNames: gs.ready.map(u => run.names[u] || "누군가"), restNames: gs.rest.map(u => run.names[u] || "누군가"), left: gs.left };
+  }
+  return ok(view);
 }
 function enemyFor(name) {
   const known = ENEMIES.find(e => name && e.name === String(name).trim());
@@ -1818,6 +2056,15 @@ async function storyBattleSync(DB, run, st, uid, now, save) {
   }
 }
 async function storyBattleDone(DB, uid, storyId, b, now) {
+  if (b.group) {   // 단체 스토리의 '각자 진행' 중에 혼자 치른 전투
+    const row = await DB.prepare("SELECT state FROM story_runs WHERE id = ?").bind("group:" + storyId).first();
+    const run = row && safeParse(row.state); const t = run && run.tracks && run.tracks[uid];
+    if (!t || !t.battle || t.battle.solo !== b.id) return;
+    t.afterBattle = `${b.enemy.name}과(와)의 전투에서 ${RESULT_KO[b.result] || "끝났다"}`; t.battle = null;
+    gPush(run, { who: "sys", for: uid, text: `전투 결과 — ${RESULT_KO[b.result] || "종료"}` }, now);
+    await DB.prepare("UPDATE story_runs SET state = ?, updated_at = ? WHERE id = ?").bind(JSON.stringify(run), now, "group:" + storyId).run();
+    return;
+  }
   const rid = uid + ":" + storyId;
   const row = await DB.prepare("SELECT state FROM story_runs WHERE id = ?").bind(rid).first();
   const run = row && safeParse(row.state);

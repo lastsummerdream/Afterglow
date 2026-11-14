@@ -166,6 +166,17 @@
 #choices .strip { height: 76px; padding: 0 50px; font-size: 28px; }
 #stage[data-pg="story"] .field { color: #fff; background: rgba(10,10,10,.72); padding: 0 34px; box-sizing: border-box; height: 86px !important; top: 1220px !important; left: 760px !important; width: 1500px !important; }
 .busy #choices, .busy #sendBtn { pointer-events: none; opacity: .5; }
+/* 단체 스토리: 지금 단계 (분기 투표 · 각자 진행 · 합류 대기) */
+.sphase { position: absolute; right: 60px; top: 40px; margin: 0; padding: 8px 24px; font-size: 22px; font-weight: 900; letter-spacing: .08em; color: #f2f2f2; background: rgba(255,255,255,.12); border-radius: 999px; }
+.sphase:empty { display: none; }
+.sphase[data-ph="vote"] { color: #1b1b1b; background: #e9d79a; }
+.sphase[data-ph="wait"], .sphase[data-ph="busy"] { color: #cfe5a8; background: rgba(207,229,168,.14); }
+.sl.priv { border-left: 4px solid rgba(207,229,168,.45); padding-left: 22px; }
+.sl.sys.priv { border: 0; padding: 0; color: #b9cf95; }
+#choices .strip.vote .vn { margin-left: 18px; font-size: 22px; font-weight: 700; color: #bdbdbd; }
+#choices .strip.vote.on { filter: brightness(1.5); }
+#choices .strip.vote.on::after { content: "✓ 내 선택"; margin-left: 14px; font-size: 20px; color: #e9d79a; }
+#choices .strip.ready { color: #cfe5a8; }
 
 /* ── 본문 글자 70% ── */
 :is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .field { font-size: 21.0px; }
@@ -174,6 +185,10 @@
 :is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .edit-row button { font-size: 15.4px; }
 :is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .edited { font-size: 14.0px; }
 :is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .confirm { font-size: 15.4px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .story-alarm { font-size: 21.0px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .story-alarm .sa-badge { font-size: 15.4px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .story-alarm .sa-join { font-size: 16.8px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .story-alarm .sa-close { font-size: 18.2px; }
 :is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .sact { font-size: 22.4px; translate: 0 5.8px; }
 :is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s0 { font-size: 19.6px; line-height: 27.3px; translate: 0 5.0px; }
 :is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .s1 { font-size: 77.0px; line-height: 80.5px; translate: 0 19.8px; }
@@ -263,6 +278,9 @@
 :is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .sl.me::before, :is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .sl.other::before { font-size: 15.4px; }
 :is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .sl.sys { font-size: 18.2px; }
 :is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) #choices .strip { font-size: 19.6px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) .sphase { font-size: 15.4px; translate: 0 4.0px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) #choices .strip.vote .vn { font-size: 15.4px; }
+:is(.L[data-r="center"], .L[data-r="bottom"], .L[data-r="left"], .L[data-r="right"]) #choices .strip.vote.on::after { font-size: 14.0px; }
 </style>
 </head>
 <body>
@@ -543,7 +561,7 @@
 </defs>
 </svg>
 
-<div class="L in in-title" data-r="title" id="L-title"><p class="t s0 " style="left:167px;top:64px" >STORY</p><p class="t s1 title-grad" style="left:167px;top:98px;width:978px" >스토리 진행</p></div><div class="L in in-center" data-r="center" id="L-center"><aside class="pnl" id="sList" style="--sl:0px;left:120px;top:300px;width:600px;height:990px"><p class="cap">STORIES</p><div class="scroll rows" id="rows"></div></aside><section class="pnl" id="sMain" style="--sl:0px;left:760px;top:300px;width:1680px;height:800px"><p class="cap" id="sCap">STORY</p><h2 class="big" id="sTitle">이야기를 골라 주세요</h2><div class="scroll fade-y" id="sLog" aria-live="polite"></div></section></div><div class="L in in-bottom" data-r="bottom" id="L-bottom"><div class="abs" id="choices" style="left:760px;top:1122px;width:1680px"></div><input class="field" id="actInput" style="left:800px;top:1232px;width:1470px;height:62px;font-size:23.8px" placeholder="캐릭터의 행동이나 대사를 적어 주세요" maxlength="300" autocomplete="off" disabled><button class="abs strip" id="sendBtn" style="left:2290px;top:1220px" disabled>보내기</button></div>
+<div class="L in in-title" data-r="title" id="L-title"><p class="t s0 " style="left:167px;top:64px" >STORY</p><p class="t s1 title-grad" style="left:167px;top:98px;width:978px" >스토리 진행</p></div><div class="L in in-center" data-r="center" id="L-center"><aside class="pnl" id="sList" style="--sl:0px;left:120px;top:300px;width:600px;height:990px"><p class="cap">STORIES</p><div class="scroll rows" id="rows"></div></aside><section class="pnl" id="sMain" style="--sl:0px;left:760px;top:300px;width:1680px;height:800px"><p class="cap" id="sCap">STORY</p><p class="sphase" id="sPhase" aria-live="polite"></p><h2 class="big" id="sTitle">이야기를 골라 주세요</h2><div class="scroll fade-y" id="sLog" aria-live="polite"></div></section></div><div class="L in in-bottom" data-r="bottom" id="L-bottom"><div class="abs" id="choices" style="left:760px;top:1122px;width:1680px"></div><input class="field" id="actInput" style="left:800px;top:1232px;width:1470px;height:62px;font-size:23.8px" placeholder="캐릭터의 행동이나 대사를 적어 주세요" maxlength="300" autocomplete="off" disabled><button class="abs strip" id="sendBtn" style="left:2290px;top:1220px" disabled>보내기</button></div>
 <img class="abs topbar" src="assets/topbar.svg" alt="">
 <button class="top-btn refresh" data-action="home" aria-label="홈 화면으로"><img src="assets/btn-refresh.svg" width="53" height="53" alt=""><span class="glyph"><svg viewBox="0 0 24 24" fill="none" stroke="#1e1e1e" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 11.5 12 4l8.5 7.5"/><path d="M6.5 10v9.5h11V10"/></svg></span><span class="tip">홈 화면으로</span></button>
 <button class="top-btn browse" data-action="browse" aria-label="다른 캐릭터 프로필 구경가기"><img src="assets/btn-browse.svg" width="52" height="53" alt=""><span class="glyph"><svg viewBox="0 0 24 24" fill="none" stroke="#1e1e1e" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="4"/><path d="M2 21a7 7 0 0 1 14 0"/><path d="M17 4a4 4 0 0 1 0 8M22 21a7 7 0 0 0-4-6.3"/></svg></span><span class="tip">다른 캐릭터 프로필 구경가기</span></button>
