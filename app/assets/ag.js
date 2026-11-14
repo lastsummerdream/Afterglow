@@ -959,7 +959,7 @@ function demoTurn(b, s, action, text, used, skill) {
   b.log.push({ kind: 'turn', label: T, text: line });
   if (E.hp <= 0) {
     b.over = true; b.result = 'win';
-    const l = E.lootTable[Math.floor(Math.random() * E.lootTable.length)];
+    const lt = demoLoot(E.lootTable, b.story), l = lt[Math.floor(Math.random() * lt.length)];
     const loot = { id: rid('i'), ...l, source: '전리품' };
     b.log.push({ kind: 'urim', text: `${E.name}을(를) 쓰러뜨렸어요. 전리품 「${loot.name}」을(를) 창고에 넣었어요.` });
     s.exp += 120; if (s.exp >= s.expMax) { s.exp -= s.expMax; s.level += 1; b.log.push({ kind: 'urim', text: `레벨이 ${s.level}(으)로 올랐어요.` }); }
@@ -989,6 +989,8 @@ const DEMO_STORIES = [
              ['관측소 문이 안쪽에서 열려요. 가면을 쓴 변이 수집자가 갈고리를 끌며 걸어 나와요.', [], true],
              ['수집자가 떨어뜨린 자루에는 잘라 낸 표지 조각이 가득해요. 누군가 경계를 지우려 하고 있어요. 이번 조사는 여기까지예요.', [], false, true]] },
 ];
+/* 스토리용 전리품(단서)은 스토리 전투에서만 (체험 모드) */
+function demoLoot(table, storyId) { const t = (table || []).filter(l => storyId || l.kind !== '단서'); return t.length ? t : [{ name: '배급 영양 팩', rarity: 'COMMON', kind: '소모품', desc: '테바 하층 배급소의 회색 팩. 맛은 없다.\n전투 중 체력을 30 회복한다.' }]; }
 function demoStoryRun(st) { const d = db(); d.stories = d.stories || {}; return d.stories[st.id]; }
 function demoStoryView(st) { const r = demoStoryRun(st); const v = { id: st.id, title: st.title, kind: st.kind, intro: st.intro, log: r.log, choices: r.choices, done: r.done, battle: r.battle, me: 'me' };
   if (st.kind !== 'group' || r.done || r.battle) return v;
@@ -1044,7 +1046,7 @@ function demoPartyAct(p, action, text, skill) {
   p.log.push({ kind: 'turn', label: `TURN ${String(p.turn).padStart(2, '0')}`, text: parts.join(' ') });
   s.hp = Math.min(s.hpMax, meM.hp); s.echoLeft = meM.echo;
   const still = p.members.filter(x => !x.down && !x.fled);
-  if (E.hp <= 0) { p.status = 'over'; p.result = 'win'; s.battleEndAt = Date.now(); const l = (E.lootTable || [])[0]; if (l) d.inventory.push({ id: rid('i'), source: '전리품', ...l });
+  if (E.hp <= 0) { p.status = 'over'; p.result = 'win'; s.battleEndAt = Date.now(); const l = demoLoot(E.lootTable, p.storyId)[0]; if (l) d.inventory.push({ id: rid('i'), source: '전리품', ...l });
     p.log.push({ kind: 'urim', text: `${E.name}을(를) 함께 쓰러뜨렸어요. 전리품은 각자 창고에 넣어 두었어요.` }); }
   else if (!still.length || meM.down || meM.fled) { p.status = 'over'; p.result = meM.fled ? 'run' : 'lose'; s.battleEndAt = Date.now(); p.log.push({ kind: 'urim', text: meM.fled ? '전장을 벗어났어요.' : '쓰러졌어요. 숙소로 옮겨 놓을게요. 체력을 회복하고 다시 나가요.' }); }
   else p.turn += 1;

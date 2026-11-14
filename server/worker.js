@@ -595,6 +595,29 @@ const EP1_ENEMIES = [
   ep1("제1기관의 파편 · 몸", 20, "boss", "machine", "갈빗대 방벽", [CLUE("12 THUMMIM의 첫 파형", "몸의 방어체 안에서 새어 나온 파형. 214년 만에 따로 뛰는 박자다.")]),
 ];
 ENEMIES.push(...EP1_ENEMIES);
+/* 스토리용 전리품(단서)은 그 단서가 나오는 스토리를 진행하는 중에 치른 전투에서만 떨어진다.
+   줄거리(제목 · 본문 · 전투 상대)에 단서 이름이나 그 단서를 지닌 적의 이름이 있으면 '맞는 스토리'로 본다.
+   스토리 밖 전투(혼자 · 파티)에서는 단서 대신 레벨에 맞는 소모품이 나온다 */
+const CLUE_OWNER = new Map(EP1_ENEMIES.flatMap(e => (e.loot || []).filter(l => l.kind === "단서").map(l => [l.name, e.name])));
+function plainLoot(level) {
+  const L = level || 1, pool = L < 9 ? [L1.ration, L1.water] : L < 13 ? [L1.moss, L1.patch, L1.water] : L < 17 ? [L1.surgery, L1.bread, L1.patch] : [L1.shard, L1.surgery, L1.bread];
+  return pool;
+}
+async function lootFor(env, enemy, storyId, level) {
+  let pool = (enemy && enemy.loot) || [];
+  const clues = pool.filter(l => l.kind === "단서");
+  if (clues.length) {
+    let fit = [];
+    if (storyId) {
+      const st = (await stories(env)).find(x => x.id === storyId);
+      const text = st ? `${st.title}\n${st.outline || ""}\n${st.enemy || ""}` : "";
+      fit = clues.filter(l => { const bare = l.name.replace(/^\d\d\s*/, ""), owner = CLUE_OWNER.get(l.name); return text && (text.includes(bare) || (owner && text.includes(owner))); });
+    }
+    pool = [...pool.filter(l => l.kind !== "단서"), ...fit];
+  }
+  if (!pool.length) pool = plainLoot(level || (enemy && enemy.level));
+  return pool[Math.floor(Math.random() * pool.length)];
+}
 /* 개인 전투 상대: 캐릭터 레벨에 맞춘다. 레벨대가 비슷한 일반 적(가끔 정예)을 고르고, 수치는 캐릭터 레벨로 다시 계산한다. 보스는 나오지 않는다. */
 function soloEnemy(level) {
   const L = Math.max(1, Math.min(20, level || 1)), near = Math.max(5, L);
@@ -1276,7 +1299,7 @@ ${sheet || "아직 캐릭터 정보를 적지 않았다."}
     else if (b.enemy.hp <= 0) {
       b.over = true; b.result = "win";
       const enemy = ENEMIES.find(e => e.name === b.enemy.name) || ENEMIES[0];
-      const l = enemy.loot[Math.floor(Math.random() * enemy.loot.length)];
+      const l = await lootFor(env, enemy, b.story, b.enemy.level);   // 스토리 단서는 맞는 스토리 중일 때만
       await DB.prepare("INSERT INTO items (id, user_id, name, rarity, kind, source, descr, slot, deco, img, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
         .bind(randomId(), user.id, l.name, l.rarity, l.kind, "전리품", l.desc, l.slot || null, l.deco ? 1 : 0, l.img || null, now).run();
       const pr = await profile(DB, user.id); const game = pr.game || {}; game.level = game.level || 1; game.exp = (game.exp || 0) + 120;
@@ -2163,7 +2186,7 @@ async function partyResolve(env, DB, p, now) {
     p.status = "over"; p.result = "win";
     const enemy = ENEMIES.find(e => e.name === p.enemy.name) || ENEMIES[0];
     for (const x of p.members.filter(y => !y.left && !y.fled)) {
-      const l = enemy.loot[Math.floor(Math.random() * enemy.loot.length)];
+      const l = await lootFor(env, enemy, p.storyId, p.enemy.level);   // 스토리 단서는 맞는 스토리 중일 때만
       await DB.prepare("INSERT INTO items (id, user_id, name, rarity, kind, source, descr, slot, deco, img, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)").bind(randomId(), x.id, l.name, l.rarity, l.kind, "전리품", l.desc, l.slot || null, l.deco ? 1 : 0, l.img || null, now).run();
       const pr = await profile(DB, x.id); const game = pr.game || {}; game.level = game.level || 1; game.exp = (game.exp || 0) + 120;
       while (game.exp >= expMax(game.level)) { game.exp -= expMax(game.level); game.level += 1; }
