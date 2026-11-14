@@ -983,6 +983,12 @@ ${sheet || "아직 캐릭터 정보를 적지 않았다."}
     }
     return ok(alarms);
   }
+  if (path === "/notices" && M === "GET") { const n = await notices(env); return ok({ list: n.list, notice: n.err || undefined }); }
+  if ((m = path.match(/^\/notices\/([0-9a-f]{32})$/)) && M === "GET") {
+    const n = await notices(env), it = n.list.find(x => x.id === m[1]);
+    if (!it) return bad("not_found", 404);
+    try { return ok({ ...it, body: await noticeBody(env, it.id) }); } catch (e) { return bad("공지 내용을 불러오지 못했어요", 502); }
+  }
   if (path === "/stories" && M === "GET") {
     const list = await stories(env);
     const ids = list.map(s => (s.kind === "group" ? "group" : user.id) + ":" + s.id);
@@ -1708,6 +1714,46 @@ async function stories(env) {
   STORY_CACHE = { at: Date.now(), list };
   return list;
 }
+/* ── 공지사항: 노션 'AFTERGLOW · 공지사항' DB에서 '공개'를 켠 글. 목록은 1분, 본문은 글마다 1분 기억한다 ── */
+const NOTION_NOTICE_DB_DEFAULT = "41831fa4abea81a4b2b9ca7be308aba8";
+let NOTICE_CACHE = { at: 0, list: null, err: "" }; const NOTICE_BODY = new Map();
+async function notices(env) {
+  if (NOTICE_CACHE.list && Date.now() - NOTICE_CACHE.at < 60000) return NOTICE_CACHE;
+  let list = [], err = "";
+  if (!env.NOTION_TOKEN) err = "공지사항을 불러올 수 없어요 (노션 연동 없음)";
+  else {
+    try {
+      const q = await notion(env, "POST", "/databases/" + (env.NOTION_NOTICE_DB || NOTION_NOTICE_DB_DEFAULT) + "/query", { filter: { property: "공개", checkbox: { equals: true } }, page_size: 40 });
+      const plain = a => (a || []).map(t => t.plain_text || "").join("");
+      for (const pg of q.results || []) {
+        const P = pg.properties || {};
+        const date = (P["날짜"] && P["날짜"].date && P["날짜"].date.start) || String(pg.created_time || "").slice(0, 10);
+        list.push({ id: pg.id.replace(/-/g, ""), title: plain(P["제목"] && P["제목"].title) || "제목 없음", kind: (P["분류"] && P["분류"].select && P["분류"].select.name) || "공지",
+          pinned: !!(P["상단 고정"] && P["상단 고정"].checkbox), date, summary: plain(P["한 줄 요약"] && P["한 줄 요약"].rich_text).slice(0, 120), edited: Date.parse(pg.last_edited_time) || 0 });
+      }
+      list.sort((a, b) => (b.pinned - a.pinned) || String(b.date).localeCompare(String(a.date)) || b.edited - a.edited);
+    } catch (e) { console.log("notice notion failed", String(e)); err = /404|object_not_found/.test(String(e)) ? "노션 공지사항 DB에 서버 연동이 연결되어 있지 않아요" : "공지사항을 잠시 불러오지 못했어요"; list = NOTICE_CACHE.list || []; }
+  }
+  NOTICE_CACHE = { at: Date.now(), list, err };
+  return NOTICE_CACHE;
+}
+// 노션 블록을 화면에 그릴 수 있는 간단한 꼴로: { t: 'h1|h2|h3|p|li|ol|quote|callout|todo|hr|img', x: [글자 조각], src }
+function noticeRich(a) { return (a || []).map(t => ({ s: String(t.plain_text || ""), b: !!(t.annotations && t.annotations.bold), i: !!(t.annotations && t.annotations.italic), u: !!(t.annotations && t.annotations.underline), k: !!(t.annotations && t.annotations.strikethrough), c: !!(t.annotations && t.annotations.code), h: t.href && /^https?:\/\//.test(t.href) ? t.href : null })).filter(t => t.s); }
+async function noticeBody(env, id) {
+  const hit = NOTICE_BODY.get(id); if (hit && Date.now() - hit.at < 60000) return hit.body;
+  const r = await notion(env, "GET", "/blocks/" + id + "/children?page_size=100");
+  const T = { heading_1: "h1", heading_2: "h2", heading_3: "h3", paragraph: "p", bulleted_list_item: "li", numbered_list_item: "ol", quote: "quote", callout: "callout", to_do: "todo", toggle: "p" };
+  const body = [];
+  for (const b of r.results || []) {
+    if (b.type === "divider") body.push({ t: "hr" });
+    else if (b.type === "image") { const im = b.image || {}; const src = (im.file && im.file.url) || (im.external && im.external.url); if (src) body.push({ t: "img", src, x: noticeRich(im.caption) }); }
+    else if (T[b.type]) { const v = b[b.type] || {}; body.push({ t: T[b.type], x: noticeRich(v.rich_text), done: b.type === "to_do" ? !!v.checked : undefined }); }
+  }
+  NOTICE_BODY.set(id, { at: Date.now(), body });
+  if (NOTICE_BODY.size > 60) NOTICE_BODY.delete(NOTICE_BODY.keys().next().value);
+  return body;
+}
+
 /* ── GM: 노션 명부의 GM 칸을 읽어 체력 · 잔향 · 경험치를 조절하고 아이템을 준다 ──
    'GM 적용'을 체크한 줄만 처리하고, 처리한 뒤 칸을 비우고 'GM 결과'에 한 일을 적는다.
    체력 · 잔향 칸: "+30" / "-20" 은 더하고 빼기, "50" 은 그 값으로, "최대" 는 가득 */

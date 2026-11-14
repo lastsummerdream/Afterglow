@@ -117,6 +117,7 @@
   .urim-tile:hover { filter: brightness(1.15); }
   .urim-tile:active { transform: scale(.96); }
   .urim-tile.glitch { animation: avg .5s steps(2) 3; }
+  .urim-tile.has-new::after { content: ""; position: absolute; right: 8px; top: 8px; width: 24px; height: 24px; border-radius: 50%; background: #ff6b5b; box-shadow: 0 0 0 5px #15181b; }   /* 읽지 않은 공지 */
   @keyframes avg { 50% { filter: invert(1); } }
   .urim-bar { position: absolute; left: 155.43px; top: 10px; width: 1153.568px; height: 111px; background: linear-gradient(90deg, rgba(232,232,232,.09), rgba(232,232,232,0)); filter: blur(8.7px); }
   .urim-line {
@@ -374,7 +375,7 @@ html.ag-wait #stage > :not(.wallpaper):not(.tint) { opacity: 0 !important; will-
 
   <!-- 상단 URIM (아이콘을 누르면 URIM이 말함) -->
   <div class="abs urim in in-urim">
-    <button class="urim-tile" id="urimTile" aria-label="URIM에게 말 걸기" title="URIM"><img src="assets/urim-tile-icon.svg" alt=""></button>
+    <button class="urim-tile" id="urimTile" data-notice-dot aria-label="공지사항 (URIM)" title="공지사항"><img src="assets/urim-tile-icon.svg" alt=""></button>
     <div class="urim-bar"></div>
     <p class="urim-line" id="urimLine" aria-live="polite">우림 대사</p>
   </div>
@@ -426,6 +427,7 @@ html.ag-wait #stage > :not(.wallpaper):not(.tint) { opacity: 0 !important; will-
           <img class="disc" src="assets/side-disc.svg" alt="">
           <img class="ico" src="assets/icon-urim.svg" style="left:60.72px;top:35.68px;width:60.5px;height:60.5px" alt="">
           <span class="txt" style="left:91px;top:102px">공지사항</span>
+          <span class="ndot" data-notice-dot style="left:136px;top:16px" aria-hidden="true"></span>
         </button>
         <button class="side-btn active" data-side="urim" style="top:430.16px" aria-label="URIM">
           <img class="disc" src="assets/side-disc-active.svg" alt="">
@@ -752,7 +754,7 @@ document.querySelectorAll('.side-btn').forEach(b => b.addEventListener('click', 
   const k = b.dataset.side;
   if (k === 'urim' && window.AG && AG.urimChat) { AG.urimChat(); return; }
   document.querySelectorAll('.side-btn').forEach(x => x.classList.toggle('active', x === b));
-  if (k === 'notice') { toast('아직 올라온 공지사항이 없어요'); document.querySelectorAll('.side-btn').forEach(x => x.classList.toggle('active', x.dataset.side === 'urim')); return; }
+  if (k === 'notice') { window.AG && AG.noticeBoard ? AG.noticeBoard() : toast('공지사항을 열 수 없어요'); document.querySelectorAll('.side-btn').forEach(x => x.classList.toggle('active', x.dataset.side === 'urim')); return; }
   if (k !== 'urim') go(k);
 }));
 
@@ -899,11 +901,14 @@ document.querySelector('[data-action="back"]').addEventListener('click', () => {
       }
     })();
   }
-  icon.addEventListener('click', () => window.AG && AG.urimChat ? AG.urimChat() : speak());   // URIM을 누르면 대화창
+  icon.addEventListener('click', () => window.AG && AG.noticeBoard ? AG.noticeBoard() : speak());   // URIM을 누르면 공지사항 (창 안의 'URIM에게 묻기'로 대화)
   /* 들어오면 자동으로 한마디: 이번 접속에서 처음이면 인사, 다시 돌아온 화면이면 가벼운 한마디 */
   lineEl.textContent = '';
   let first = true; try { first = !sessionStorage.getItem('ag-urim-hi'); sessionStorage.setItem('ag-urim-hi', '1'); } catch {}
-  const begin = () => setTimeout(() => speak(first ? greeting() : undefined), 1500);   // 진입 애니메이션(URIM 줄이 내려온 뒤)
+  const begin = () => {
+    setTimeout(() => speak(first ? greeting() : undefined), 1500);   // 진입 애니메이션(URIM 줄이 내려온 뒤)
+    if (window.AG && AG.noticeDot && !(typeof VISIT !== 'undefined' && VISIT)) setTimeout(() => AG.noticeDot(true), 2600);   // 새 공지가 있으면 한 번 보여 준다
+  };
   const root = document.documentElement;
   if (!root.classList.contains('ag-wait')) begin();
   else new MutationObserver((m, o) => { if (!root.classList.contains('ag-wait')) { o.disconnect(); begin(); } }).observe(root, { attributes: true, attributeFilter: ['class'] });

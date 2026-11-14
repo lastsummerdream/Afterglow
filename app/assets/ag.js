@@ -575,6 +575,7 @@ const S = {
   },
   users: () => call('GET', '/users'),
   urim: messages => call('POST', '/urim', { messages }),
+  notices: { list: () => call('GET', '/notices'), get: id => call('GET', `/notices/${id}`) },   // 공지사항 (노션)
   people: { get: id => call('GET', `/people/${id}`), illust: id => call('GET', `/people/${id}/illust`) },
   illustPut: illust => call('PUT', '/me/illust', { illust }),
   channels: {
@@ -785,6 +786,14 @@ function findMsg(id) {
 }
 const lastOf = list => { const l = [...list].reverse().find(m => !m.deleted); return l ? { name: l.userId === 'me' ? meName() : nm(l.userId), text: l.text, at: l.at } : null; };
 
+const DEMO_NOTICES = [
+  { id: 'n0000000000000000000000000000001', title: '공지사항 창이 열렸어요', kind: '공지', pinned: true, date: '2026-11-14', summary: '메인 상단의 URIM을 누르면 언제든 공지를 다시 볼 수 있어요.',
+    body: [{ t: 'p', x: [{ s: '안녕하세요, URIM이에요. 이제부터 잔광 단말의 소식은 이 공지사항 창에서 알려 드려요.' }] }, { t: 'h2', x: [{ s: '이렇게 볼 수 있어요' }] },
+      { t: 'li', x: [{ s: '메인 화면 위쪽의 ' }, { s: 'URIM', b: true }, { s: '을 누르면 공지사항 창이 열려요.' }] }, { t: 'li', x: [{ s: '새 공지가 올라오면 들어올 때 한 번 자동으로 보여 드려요.' }] },
+      { t: 'li', x: [{ s: "'오늘 하루 보지 않기'를 누르면 그날은 자동으로 뜨지 않아요." }] }] },
+  { id: 'n0000000000000000000000000000002', title: '단체 스토리 진행 방식이 바뀌었어요', kind: '업데이트', pinned: false, date: '2026-11-14', summary: '분기는 투표, 그 사이는 각자 진행 후 합류',
+    body: [{ t: 'p', x: [{ s: '분기에서는 일행이 투표해서 ' }, { s: '과반수', b: true }, { s: '가 고른 행동만 일어나요.' }] }, { t: 'p', x: [{ s: '분기와 분기 사이에는 각자 움직이다가 합류 지점에서 다시 모여요.' }] }] },
+];
 const Dm = {
   notify: async () => { const d = db(); return { group: true, private: false, dm: Object.values(d.dms).some(x => x.unread > 0), inv: Math.max(0, (Array.isArray(d.inventory) ? d.inventory.length : 0) - 48) }; },
   seen: async () => ({ ok: true }),
@@ -804,6 +813,7 @@ const Dm = {
     illust: () => wait({ illust: null }),
   },
   illustPut: () => wait({ ok: true }),
+  notices: { list: () => wait({ list: DEMO_NOTICES.map(({ body, ...n }) => n) }), get: id => { const n = DEMO_NOTICES.find(x => x.id === id); return n ? wait(n) : fail('not_found'); } },
   urim: messages => wait({ text: ['체험 모드에서는 정해진 대답만 할 수 있어요. 로그인하면 캐릭터에 맞춰 이야기해 드릴게요.', '전투 진입에서 스토리나 전투를 고를 수 있어요. 체력은 창고의 회복 아이템으로 채워요.', '상단의 가운데 버튼을 누르면 다른 캐릭터를 구경할 수 있어요.'][messages.filter(m => m.role === 'user').length % 3] }, 700),
   channels: {
     list: () => wait(db().channels.map(c => ({ id: c.id, name: c.name, members: c.members, last: lastOf(c.msgs) }))),
@@ -1111,7 +1121,7 @@ AG.questImg = name => { const k = String(name || '').slice(0, 2); return /^(0[1-
 Object.assign(AG, {
   me: () => impl.me(), users: () => impl.users(), people: impl.people, urim: m => impl.urim(m), channels: impl.channels, msg: impl.msg, talks: impl.talks, dms: impl.dms,
   stats: (...a) => impl.stats(...a), inventory: impl.inventory, home: impl.home, lines: impl.lines, character: impl.character,
-  account: impl.account, battle: impl.battle, posts: impl.posts, story: impl.story, party: impl.party,
+  account: impl.account, battle: impl.battle, posts: impl.posts, story: impl.story, party: impl.party, notices: impl.notices,
   notify: () => impl.notify(), seen: a => impl.seen(a),
 });
 /* 이 화면을 보고 있는 동안 '읽음'으로 남긴다 (메인의 새 메시지 점이 꺼진다) */
@@ -1288,6 +1298,112 @@ AG.urimChat = function () {
   input.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); send(); } e.stopPropagation(); });
   draw(); setTimeout(() => input.focus({ preventScroll: true }), 50);
   return m;
+};
+/* ── 공지사항 창 (게임 공지처럼): 메인 상단의 URIM을 누르면 열리고, 새 공지가 있으면 들어올 때 한 번 저절로 열린다 ──
+   내용은 노션 'AFTERGLOW · 공지사항'에서 온다. 읽은 공지는 이 기기에 기억하고, '오늘 하루 보지 않기'를 누르면 그날은 저절로 뜨지 않는다 */
+const NT_SEEN = 'ag-notice-seen', NT_TODAY = 'ag-notice-today';
+const ntToday = () => new Date(Date.now() + 9 * 3600000).toISOString().slice(0, 10);
+const ntSeen = () => { try { return new Set(JSON.parse(localStorage.getItem(NT_SEEN) || '[]')); } catch { return new Set(); } };
+const ntMark = id => { const s = ntSeen(); if (s.has(id)) return; s.add(id); try { localStorage.setItem(NT_SEEN, JSON.stringify([...s].slice(-150))); } catch {} };
+const NT_COLOR = { 공지: '#8fb4ff', 업데이트: '#9fd98a', 이벤트: '#f2a0c8', 점검: '#f2b36b' };
+function ntSpan(x) {
+  return (x || []).map(t => {
+    let h = AG.esc(t.s).replace(/\n/g, '<br>');
+    if (t.c) h = `<code>${h}</code>`; if (t.b) h = `<b>${h}</b>`; if (t.i) h = `<i>${h}</i>`; if (t.u) h = `<u>${h}</u>`; if (t.k) h = `<s>${h}</s>`;
+    if (t.h && /^https?:\/\//.test(t.h)) h = `<a href="${AG.esc(t.h)}" target="_blank" rel="noopener">${h}</a>`;
+    return h;
+  }).join('');
+}
+function ntBody(body) {
+  let h = '', list = '';
+  const flush = () => { if (list) { h += `</${list}>`; list = ''; } };
+  for (const b of body || []) {
+    const want = b.t === 'li' ? 'ul' : b.t === 'ol' ? 'ol' : '';
+    if (want !== list) { flush(); if (want) { h += `<${want}>`; list = want; } }
+    if (want) { h += `<li>${ntSpan(b.x)}</li>`; continue; }
+    if (b.t === 'hr') h += '<hr>';
+    else if (b.t === 'img') { if (/^https:\/\//.test(b.src || '')) h += `<figure><img src="${AG.esc(b.src)}" alt="" loading="lazy">${b.x && b.x.length ? `<figcaption>${ntSpan(b.x)}</figcaption>` : ''}</figure>`; }
+    else if (/^h[123]$/.test(b.t)) h += `<${b.t === 'h1' ? 'h5' : 'h6'}>${ntSpan(b.x)}</${b.t === 'h1' ? 'h5' : 'h6'}>`;
+    else if (b.t === 'quote') h += `<blockquote>${ntSpan(b.x)}</blockquote>`;
+    else if (b.t === 'callout') h += `<p class="nt-call">${ntSpan(b.x)}</p>`;
+    else if (b.t === 'todo') h += `<p class="nt-todo${b.done ? ' done' : ''}">${b.done ? '☑' : '☐'} ${ntSpan(b.x)}</p>`;
+    else h += b.x && b.x.length ? `<p>${ntSpan(b.x)}</p>` : '<p class="nt-gap"></p>';
+  }
+  flush(); return h || '<p class="nt-dim">내용이 없어요.</p>';
+}
+AG.noticeBoard = async function (pick) {
+  if (document.querySelector('.bw.notice')) return;
+  if (!document.getElementById('ntCss')) {
+    const st = document.createElement('style'); st.id = 'ntCss';
+    st.textContent = `.bw.notice{width:1900px;height:1120px;max-height:none;padding:56px 100px 44px}
+.nt-wrap{flex:1;min-height:0;display:grid;grid-template-columns:560px 1fr;gap:44px}
+.nt-list,.nt-view{min-height:0;overflow-y:auto;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.3) transparent}
+.nt-list{padding-right:10px}
+.nt-it{position:relative;display:block;width:100%;text-align:left;margin:0 0 12px;padding:20px 26px;color:#f2f2f2;font:inherit;border:0;border-left:5px solid transparent;background:rgba(255,255,255,.06);cursor:pointer;transition:background .18s,translate .18s}
+.nt-it:hover{background:rgba(255,255,255,.12);translate:6px 0}.nt-it.on{background:rgba(255,255,255,.17);border-left-color:#f2f2f2}
+.nt-it b{display:block;margin-top:8px;font-size:27px;font-weight:900;line-height:1.35;word-break:keep-all}
+.nt-it small{display:block;margin-top:6px;font-size:19px;color:#a9a9a9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nt-it.new::after{content:"NEW";position:absolute;right:20px;top:20px;font-family:"Passion One",sans-serif;font-size:18px;letter-spacing:.12em;color:#ff8f80}
+.nt-tag{display:inline-block;padding:3px 14px;font-size:17px;font-weight:900;color:#141414;border-radius:999px}
+.nt-pin{margin-left:8px;font-size:17px;color:#e9d79a;font-weight:700}
+.nt-date{margin-left:10px;font-size:17px;color:#9f9f9f}
+.nt-view{padding:6px 24px 30px 34px;border-left:2px solid rgba(255,255,255,.1);font-size:26px;line-height:1.75;color:#ececec;word-break:keep-all;overflow-wrap:anywhere}
+.bw .nt-view h4{font-family:"Noto Sans KR",sans-serif;font-size:42px;font-weight:900;letter-spacing:0;color:#fff;margin:14px 0 8px;padding:0;border:0;line-height:1.3}
+.nt-view .nt-meta{margin-bottom:26px;padding-bottom:20px;border-bottom:2px solid rgba(255,255,255,.12)}
+.bw .nt-view h5{font-size:34px;font-weight:900;margin:30px 0 10px;color:#fff}.bw .nt-view h6{font-size:29px;font-weight:900;margin:24px 0 8px;color:#f2f2f2}
+.nt-view p{margin:0 0 14px}.nt-view .nt-gap{height:10px;margin:0}.nt-view ul,.nt-view ol{margin:0 0 16px;padding-left:36px}.nt-view li{margin-bottom:6px}
+.nt-view blockquote{margin:0 0 16px;padding:6px 0 6px 24px;border-left:4px solid rgba(255,255,255,.35);color:#cfcfcf}
+.nt-view .nt-call{padding:18px 24px;background:rgba(255,255,255,.08);border-left:4px solid #e9d79a}
+.nt-view .nt-todo.done{color:#9f9f9f;text-decoration:line-through}
+.nt-view hr{border:0;border-top:2px solid rgba(255,255,255,.14);margin:24px 0}
+.nt-view figure{margin:0 0 18px}.nt-view img{max-width:100%;display:block}.nt-view figcaption{font-size:19px;color:#a9a9a9;margin-top:6px}
+.nt-view a{color:#a9c8ff}.nt-view code{font-size:.9em;padding:1px 8px;background:rgba(255,255,255,.12)}
+.nt-dim{color:#a9a9a9}
+.nt-foot{display:flex;align-items:center;gap:16px;margin-top:24px}
+.nt-foot label{display:flex;align-items:center;gap:12px;font-size:22px;color:#c9c9c9;cursor:pointer;margin-right:auto}
+.nt-foot input{width:26px;height:26px;accent-color:#e9e9e9;cursor:pointer}
+html.m .bw.notice{width:960px;height:calc(var(--mh) - 120px);padding:44px 54px 36px}
+html.m .nt-wrap{grid-template-columns:1fr;grid-template-rows:minmax(0,30%) 1fr;gap:20px}
+html.m .nt-view{border-left:0;border-top:2px solid rgba(255,255,255,.1);padding:20px 4px 20px 0}
+html.m .nt-foot{flex-wrap:wrap}html.m .nt-foot label{width:100%}`;
+    document.head.appendChild(st);
+  }
+  const m = AG.sheet(`<h2>NOTICE</h2><h3>공지사항</h3>
+    <div class="nt-wrap"><div class="nt-list" role="listbox" aria-label="공지 목록"><p class="nt-dim">불러오는 중…</p></div><article class="nt-view" aria-live="polite"></article></div>
+    <div class="nt-foot"><label><input type="checkbox" data-today ${(() => { try { return localStorage.getItem(NT_TODAY) === ntToday() ? 'checked' : ''; } catch { return ''; } })()}> 오늘 하루 보지 않기</label>
+      <button class="bw-btn" data-ask type="button">URIM에게 묻기</button><button class="bw-btn" data-x type="button">닫기</button></div>`, 'wide notice');
+  const box = m.el.querySelector('.nt-list'), view = m.el.querySelector('.nt-view');
+  m.el.querySelector('[data-x]').onclick = m.close;
+  m.el.querySelector('[data-ask]').onclick = () => { m.close(); AG.urimChat && AG.urimChat(); };
+  m.el.querySelector('[data-today]').onchange = e => { try { e.target.checked ? localStorage.setItem(NT_TODAY, ntToday()) : localStorage.removeItem(NT_TODAY); } catch {} };
+  let list = [];
+  try { const r = await AG.notices.list(); list = r.list || []; if (r.notice && !list.length) box.innerHTML = `<p class="nt-dim">${AG.esc(r.notice)}</p>`; }
+  catch (e) { box.innerHTML = `<p class="nt-dim">${AG.esc(AG.errMsg(e))}</p>`; return; }
+  if (!list.length) { if (!box.querySelector('.nt-dim') || box.textContent === '불러오는 중…') box.innerHTML = '<p class="nt-dim">아직 공지가 없어요.</p>'; view.innerHTML = ''; return; }
+  const seen = ntSeen();
+  const tag = n => `<span class="nt-tag" style="background:${NT_COLOR[n.kind] || '#d9d9d9'}">${AG.esc(n.kind)}</span>${n.pinned ? '<span class="nt-pin">고정</span>' : ''}<span class="nt-date">${AG.esc(String(n.date || '').replace(/-/g, '.'))}</span>`;
+  box.innerHTML = list.map(n => `<button class="nt-it${seen.has(n.id) ? '' : ' new'}" data-id="${AG.esc(n.id)}" type="button" role="option">${tag(n)}<b>${AG.esc(n.title)}</b>${n.summary ? `<small>${AG.esc(n.summary)}</small>` : ''}</button>`).join('');
+  let cur = null;
+  async function show(id) {
+    const n = list.find(x => x.id === id); if (!n) return; cur = id;
+    box.querySelectorAll('.nt-it').forEach(b => { b.classList.toggle('on', b.dataset.id === id); b.setAttribute('aria-selected', b.dataset.id === id); });
+    const it = box.querySelector(`[data-id="${CSS.escape(id)}"]`); it && it.classList.remove('new'); it && it.scrollIntoView({ block: 'nearest' });
+    ntMark(id); AG.noticeDot && AG.noticeDot();
+    view.innerHTML = `<h4>${AG.esc(n.title)}</h4><div class="nt-meta">${tag(n)}</div><p class="nt-dim">불러오는 중…</p>`; view.scrollTop = 0;
+    try { const full = await AG.notices.get(id); if (cur !== id) return; view.innerHTML = `<h4>${AG.esc(n.title)}</h4><div class="nt-meta">${tag(n)}</div>${ntBody(full.body)}`; }
+    catch (e) { if (cur === id) view.querySelector('.nt-dim').textContent = AG.errMsg(e); }
+  }
+  box.querySelectorAll('.nt-it').forEach(b => b.onclick = () => show(b.dataset.id));
+  show(pick && list.some(n => n.id === pick) ? pick : (list.find(n => !seen.has(n.id)) || list[0]).id);
+};
+/* 새 공지 확인: URIM 아이콘에 점을 켜고, 새 공지가 있으면(오늘 하루 보지 않기가 아니면) 한 번 저절로 연다 */
+AG.noticeDot = async function (auto) {
+  let list = [];
+  try { list = (await AG.notices.list()).list || []; } catch { return; }
+  const seen = ntSeen(), fresh = list.filter(n => !seen.has(n.id));
+  document.querySelectorAll('[data-notice-dot]').forEach(el => { el.classList.toggle('has-new', fresh.length > 0); if (el.classList.contains('ndot')) el.classList.toggle('on', fresh.length > 0); });
+  let hide = false; try { hide = localStorage.getItem(NT_TODAY) === ntToday(); } catch {}
+  if (auto && fresh.length && !hide && !document.querySelector('.bw-back')) AG.noticeBoard(fresh[0].id);
 };
 
 /* ── 프로필 사진: 정사각형으로 잘라 내기 (끌어서 위치, 조절바로 크기) ── */
