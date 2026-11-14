@@ -297,7 +297,11 @@ html.m.visit .dlggrp { top: calc(var(--mh) - 770px); }
 html.m.visit .chargrp { top: 230px; }
 /* 다른 캐릭터 구경 (main.html?visit=…): 메뉴를 감추고 간단한 정보만 */
 .vinfo { display: none; }
-.visit .layer, .visit .hit, .visit .sidegrp, .visit .optgrp, .visit .lvl, .visit .urim, .visit .char-hint b { display: none !important; }
+.visit .layer, .visit .hit, .visit .sidegrp, .visit .optgrp, .visit .urim, .visit .char-hint b { display: none !important; }
+/* 구경 중에도 레벨 도형은 보인다 (레벨 숫자만: 경험치 · 오염도 · 체력 · 잔향은 숨김) */
+.visit .lvl { left: 1550px; top: 330px; }   /* 정보 창 왼쪽 */
+.visit .lvl .k, .visit .lvl .v, .visit .lvl .exp { display: none; }
+.visit .lvl:not(.ready) { visibility: hidden; }
 .visit .vinfo { display: block; position: absolute; left: 1800px; top: 372px; width: 720px; padding: 44px 96px 48px 84px; box-sizing: border-box; color: #f2f2f2; z-index: 30;
   filter: drop-shadow(0 18px 26px rgba(0,0,0,.4)); animation: vIn .6s cubic-bezier(.2,.8,.2,1) .5s backwards; }
 @keyframes vIn { from { opacity: 0; translate: 60px 0; } }
@@ -722,6 +726,7 @@ if (window.AG && VISIT) {
     const brief = [['직업', d.job], ['소속', d.faction], ['출신', d.origin], ['종족', AG.SPECIES[d.species] || d.species], ['키', d.height]];
     rows.innerHTML = brief.map(([k, v]) => `<dt>${k}</dt><dd>${AG.esc(v && v !== '—' ? v : '—')}</dd>`).join('');
     document.getElementById('vMore').onclick = () => AG.profileSheet(p);
+    document.getElementById('lvlNum').textContent = String(p.level || 1).padStart(2, '0'); document.getElementById('lvl').classList.add('ready');   // 레벨만 보여 준다
     CONFIG.lines = (p.lines || []).slice(0, 5); idx = 0;
     if (CONFIG.lines.length) setTimeout(() => say(CONFIG.lines[0]), 600);
     if (p.hasIllust) AG.people.illust(VISIT).then(r => { if (r && r.illust) { images = [r.illust]; imgIdx = 0; setImage(r.illust); } }).catch(() => {});
