@@ -1,4 +1,4 @@
-const { app, BrowserWindow, Menu, shell, session } = require('electron');
+const { app, BrowserWindow, Menu, shell, session, dialog } = require('electron');
 const path = require('path');
 
 const START_URL = 'https://lastsummerdream.github.io/Afterglow/app/';
@@ -90,6 +90,8 @@ function buildMenu(win) {
   Menu.setApplicationMenu(Menu.buildFromTemplate(template));
 }
 
+let quitting = false;   // '종료'를 고른 뒤에는 다시 묻지 않는다
+
 function createWindow() {
   const win = new BrowserWindow({
     width: 1440,
@@ -110,6 +112,24 @@ function createWindow() {
 
   buildMenu(win);
   win.once('ready-to-show', () => win.show());
+
+  // 창을 닫거나(⌘Q · Alt+F4 포함) 종료하려 하면 한 번 묻는다
+  win.on('close', (e) => {
+    if (quitting) return;
+    e.preventDefault();
+    const choice = dialog.showMessageBoxSync(win, {
+      type: 'question',
+      buttons: ['종료', '취소'],
+      defaultId: 1,
+      cancelId: 1,
+      noLink: true,
+      title: 'AFTERGLOW',
+      message: '정말 종료하시겠습니까?'
+    });
+    if (choice === 0) { quitting = true; app.quit(); }
+  });
+  // 페이지 쪽의 '나가기 확인'은 앱이 직접 묻기 때문에 막지 않는다
+  win.webContents.on('will-prevent-unload', (e) => e.preventDefault());
 
   win.webContents.setWindowOpenHandler(({ url }) => {
     try {

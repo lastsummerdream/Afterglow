@@ -81,7 +81,7 @@ AG.boot();
   function toBattle() {   // 줄거리에 전투가 나오면 전투 화면으로 보낸다
     if (leaving || !run || !run.battle) return; leaving = true;
     AG.toast(`${run.battle.enemy || '적'}과(와) 전투가 시작돼요`, 1500);
-    setTimeout(() => location.href = run.battle.party ? AG.PAGES.party + '?id=' + run.battle.party : AG.PAGES.battle, 1500);
+    setTimeout(() => { AG.leaving(); location.href = run.battle.party ? AG.PAGES.party + '?id=' + run.battle.party : AG.PAGES.battle; }, 1500);
   }
   async function open(id) {
     if (busy) return;

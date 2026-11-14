@@ -110,7 +110,7 @@ AG.page = (location.pathname.split('/').pop() || 'index.html').replace(/\.html$/
 AG.M = !!AG.M_PAGES[AG.page] && innerWidth < innerHeight && innerWidth <= 820;
 if (AG.M) document.documentElement.classList.add('m', 'm-' + AG.page);
 if (AG.M && AG.M_PAGES[AG.page].drawers) document.documentElement.classList.add('m-dr');
-{ const w0 = innerWidth; addEventListener('resize', () => { if (Math.abs(innerWidth - w0) > 120) location.reload(); }); }   // 화면을 돌리면 배치를 새로
+{ const w0 = innerWidth; addEventListener('resize', () => { if (Math.abs(innerWidth - w0) > 120) { AG.leaving && AG.leaving(); location.reload(); } }); }   // 화면을 돌리면 배치를 새로
 AG.MW = 1030;   // 세로 캔버스의 폭. 항상 화면 폭에 꽉 맞추고(양옆 여백 없음), 높이는 화면 비율만큼 — 위쪽은 위에, 아래쪽은 아래에 붙여 배치한다
 AG.fitStage = function (stage) {
   if (!AG.M) {
@@ -532,7 +532,7 @@ AG.preview = (text, n = 200) => {
 const token = () => LS.get(TOKEN_KEY);
 AG.mode = token() ? 'server' : 'demo';
 /* 로그인 안 했으면 커버로 (실제 사이트) · 미리보기에서는 커버의 '체험 모드'를 고른 경우에만 둘러볼 수 있음 */
-AG.toCover = () => location.replace(AG.PAGES.cover);
+AG.toCover = () => { AG.leaving(); location.replace(AG.PAGES.cover); };
 if (!window.AG_NO_GATE && !token() && (AG.PROD || LS.get('ag-demo') !== '1')) AG.toCover();
 
 /* 자주 묻는 것(/me · /stats · /users · /stories)은 30초 동안 기억해 두고 바로 돌려준다. 화면을 넘길 때마다 서버를 기다리지 않게.
@@ -1383,6 +1383,20 @@ addEventListener('load', () => {
   const run = () => [...new Set(Object.values(AG.PAGES))].filter(h => h && !location.pathname.endsWith('/' + h)).forEach(h => { const l = document.createElement('link'); l.rel = 'prefetch'; l.href = h; document.head.appendChild(l); });
   (window.requestIdleCallback || (f => setTimeout(f, 1200)))(run, { timeout: 3000 });
 });
+
+/* ── 창(탭)을 닫으려 하면 한 번 묻는다 ──
+   사이트 안에서 화면을 옮길 때(누르고 바로 이동 · AG.leaving()을 부른 이동)는 묻지 않는다.
+   문구는 브라우저가 정해서 '사이트에서 나가시겠습니까?'처럼 보인다. 데스크톱 앱은 앱이 직접 '정말 종료하시겠습니까?'를 묻고,
+   휴대폰 브라우저는 이 확인을 거의 띄우지 않아서 켜지 않는다 */
+(function () {
+  let inside = 0;
+  AG.leaving = () => { inside = Date.now(); };
+  if (/Electron/i.test(navigator.userAgent) || matchMedia('(pointer: coarse)').matches) return;
+  addEventListener('click', AG.leaving, true);
+  addEventListener('submit', AG.leaving, true);
+  addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ' || e.key === 'Escape' || e.key === 'Backspace' && !/INPUT|TEXTAREA/.test((e.target || {}).tagName || '')) AG.leaving(); }, true);
+  addEventListener('beforeunload', e => { if (Date.now() - inside < 4000) return; e.preventDefault(); e.returnValue = ''; });
+})();
 
 /* ── 정적 파일을 기기에 저장해 두고 바로 꺼내 쓴다 (sw.js). 새 버전은 뒤에서 받아 다음 이동 때 반영 ── */
 if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});

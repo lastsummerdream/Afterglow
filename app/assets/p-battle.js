@@ -138,7 +138,7 @@ AG.boot();
     try {
       b = await AG.battle.turn(action, text, itemId, skill);
       bars(prev); await renderLog(true);
-      if (b.over && b.story) { AG.toast('이야기로 돌아가요', 1600); setTimeout(() => location.href = AG.PAGES.story + '?id=' + b.story, 1700); return; }   // 스토리 중 전투였으면 이야기로
+      if (b.over && b.story) { AG.toast('이야기로 돌아가요', 1600); setTimeout(() => (AG.leaving(), location.href = AG.PAGES.story + '?id=' + b.story), 1700); return; }   // 스토리 중 전투였으면 이야기로
     } catch (e) { AG.toast(AG.errMsg(e)); }
     setBusy(false); input.focus({ preventScroll: true });
   }

@@ -41,7 +41,7 @@ AG.boot({ noDemoChip: true });
   }
 
   /* 진입 */
-  function go(url) { stage.classList.add('leaving'); setTimeout(() => location.href = url, 450); }
+  function go(url) { stage.classList.add('leaving'); AG.leaving(); setTimeout(() => location.href = url, 450); }
   function enter() {
     if (!stage.classList.contains('ready') || stage.classList.contains('panel-open')) return;
     if (session) return go(MAIN);

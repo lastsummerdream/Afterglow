@@ -19,7 +19,7 @@ AG.boot();
   };
   $('outBtn').onclick = async () => {
     if (demo) { AG.LS.del('ag-demo'); return location.href = AG.PAGES.cover; }
-    await AG.account.logout(); AG.toast('로그아웃했어요'); setTimeout(() => location.href = AG.PAGES.cover, 600);
+    await AG.account.logout(); AG.toast('로그아웃했어요'); setTimeout(() => (AG.leaving(), location.href = AG.PAGES.cover), 600);
   };
   $('delBtn').onclick = () => {
     if (demo) return AG.toast('체험 모드에는 지울 계정이 없어요');
@@ -29,7 +29,7 @@ AG.boot();
     m.el.querySelector('[data-x]').onclick = m.close;
     m.el.querySelector('[data-ok]').onclick = async () => {
       const pw = m.el.querySelector('input').value; if (!pw) return m.el.querySelector('input').focus();
-      try { await AG.account.remove(pw); AG.LS.del('ag-token'); m.close(); AG.toast('계정을 삭제했어요'); setTimeout(() => location.href = AG.PAGES.cover, 900); }
+      try { await AG.account.remove(pw); AG.LS.del('ag-token'); m.close(); AG.toast('계정을 삭제했어요'); setTimeout(() => (AG.leaving(), location.href = AG.PAGES.cover), 900); }
       catch (e) { m.el.querySelector('.err').textContent = AG.errMsg(e); }
     };
   };
@@ -41,7 +41,7 @@ AG.boot();
     const go = async kind => {
       if (!u.value.trim()) return u.focus(); if (!p.value) return p.focus();
       err.textContent = '';
-      try { await AG.auth[kind](u.value.trim(), p.value); m.close(); AG.toast(kind === 'login' ? '로그인했어요' : '가입했어요'); setTimeout(() => location.reload(), 600); }
+      try { await AG.auth[kind](u.value.trim(), p.value); m.close(); AG.toast(kind === 'login' ? '로그인했어요' : '가입했어요'); setTimeout(() => (AG.leaving(), location.reload()), 600); }
       catch (e) { err.textContent = AG.errMsg(e) + (e.code === 'network' ? ' · 이 페이지 주소에서는 서버를 쓸 수 없을 수 있어요' : ''); }
     };
     m.el.querySelector('[data-in]').onclick = () => go('login');
