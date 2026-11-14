@@ -784,7 +784,7 @@ function findMsg(id) {
 const lastOf = list => { const l = [...list].reverse().find(m => !m.deleted); return l ? { name: l.userId === 'me' ? meName() : nm(l.userId), text: l.text, at: l.at } : null; };
 
 const Dm = {
-  notify: async () => { const d = db(); return { group: true, private: false, dm: Object.values(d.dms).some(x => x.unread > 0) }; },
+  notify: async () => { const d = db(); return { group: true, private: false, dm: Object.values(d.dms).some(x => x.unread > 0), inv: Math.max(0, (Array.isArray(d.inventory) ? d.inventory.length : 0) - 48) }; },
   seen: async () => ({ ok: true }),
   push: { info: async () => ({ key: '', on: false }), add: async () => ({ ok: true }), remove: async () => ({ ok: true }) },
   async me() {
@@ -1124,6 +1124,21 @@ AG.pushAsk = async () => {
   m.el.querySelector('[data-x]').onclick = m.close;
   m.el.querySelector('[data-y]').onclick = async () => { m.close(); try { await AG.pushOn(); AG.toast('새 메시지가 오면 알려 드릴게요'); } catch (e) { AG.toast(e.message || '알림을 켜지 못했어요'); } };
 };
+/* 창고가 넘치면 (48칸 초과) 어느 화면에서든 알려 주고 창고로 보낸다. 고르는 건 창고 화면에서 */
+AG.INV_CAP = 48;
+AG.invCheck = function (f) {
+  const n = f && f.inv; if (!(n > 0)) return;
+  if (/inventory\.html$/.test(location.pathname) || document.querySelector('.bw-back')) return;
+  try { if (Date.now() - (+sessionStorage.getItem('ag-invask') || 0) < 60000) return; sessionStorage.setItem('ag-invask', String(Date.now())); } catch {}
+  const m = AG.sheet(`<h2>STORAGE FULL</h2><h3>창고가 넘쳤어요</h3><p class="bw-empty" style="padding:10px 0 0;text-align:left">창고에는 ${AG.INV_CAP}개까지 둘 수 있어요. 새로 들어온 물건 때문에 ${n}개가 넘쳤어요.<br>창고에서 버릴 물건을 골라 주세요.</p><div class="bw-btns"><button class="bw-btn" data-y>창고로 가기</button><button class="bw-btn" data-x>나중에</button></div>`);
+  m.el.querySelector('[data-x]').onclick = m.close;
+  m.el.querySelector('[data-y]').onclick = () => { location.href = AG.PAGES.inventory; };
+};
+// 메인 · 창고 · 로그인 화면이 아니면 들어올 때 한 번 확인한다 (메인은 20초마다 따로 확인)
+addEventListener('load', () => {
+  if (/(?:^|\/)(?:index|main|inventory)\.html$|\/$/.test(location.pathname) || new URLSearchParams(location.search).get('visit')) return;
+  setTimeout(async () => { try { AG.invCheck(await AG.notify()); } catch {} }, 1500);
+});
 AG.auth = {
   async login(username, password) { const j = await rawAuth('/auth/login', username, password); LS.set(TOKEN_KEY, j.token); return j; },
   async signup(username, password, invite) { const j = await rawAuth('/auth/signup', username, password, invite); LS.set(TOKEN_KEY, j.token); return j; },

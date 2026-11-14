@@ -1281,6 +1281,8 @@ ${sheet || "아직 캐릭터 정보를 적지 않았다."}
       let lvUp = false; while (game.exp >= expMax(game.level)) { game.exp -= expMax(game.level); game.level += 1; lvUp = true; }
       await saveProfile(DB, user.id, { game }, now);
       b.log.push({ kind: "urim", text: `${b.enemy.name}을(를) 쓰러뜨렸어요. 전리품 「${l.name}」을(를) 창고에 넣었어요.` + (lvUp ? ` 레벨이 ${game.level}(으)로 올랐어요.` : "") });
+      b.invOver = await invOver(DB, user.id);
+      if (b.invOver) b.log.push({ kind: "urim", text: INV_FULL_LINE });
     } else if (b.me.hp <= 0) {
       b.over = true; b.result = "lose"; b.log.push({ kind: "urim", text: "쓰러졌어요. 숙소로 옮겨 놓을게요. 체력을 회복하고 다시 나가요." });
     } else {
@@ -1511,6 +1513,13 @@ async function notifyNew(env, scope, room, from, text, now) {
   }
 }
 // 메인 화면의 새 메시지 점: 단체 단말 · 개인 연락망 · 개인 단말
+/* 창고는 48칸. 넘치면 몇 개가 넘쳤는지 알려 주고, 고르는 건 사용자가 창고에서 한다 */
+const INV_CAP = 48;
+async function invOver(DB, uid) {
+  const r = await DB.prepare("SELECT COUNT(*) AS n FROM items WHERE user_id = ?").bind(uid).first();
+  return Math.max(0, ((r && r.n) || 0) - INV_CAP);
+}
+const INV_FULL_LINE = "창고가 가득 차서 넘쳤어요. 창고에서 버릴 물건을 골라 주세요.";
 async function unreadFlags(DB, uid, now) {
   const pr = await profile(DB, uid); const game = pr.game || {};
   let seen = game.seen;
@@ -1518,7 +1527,7 @@ async function unreadFlags(DB, uid, now) {
   const g = await DB.prepare("SELECT 1 FROM messages WHERE scope='ch' AND user_id != ? AND deleted_at IS NULL AND created_at > ? LIMIT 1").bind(uid, seen.group || 0).first();
   const p = await DB.prepare("SELECT 1 FROM messages m JOIN talks t ON t.id = m.room WHERE m.scope='talk' AND (t.a_user = ? OR t.b_user = ?) AND m.user_id != ? AND m.created_at > ? LIMIT 1").bind(uid, uid, uid, seen.private || 0).first();
   const d = await DB.prepare("SELECT 1 FROM messages m WHERE m.scope='dm' AND (m.room LIKE ? OR m.room LIKE ?) AND m.user_id != ? AND m.created_at > COALESCE((SELECT read_at FROM dm_reads WHERE user_id = ? AND partner_id = m.user_id), 0) LIMIT 1").bind(uid + ":%", "%:" + uid, uid, uid).first();
-  return { group: !!g, private: !!p, dm: !!d };
+  return { group: !!g, private: !!p, dm: !!d, inv: await invOver(DB, uid) };
 }
 
 /* ── 평판: 스토리에서 한 행동이 기록되고, 세력과 NPC가 그에 맞춰 반응한다 ── */
@@ -1913,7 +1922,7 @@ async function partyResolve(env, DB, p, now) {
       while (game.exp >= expMax(game.level)) { game.exp -= expMax(game.level); game.level += 1; }
       await saveProfile(DB, x.id, { game }, now);
     }
-    p.log.push({ kind: "urim", text: `${p.enemy.name}을(를) 함께 쓰러뜨렸어요. 전리품은 각자 창고에 넣어 두었어요.` });
+    p.log.push({ kind: "urim", text: `${p.enemy.name}을(를) 함께 쓰러뜨렸어요. 전리품은 각자 창고에 넣어 두었어요. 창고가 넘친 사람은 창고에서 버릴 물건을 골라 주세요.` });
   } else if (!still.length) {
     p.status = "over"; p.result = p.members.some(x => x.fled) ? "run" : "lose";
     p.log.push({ kind: "urim", text: p.result === "run" ? "모두 전장을 벗어났어요." : "모두 쓰러졌어요. 숙소로 옮겨 놓을게요. 체력을 회복하고 다시 나가요." });

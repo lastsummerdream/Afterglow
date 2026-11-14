@@ -760,7 +760,7 @@ document.querySelectorAll('.side-btn').forEach(b => b.addEventListener('click', 
 document.querySelector('[data-action="home"]').addEventListener('click', () => { location.href = 'main.html'; });
 /* 새 메시지 점: 단체 단말 · 개인 연락망 · 개인 단말 */
 if (window.AG && AG.notify && !VISIT) {
-  const nd = async () => { try { const f = await AG.notify(); document.querySelectorAll('[data-nd]').forEach(el => el.classList.toggle('on', !!f[el.dataset.nd])); } catch {} };
+  const nd = async () => { try { const f = await AG.notify(); document.querySelectorAll('[data-nd]').forEach(el => el.classList.toggle('on', !!f[el.dataset.nd])); AG.invCheck(f); } catch {} };
   nd(); setInterval(() => { if (!document.hidden) nd(); }, 20000);
   addEventListener('pageshow', e => { if (e.persisted) nd(); }); document.addEventListener('visibilitychange', () => { if (!document.hidden) nd(); });
   if (AG.pushAsk) setTimeout(() => AG.pushAsk(), 2500);   // 처음 한 번: 알림 받을지 묻기
